@@ -54,7 +54,7 @@ function Onboarding() {
       } catch (e: any) { toast.error(e?.message ?? "Erro"); }
       finally { setLoading(false); }
     }
-    if (step === total) { nav({ to: "/app" }); return; }
+    if (step === total) { nav({ to: "/" }); return; }
     setStep(step + 1);
     playSound("pop");
   }

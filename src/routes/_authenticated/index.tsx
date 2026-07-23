@@ -83,7 +83,7 @@ function DashboardPage() {
             <tr>
               <th className="sheet-th">Métrica</th>
               {dadosAno.map((d) => (
-                <th key={d.m} className="sheet-th text-right cursor-pointer hover:bg-primary/80" onClick={() => nav({ to: "/app/fluxo" })}>
+                <th key={d.m} className="sheet-th text-right cursor-pointer hover:bg-primary/80" onClick={() => nav({ to: "/fluxo" })}>
                   {MESES_ABREV[d.m]}
                 </th>
               ))}
