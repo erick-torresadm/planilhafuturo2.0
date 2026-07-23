@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
                   a
                     ? "bg-primary/15 text-primary font-semibold ring-1 ring-primary/30"
-                    : "text-sidebar-foreground/80 hover:bg-white/5 hover:text-foreground",
+                    : "text-sidebar-foreground/80 hover:bg-black/5 hover:text-foreground",
                 )}
               >
                 <Icon className={cn("h-4 w-4", a && "drop-shadow-[0_0_6px_oklch(0.82_0.19_165)]")} />
@@ -68,7 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border">
-          <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-white/5 hover:text-foreground">
+          <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-black/5 hover:text-foreground">
             <LogOut className="h-4 w-4" /> Sair
           </button>
         </div>
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Topbar */}
         <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border">
           <div className="flex items-center gap-3 px-4 lg:px-6 h-14">
-            <button onClick={() => setOpen(true)} className="lg:hidden tap-target -ml-2 grid place-items-center rounded-lg hover:bg-white/5">
+            <button onClick={() => setOpen(true)} className="lg:hidden tap-target -ml-2 grid place-items-center rounded-lg hover:bg-black/5">
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2 lg:hidden">
@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="font-display font-semibold text-sm -mt-0.5">{current.label}</div>
             </div>
             <div className="flex-1" />
-            <button className="tap-target grid place-items-center rounded-lg hover:bg-white/5 relative">
+            <button className="tap-target grid place-items-center rounded-lg hover:bg-black/5 relative">
               <Bell className="h-4 w-4" />
               <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px] shadow-primary" />
             </button>
@@ -137,7 +137,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="tap-target grid place-items-center rounded-lg hover:bg-white/5">
+              <button onClick={() => setOpen(false)} className="tap-target grid place-items-center rounded-lg hover:bg-black/5">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link key={n.to} to={n.to}
                     className={cn(
                       "flex items-center gap-3 px-3 py-3 rounded-lg text-sm",
-                      a ? "bg-primary/15 text-primary font-semibold ring-1 ring-primary/30" : "hover:bg-white/5",
+                      a ? "bg-primary/15 text-primary font-semibold ring-1 ring-primary/30" : "hover:bg-black/5",
                     )}
                   >
                     <Icon className="h-4 w-4" /> {n.label}
@@ -157,7 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 );
               })}
             </nav>
-            <button onClick={logout} className="mt-4 flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-muted-foreground hover:bg-white/5">
+            <button onClick={logout} className="mt-4 flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-muted-foreground hover:bg-black/5">
               <LogOut className="h-4 w-4" /> Sair
             </button>
           </aside>

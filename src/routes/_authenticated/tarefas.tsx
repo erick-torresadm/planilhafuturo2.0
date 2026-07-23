@@ -99,7 +99,7 @@ function TarefasPage() {
             <div key={r.id} className={cn("glass p-3 flex items-center gap-3", isDone && "opacity-50", isLate && "ring-1 ring-negative/40")}>
               <button onClick={() => upd.mutate({ id: r.id, patch: { status: isDone ? "pendente" : "feito" } })}
                 className={cn("h-9 w-9 shrink-0 rounded-lg grid place-items-center transition-all",
-                  isDone ? "mint-gradient" : isLate ? "bg-negative-soft text-negative" : "bg-white/5 text-muted-foreground hover:bg-white/10")}>
+                  isDone ? "mint-gradient" : isLate ? "bg-negative-soft text-negative" : "bg-black/5 text-muted-foreground hover:bg-black/10")}>
                 {isDone ? <Check className="h-4 w-4" /> : isLate ? <AlertTriangle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
               </button>
               <div className="flex-1 min-w-0">

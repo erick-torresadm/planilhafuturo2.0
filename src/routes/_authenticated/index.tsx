@@ -96,7 +96,7 @@ function DashboardPage() {
 
         {/* Barra simples: comprometido vs livre */}
         <div className="mt-6">
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-2 rounded-full bg-black/5 overflow-hidden">
             <div
               className={sobra >= 0 ? "h-full bg-primary/80" : "h-full bg-negative"}
               style={{ width: `${pctComprometido}%` }}
@@ -109,7 +109,7 @@ function DashboardPage() {
         </div>
 
         {/* 3 números essenciais */}
-        <div className="mt-6 grid grid-cols-3 gap-px bg-white/5 rounded-lg overflow-hidden">
+        <div className="mt-6 grid grid-cols-3 gap-px bg-black/5 rounded-lg overflow-hidden">
           <MiniStat label="Gastos fixos" value={fixos} />
           <MiniStat label="Parcelas" value={parc} />
           <MiniStat label="Livre" value={sobra} accent={sobra < 0 ? "neg" : "pos"} />
@@ -149,11 +149,11 @@ function DashboardPage() {
 function MonthPicker({ offset, setOffset, label }: { offset: number; setOffset: (n: number) => void; label: string }) {
   return (
     <div className="inline-flex items-center rounded-lg border border-border overflow-hidden shrink-0">
-      <button className="h-9 w-9 grid place-items-center hover:bg-white/5" onClick={() => setOffset(offset - 1)} aria-label="Mês anterior">
+      <button className="h-9 w-9 grid place-items-center hover:bg-black/5" onClick={() => setOffset(offset - 1)} aria-label="Mês anterior">
         <ChevronLeft className="h-4 w-4" />
       </button>
       <div className="px-3 text-xs font-medium tabular-nums">{label}</div>
-      <button className="h-9 w-9 grid place-items-center hover:bg-white/5" onClick={() => setOffset(offset + 1)} aria-label="Próximo mês">
+      <button className="h-9 w-9 grid place-items-center hover:bg-black/5" onClick={() => setOffset(offset + 1)} aria-label="Próximo mês">
         <ChevronRight className="h-4 w-4" />
       </button>
     </div>
@@ -182,7 +182,7 @@ function PilarRow({ label, hint, value, renda, ideal }: { label: string; hint: s
           <div className="text-sm font-medium">{label}</div>
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{hint}</div>
         </div>
-        <div className="mt-2 h-1 rounded-full bg-white/5 overflow-hidden relative">
+        <div className="mt-2 h-1 rounded-full bg-black/5 overflow-hidden relative">
           <div className="h-full bg-foreground/70" style={{ width: `${Math.min(100, pct)}%` }} />
           <div className="absolute top-0 h-full w-px bg-muted-foreground/60" style={{ left: `${ideal}%` }} />
         </div>

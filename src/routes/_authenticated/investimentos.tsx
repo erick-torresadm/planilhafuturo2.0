@@ -59,7 +59,7 @@ function InvestPage() {
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Posição atual</div>
           <div className="font-display text-4xl lg:text-5xl font-bold text-primary mt-1"><Money value={totalAtual} /></div>
           <div className="mt-2 flex flex-wrap gap-2">
-            <div className="chip bg-white/5">Aplicado <Money value={totalAplicado} /></div>
+            <div className="chip bg-black/5">Aplicado <Money value={totalAplicado} /></div>
             <div className={`chip ${rendTotal >= 0 ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"}`}>
               <TrendingUp className="h-3 w-3" /> <Money value={rendTotal} signed showSign /> ({pctRend.toFixed(2)}%)
             </div>

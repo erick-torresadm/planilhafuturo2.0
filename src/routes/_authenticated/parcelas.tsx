@@ -122,7 +122,7 @@ function ParcelasPage() {
                       <span>{paga} de {r.qtd_parcelas}</span>
                       <span>{restantes} restantes</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-black/5 overflow-hidden">
                       <div className="h-full mint-gradient" style={{ width: `${pct}%` }} />
                     </div>
                   </div>

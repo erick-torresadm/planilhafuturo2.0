@@ -111,12 +111,12 @@ function FluxoPage() {
         </div>
         <div className="flex items-center rounded-lg border border-border overflow-hidden">
           <button onClick={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}
-            className="h-9 w-9 grid place-items-center hover:bg-white/5" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
+            className="h-9 w-9 grid place-items-center hover:bg-black/5" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
           <div className="text-xs font-medium px-3 tabular-nums">
             {MESES_ABREV[anchor.m]}/{String(anchor.y).slice(2)} – {MESES_ABREV[meses[5].m]}/{String(meses[5].y).slice(2)}
           </div>
           <button onClick={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}
-            className="h-9 w-9 grid place-items-center hover:bg-white/5" aria-label="Próximo"><ChevronRight className="h-4 w-4" /></button>
+            className="h-9 w-9 grid place-items-center hover:bg-black/5" aria-label="Próximo"><ChevronRight className="h-4 w-4" /></button>
           <button onClick={() => setAnchor({ y: today.getFullYear(), m: today.getMonth() })}
             className="text-[11px] font-semibold px-3 h-9 border-l border-border text-primary hover:bg-primary/10">Hoje</button>
         </div>
@@ -150,7 +150,7 @@ function FluxoPage() {
               className={`shrink-0 px-3 py-2 rounded-lg text-left transition-all border ${
                 active
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border hover:bg-white/5"
+                  : "border-border hover:bg-black/5"
               }`}>
               <div className={`text-[10px] uppercase tracking-widest ${active ? "opacity-80" : "text-muted-foreground"}`}>
                 {MESES_ABREV[mm.m]}/{String(mm.y).slice(2)} {isToday && !active && <span className="text-primary">•</span>}
@@ -233,7 +233,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
             <polyline
               points={spark}
               fill="none"
-              stroke={saldoFim < 0 ? "oklch(0.68 0.22 25)" : "oklch(0.82 0.19 165)"}
+              stroke={saldoFim < 0 ? "oklch(0.55 0.20 25)" : "oklch(0.55 0.15 165)"}
               strokeWidth="2.5"
               vectorEffect="non-scaling-stroke"
               strokeLinecap="round"
