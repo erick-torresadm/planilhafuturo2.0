@@ -8,7 +8,7 @@ import {
 } from "@/lib/demoData";
 import { ArrowRight, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
       { title: "Planilha — Visão do mês" },

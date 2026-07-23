@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -8,7 +9,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
   { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, short: "Fluxo" },
   { to: "/gastos", label: "Gastos Fixos", icon: Receipt, short: "Gastos" },
   { to: "/parcelas", label: "Parcelas", icon: CreditCard, short: "Parc" },
@@ -42,9 +43,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ============ Desktop Sidebar ============ */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border sticky top-0 h-screen">
         <div className="px-5 py-5 flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl mint-gradient grid place-items-center font-bold text-sm">P</div>
+          <Logo size={28} withWordmark={false} />
           <div>
-            <div className="font-display text-base font-bold leading-tight">Planilha</div>
+            <div className="font-display text-lg leading-tight">dindinho</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
           </div>
         </div>
@@ -83,8 +84,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="h-8 w-8 rounded-lg mint-gradient grid place-items-center font-bold text-xs">P</div>
-              <div className="font-display font-bold">Planilha</div>
+              <Logo size={24} withWordmark={false} />
+              <div className="font-display text-lg">dindinho</div>
             </div>
             <div className="hidden lg:block">
               <div className="text-xs text-muted-foreground">Você está em</div>
@@ -131,9 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <aside className="absolute inset-y-0 left-0 w-72 bg-sidebar border-r border-sidebar-border p-4 flex flex-col fade-up">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-xl mint-gradient grid place-items-center font-bold text-sm">P</div>
+                <Logo size={28} withWordmark={false} />
                 <div>
-                  <div className="font-display font-bold">Planilha</div>
+                  <div className="font-display text-lg">dindinho</div>
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
                 </div>
               </div>

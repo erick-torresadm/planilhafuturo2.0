@@ -1,115 +1,102 @@
-# Redesign completo — SaaS financeiro mobile-first
 
-Prioridade absoluta: **80% mobile**. Toda tela é desenhada primeiro para 375px de largura e depois escala pra desktop.
+# Plano — rebrand, landing page e polimento SaaS
 
-## 1. Design system (src/styles.css)
+Decisões que assumi (você pulou as perguntas):
+- **Nome**: `meudindin` como preferência, `meucofrin` como fallback. Verifico `.com.br` no registro.br antes de fechar o logo.
+- **Direção visual**: **editorial calmo** (Linear/Notion/Stripe) — off-white quente, serif discreto nos títulos, sans geométrico no corpo, muito respiro, verde-esmeralda só como acento. Sai da cara de "IA seco" sem virar fintech neon.
+- **E2E**: Playwright completo em todas as telas, com screenshots.
+- **Landing**: hero + prova visual + comparativo com planilha + features + FAQ + waitlist. Motion sutil (fade/parallax/tilt/marquee), nada exagerado.
 
-Substituir tokens atuais pelo tema **Neon Mint dark** (com modo claro como opção secundária):
+---
 
-- `--background: #0d1b2a` (azul-marinho profundo)
-- `--card: #12253a` (superfície elevada)
-- `--card-elevated: #17304a`
-- `--foreground: #e6f4ef`
-- `--muted: #1b4332` (verde escuro sutil)
-- `--muted-foreground: #94a8a0`
-- `--primary: #2dd4a8` (mint) / `--primary-foreground: #0d1b2a`
-- `--accent: #73ffb8` (neon glow, só para destaques/hover)
-- `--positive: #2dd4a8`, `--negative: #ff6b6b`, `--warning: #fbbf24`
-- `--border: rgba(115,255,184,0.08)` (bordas quase invisíveis, glow sutil)
-- Sombras com glow verde: `--shadow-glow: 0 0 24px rgba(45,212,168,0.15)`
+## 1. Pesquisa de referência (rápida, antes de codar)
 
-Tipografia via `<link>` no `__root.tsx` (Google Fonts — Sora 400/600/700 + Manrope 400/500/600/700). `--font-heading: "Sora"`, `--font-sans: "Manrope"`. `tabular-nums` em toda cifra. Radius base 14px (arredondado moderno, não brutalist).
+Rodo em paralelo (subagents) 3 pesquisas curtas:
+- Landing pages fintech BR/US premium (Linear, Copilot Money, Monarch, Cushion, Rocket Money, Organizze, Mobills).
+- Componentes de motion prontos (Aceternity UI, Magic UI, Motion Primitives, shadcnblocks).
+- Padrões de "planilha bonita" (Causal, Sigma, Rows.com, Airtable).
 
-Atualizar `sheet-th/sheet-td/sheet-row-alt` para tema dark: header com gradiente mint sutil, linhas alternadas com `bg-card-elevated`, célula focada com ring mint neon.
+Consolido em 1 moodboard interno (comentário no PR) — não vira arquivo do projeto.
 
-## 2. Shell mobile-first (novo AppShell)
+## 2. Marca
 
-Reescrever `src/components/AppShell.tsx` usando shadcn `Sidebar` com `collapsible="offcanvas"`:
+- Verifico disponibilidade `meudindin.com.br` / `meucofrin.com.br` via registro.br.
+- Gero logo com `imagegen` (premium, transparente): cofrinho minimalista + wordmark. 2 variações → escolho a melhor.
+- Salvo em `src/assets/logo.svg` (ou via `lovable-assets` se PNG).
+- Atualizo favicon (`public/favicon.png`), `<title>`, meta og.
 
-- **Mobile (<768px)**: topbar fixa (56px) com logo + nome da tela + `SidebarTrigger` (hambúrguer). Sidebar desliza da esquerda como overlay. Bottom safe-area padding.
-- **Desktop (≥768px)**: sidebar fixa 240px à esquerda, sempre visível, com opção de recolher para ícones.
-- Sidebar: logo "💰 Planilha", nome do usuário + avatar, itens (Dashboard, Fluxo Diário, Gastos Fixos, Parcelas, Desejos, Investimentos, Tarefas, Config), badge de saldo atual no rodapé, botão Sair.
-- Item ativo com borda-esquerda mint + fundo `bg-primary/10` + texto mint.
+## 3. Design system (refinar, não reinventar)
 
-## 3. Componente novo: `<DataView>` (toggle Card/Tabela)
+`src/styles.css`:
+- Base **Paper & Ink cálido**: `--background: oklch(0.985 0.005 85)` (off-white), `--foreground: oklch(0.18 0.01 240)` (quase preto azulado).
+- Acento **esmeralda restrito**: `--primary: oklch(0.45 0.09 165)` (só CTAs, foco, estados positivos).
+- Cinzas em escala 50→900 baseada em oklch para bordas, sombras, muted.
+- Tipografia: **Fraunces** (display, serif variable) + **Geist Sans** (corpo) + **Geist Mono** (números). Substitui Urbanist/Epilogue.
+- Radius padrão `10px`, sombras `0 1px 2px / 0 8px 24px -12px` (nada de glow neon).
+- Novos utilitários: `.card-quiet`, `.divider-hair`, `.num-lg` (tabular + tracking negativo).
 
-Componente reutilizável que envolve dados tabulares:
-- Header com título + botões pill `[Cards | Tabela]` (padrão Cards no mobile, Tabela no desktop, preferência salva em localStorage).
-- Modo **Tabela**: mantém `sheet-grid` com scroll horizontal + **primeira coluna sticky** (`sticky left-0 bg-card z-10`).
-- Modo **Cards**: renderiza via prop `renderCard(row)` — cada card em `bg-card rounded-2xl p-4` com hierarquia clara (título grande, cifra em destaque, meta em muted).
+## 4. Landing page (`/` público)
 
-Usado em: Gastos Fixos, Parcelas, Desejos, Investimentos, Tarefas.
+Movo o dashboard atual pra `/app` e libero `/` para a LP. Rotas novas: `src/routes/index.tsx` (LP), `src/routes/_app/` mantém área logada.
 
-## 4. Redesign por tela (mobile-first)
+Seções da LP (todas com motion via `motion/react` — já compatível com stack):
+1. **Nav** — logo + links (Produto, Preços, FAQ) + CTA "Entrar" e "Começar grátis". Blur sticky ao scrollar.
+2. **Hero** — headline serif grande ("Veja seus próximos 6 meses de dinheiro. Sem planilha."), sub, 2 CTAs, mockup do app com **tilt suave no mouse** e badge "feito pra quem já usa a planilha do Breno".
+3. **Prova social** — marquee com logos/depoimentos (fake temporário, marcado como placeholder).
+4. **Comparativo planilha × meudindin** — split screen animado com transição de screenshot da planilha Excel → screenshot do app ao entrar no viewport.
+5. **Features (4 cards bento)** — Fluxo diário, Gastos fixos, Parcelas, Desejos & caixinhas. Cada card com micro-animação (Framer `whileInView`).
+6. **Como funciona** — 3 passos numerados com stagger reveal.
+7. **Screenshots ao vivo** — carrossel horizontal com scroll-linked animation dos 4 principais telas.
+8. **Pricing** — 2 planos (Grátis / Pro R$ 19/mês). Toggle mensal/anual.
+9. **FAQ** — accordion (shadcn) com 8 perguntas.
+10. **CTA final** — waitlist com input de e-mail (grava em tabela `waitlist` no Supabase).
+11. **Footer** — minimalista, links legais + logo.
 
-### Dashboard (`_authenticated/index.tsx`)
-- **Hero stat card**: saldo atual gigante (`text-5xl font-heading tabular-nums`), delta do mês com seta ↑↓ colorida, mini-sparkline dos 6 meses (SVG inline).
-- Grid 2×2 de KPI cards: Entradas mês, Saídas mês, Reserva (%), Investimentos.
-- Card "Meu dinheiro está onde?" — barra empilhada horizontal (Conta / Investimentos / Caixinhas) + legenda.
-- Card "Próximos 6 meses" — no mobile vira lista scrollável horizontal de month-cards (snap-x, cada card = 1 mês com sobra + acumulado + badge status). No desktop mantém tabela.
-- Card "Reserva de emergência" — progress bar grossa mint com % centralizado.
-- Ordem otimizada mobile: saldo → sparkline → reserva → 6 meses → onde está → KPIs.
+Motion budget: `fade-up` no scroll, `tilt` no mockup, `marquee` nos logos, `stagger` em listas, `blur-in` nos títulos. Sem parallax pesado. Respeita `prefers-reduced-motion`.
 
-### Fluxo Diário (`fluxo.tsx`)
-- Toolbar sticky no topo: seletor mês (chevron ← Nov ▼ →), botão "Hoje", toggle Card/Tabela.
-- **Cards (default mobile)**: um card por dia com data grande à esquerda + entradas/saídas empilhadas + saldo do dia em destaque à direita (verde/vermelho). Dias sem lançamentos colapsados numa linha "5 dias sem movimento".
-- **Tabela (desktop)**: mantém grid dos 6 meses com scroll horizontal, primeira coluna (data) sticky, células com foco neon ring, navegação Tab/Enter preservada.
-- FAB (`fixed bottom-20 right-4`) "+ Lançamento" abre bottom-sheet com data/descrição/valor/tipo.
+## 5. Polimento do app (áreas logadas)
 
-### Gastos Fixos (`gastos.tsx`)
-- **Cards**: cada gasto = card com ícone da categoria + descrição + dia do mês (pill) + valor grande à direita + switch ativo/inativo.
-- Agrupamento por categoria (accordion collapsible).
-- Total no header sticky: "Total mensal: R$ X.XXX".
-- Botão flutuante "+ Novo gasto".
+Passa em cada tela e aplica o novo DS + arruma pontas soltas:
+- **Dashboard**: mantém estrutura atual (você aprovou o formato do Breno), só re-tipografa e reduz densidade.
+- **Fluxo diário**: revalida sticky header e destaque do dia (já funciona, só troca cores).
+- **Gastos**: já refeito recentemente, só ajusta paleta.
+- **Parcelas / Desejos / Investimentos / Tarefas**: aplica DataView + tipografia nova, revisa empty states.
+- **Config**: agrupa em seções com dividers hair.
+- **Onboarding**: reescreve com o novo tom editorial.
+- **Auth**: hero à esquerda + form à direita, split premium.
 
-### Parcelas (`parcelas.tsx`)
-- **Cards**: descrição + progress bar (parcela atual/total) + valor mensal + meses restantes + data fim.
-- Header: total mensal em parcelas + total quitando (soma restante).
-- Import CSV mantém como botão secundário no header.
+## 6. Backend / infra
 
-### Desejos (`desejos.tsx`)
-- Cards de desejo com status badge colorido (verde "PODE COMPRAR", âmbar "X meses para guardar", vermelho "REVER").
-- Seção Caixinhas separada com cards grandes (emoji + nome + progress circular ou linear com %).
+- Nova tabela `waitlist(email, created_at)` com RLS `INSERT anon`, `SELECT service_role`. Migration + grants.
+- Nada além disso (sem mexer em lógica financeira).
 
-### Investimentos (`investimentos.tsx`)
-- Hero card com Posição Total + Rendimento total (% e R$).
-- Card animado "Rendeu hoje: R$ X" com glow mint pulsante.
-- Cards de posição por ativo (nome, tipo, aplicado, atual, rendimento %).
+## 7. QA ponta-a-ponta (Playwright, headless, 1280×1800)
 
-### Tarefas (`tarefas.tsx`)
-- Filtro pills sticky. Cards com checkbox à esquerda + descrição + data/valor. Atrasadas com borda vermelha à esquerda.
+Script único em `/tmp/browser/qa/run.py` que:
+1. Loga com a conta `ericktorresadm@hotmail.com`.
+2. Visita cada rota: `/`, `/auth`, `/onboarding`, `/app`, `/app/fluxo`, `/app/gastos`, `/app/parcelas`, `/app/desejos`, `/app/investimentos`, `/app/tarefas`, `/app/config`.
+3. Em cada uma: screenshot + verifica ausência de erros no console + testa 1 interação real (ex.: preencher célula no fluxo, adicionar gasto, alternar view Card/Tabela).
+4. Salva screenshots em `/tmp/browser/qa/shots/` e printa relatório.
 
-### Config (`config.tsx`)
-- Seções agrupadas (Perfil, Dinheiro, Sons, Conta) com labels acima e helper text abaixo. Cards separados, respirando.
+Só declaro "pronto pra vender" após todos os passos passarem visualmente.
 
-### Auth (`auth.tsx`) e Onboarding
-- Redesign com hero mint, logo, cards escuros, botões mint com glow no hover. Onboarding progress-bar mint, botões grandes tocáveis (min h-12).
-
-## 5. Interações e polimento
-
-- Toda ação de sucesso: micro-animação (scale + glow mint 200ms) + som existente.
-- Botões: `min-h-11` no mobile (touch target 44px+), `active:scale-[0.98]`.
-- Inputs de célula: focus com `ring-2 ring-primary/40` + glow.
-- Skeletons animados enquanto carrega (não spinner genérico).
-- Transições de rota: fade curto (150ms).
+---
 
 ## Detalhes técnicos
 
-- Fontes: adicionar `<link>` Sora+Manrope no `__root.tsx` `head.links`.
-- Sidebar shadcn: usar `collapsible="offcanvas"` (mobile fecha completo) — no desktop usar variante `collapsible="icon"` opcional. Wrapper `SidebarProvider` com `w-full` e `min-h-svh`.
-- Ao usar CSS vars em widths: usar `w-[var(--sidebar-width)]` (nunca `w-[--sidebar-width]`).
-- `DataView`: hook `useViewMode(key)` com localStorage, default `"cards"` se `window.innerWidth < 768`.
-- Cifras: componente `<Money value={n} />` com `tabular-nums` e cor semântica automática (verde/vermelho/neutro).
-- Sparkline: SVG polyline puro (sem lib) baseado nos 6 saldos.
-- Bottom-sheet: usar `Sheet` do shadcn com `side="bottom"`.
-- FAB não sobrepor bottom-safe-area em iOS: `bottom-[calc(1rem+env(safe-area-inset-bottom))]`.
-- Manter toda lógica atual de `useSounds`, `finance.ts`, `db.ts`, RLS, rotas — só UI muda.
-- Preservar navegação Tab/Enter/setas no `SheetCell` no modo Tabela.
+- Instalo: `motion` (motion/react v11) e `@number-flow/react` (animação de números na LP).
+- Fontes via `<link>` no `__root.tsx` (Fraunces + Geist).
+- LP usa `og:image` absoluto com screenshot do hero (gerado via product-shot skill).
+- SEO: `head()` único em `/` com title "meudindin — planejamento financeiro simples", description, og completo.
+- Rota `/app` protegida (reativo `_authenticated` layout já existente).
+- Sem mudança em `finance.ts`, `db.ts`, RLS existente, tipos gerados.
 
 ## Arquivos
 
-**Editar**: `src/styles.css`, `src/routes/__root.tsx`, `src/components/AppShell.tsx`, `src/components/SheetCell.tsx`, todas as rotas em `src/routes/_authenticated/*.tsx`, `src/routes/auth.tsx`, `src/routes/onboarding.tsx`.
+**Criar**: `src/routes/index.tsx` (LP), `src/components/landing/*` (Nav, Hero, Compare, Features, Steps, Screens, Pricing, Faq, Cta, Footer), `src/components/Logo.tsx`, `src/assets/logo.svg`, `public/favicon.png`, migration `waitlist`, `/tmp/browser/qa/run.py`.
 
-**Criar**: `src/components/DataView.tsx`, `src/components/Money.tsx`, `src/components/Sparkline.tsx`, `src/components/MonthCard.tsx`, `src/components/StatCard.tsx`, `src/components/EmptyState.tsx`, `src/hooks/useViewMode.ts`.
+**Editar**: `src/styles.css`, `src/routes/__root.tsx`, todos `src/routes/_authenticated/*`, `src/routes/auth.tsx`, `src/routes/onboarding.tsx`, `src/components/AppShell.tsx`.
 
-Sem mudanças de schema, backend ou lógica financeira — puramente UI/UX.
+**Mover**: rotas atuais de `_authenticated/` para `_app/_authenticated/` (ou renomeio para liberar `/`).
+
+Quando aprovar, começo pela pesquisa + verificação do domínio, aí sigo em ordem.
