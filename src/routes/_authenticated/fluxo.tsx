@@ -268,7 +268,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
                 ? "bg-negative/10"
                 : i % 2 ? "sheet-row-alt" : "";
             return (
-              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`}>
+              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`} style={isToday ? { scrollMarginTop: 120 } : undefined}>
                 <td className={`sheet-td text-center font-bold ${isToday ? "text-primary" : isWeekend ? "text-muted-foreground/70" : "text-foreground"}`}>
                   <div className={`${isToday ? "text-lg" : "text-base"} leading-none`}>{d.dia}</div>
                   <div className="text-[9px] font-semibold uppercase tracking-wider opacity-60 mt-0.5">{wd}</div>
