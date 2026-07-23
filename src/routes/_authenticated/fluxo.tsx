@@ -195,7 +195,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
     }
   }, [mm.y, mm.m]);
 
-  const wrapClass = mobile ? "glass overflow-hidden" : "";
+  const wrapClass = mobile ? "glass" : "";
   const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
 
   // Sparkline of balance across month
