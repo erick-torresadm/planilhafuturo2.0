@@ -167,7 +167,7 @@ function FluxoPage() {
       </div>
 
       {/* Desktop: mesmo padrão, mês único selecionado (mais focado) */}
-      <div className="hidden lg:block glass overflow-hidden">
+      <div className="hidden lg:block glass">
         <MonthSheet mm={mesesData[monthOffset]} today={today} onCommit={commit} />
       </div>
 
@@ -195,7 +195,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
     }
   }, [mm.y, mm.m]);
 
-  const wrapClass = mobile ? "glass overflow-hidden" : "";
+  const wrapClass = mobile ? "glass" : "";
   const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
 
   // Sparkline of balance across month
