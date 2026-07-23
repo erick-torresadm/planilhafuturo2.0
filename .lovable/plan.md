@@ -1,73 +1,115 @@
+# Redesign completo — SaaS financeiro mobile-first
 
-# Planejamento Financeiro estilo "Planilha do Erick"
+Prioridade absoluta: **80% mobile**. Toda tela é desenhada primeiro para 375px de largura e depois escala pra desktop.
 
-## Objetivo
-App web com **cara de planilha** (grade densa, edição inline, navegação por teclado tipo Excel), replicando fielmente a lógica das planilhas anexadas. O foco é **visualização do futuro do dinheiro** — 6 meses à frente com saldo projetado dia a dia.
+## 1. Design system (src/styles.css)
 
-## Análise das planilhas anexadas
-Inspecionei os dois arquivos. As abas confirmam quase 1:1 o que você descreveu:
-- **Tabela_gastos** — Cat, Desc, Valor, Tipo (P/A/C), Freq (Mensal/Anual), Dia, Forma, Ativo. Sua Fase 2 bate, mas faltou **Freq (Mensal/Anual)** e **Parc (ex "3/24", "10/10")** que existem na planilha — importante para gastos anuais como IPTU/Claude AI não estourarem todo mês no fluxo diário.
-- **V.GERAL PRIMEIRO/SEGUNDO SEMESTRE** — grade de 6 meses lado a lado, colunas Entradas Fixas | Entrada Diária | Saídas Fixas | Saída Diária | Saldo. Bate com Fase 3.
-- **Parcelas** — Data, Descrição, Valor Total, Qtd, Parcela, Cartão, Categoria, Nota, Restantes, Até, + colunas mensais (JUL…DEZ). Bate com Fase 4. Nota: a planilha usa formato "7/12" (parcela atual/total) — precisamos guardar `parcela_atual` além de `qtd_parcelas` pra calcular "Restantes" e "Até".
-- **Fila de Desejos** — bate com Fase 6, incluindo "Sobra mensal estimada" no topo.
-- **Investimentos** — Data, Nome, Tipo, Renda, Valor Aplicado, Posição Atual, Renda Mensal, Vencimento. Bate com Fase 8.
-- **DASHBOARD** e **RECOMENDADO** existem mas quase vazias — vamos usar sua especificação da Fase 5.
+Substituir tokens atuais pelo tema **Neon Mint dark** (com modo claro como opção secundária):
 
-## Ajustes que proponho (baseados na planilha real)
-1. **gastos_fixos** ganha `frequencia` (`mensal`|`anual`) e `parcela_atual`/`parcela_total` (pra tipo C). Gasto anual só entra na Saída Fixa do dia certo **uma vez por ano**, não todo mês.
-2. **parcelas** ganha `parcela_inicial` (ex já pagou 6 de 12, começa em 7) — a planilha rastreia isso.
-3. **Fluxo Diário**: janela de 6 meses configurável, mês atual sempre à esquerda. Saldo do dia 31 do mês anterior alimenta o próximo. Saídas Fixas do dia = soma de gastos_fixos ativos com `dia = D` respeitando frequência + soma das parcelas ativas cujo dia bate.
-4. **Dashboard** com clique no mês → navega pro Fluxo Diário focado nele.
-5. **Estilo planilha**: grade densa (linhas ~28px), fonte tabular (Inter tabular-nums), edição inline com Tab/Enter/Setas/F2/Esc, autosave debounced, undo local (Ctrl+Z).
+- `--background: #0d1b2a` (azul-marinho profundo)
+- `--card: #12253a` (superfície elevada)
+- `--card-elevated: #17304a`
+- `--foreground: #e6f4ef`
+- `--muted: #1b4332` (verde escuro sutil)
+- `--muted-foreground: #94a8a0`
+- `--primary: #2dd4a8` (mint) / `--primary-foreground: #0d1b2a`
+- `--accent: #73ffb8` (neon glow, só para destaques/hover)
+- `--positive: #2dd4a8`, `--negative: #ff6b6b`, `--warning: #fbbf24`
+- `--border: rgba(115,255,184,0.08)` (bordas quase invisíveis, glow sutil)
+- Sombras com glow verde: `--shadow-glow: 0 0 24px rgba(45,212,168,0.15)`
 
-## Ordem de execução (mesma que você propôs)
-Vou seguir suas 10 fases exatamente na ordem. Cada fase = um deliverable testável antes de seguir.
+Tipografia via `<link>` no `__root.tsx` (Google Fonts — Sora 400/600/700 + Manrope 400/500/600/700). `--font-heading: "Sora"`, `--font-sans: "Manrope"`. `tabular-nums` em toda cifra. Radius base 14px (arredondado moderno, não brutalist).
 
-| Fase | Entrega |
-|---|---|
-| 1 | Enable Lovable Cloud + schema (9 tabelas) + RLS + trigger de profile + seed |
-| 2 | Tela **Gastos Fixos** (com Freq + Parc) |
-| 3 | Tela **Fluxo Diário** (6 meses, saldo projetado, teclado tipo Excel) |
-| 4 | Tela **Parcelas** (+ importação CSV Nubank/XP) |
-| 5 | **Dashboard** anual + reserva de emergência + "onde está meu dinheiro" |
-| 6 | **Fila de Desejos** + Caixinhas |
-| 7 | Sons Web Audio + configurações |
-| 8 | **Investimentos** + rendimento diário CDI |
-| 9 | Tarefas + Lembretes (automáticos e manuais) |
-| 10 | Onboarding 5 telas (nome, renda, gastos pré-preenchidos, importar CSV, pronto) |
+Atualizar `sheet-th/sheet-td/sheet-row-alt` para tema dark: header com gradiente mint sutil, linhas alternadas com `bg-card-elevated`, célula focada com ring mint neon.
 
-## Decisões técnicas (o que vou usar por padrão)
-- **Backend**: Lovable Cloud (Supabase gerenciado) — banco, auth email/senha + Google, RLS por `auth.uid()`.
-- **Stack**: TanStack Start (React 19 + Vite) já pronto no template, Tailwind v4, shadcn/ui, TanStack Query, TanStack Table para as grades.
-- **Design system**: paleta da planilha (azul escuro #0D47A1 header, verde #2E7D32 positivo, vermelho #C62828 negativo, linhas alternadas), tokens semânticos em `src/styles.css` (nada de cor hardcoded nos componentes). Fonte Inter com `font-variant-numeric: tabular-nums`.
-- **Trial/pagamento**: campos `plano`, `trial_started_at`, `trial_ends_at` ficam no schema desde a Fase 1, **mas a integração Stripe não entra agora** — só quando você pedir. Assinaturas ficam como tabela vazia até lá.
+## 2. Shell mobile-first (novo AppShell)
 
-## Perguntas antes de começar a Fase 1
-Preciso confirmar 3 coisas rápidas antes de gerar o banco (evita retrabalho):
+Reescrever `src/components/AppShell.tsx` usando shadcn `Sidebar` com `collapsible="offcanvas"`:
 
-1. **Login**: só email/senha, ou também Google? (padrão que sugiro: email/senha + Google)
-2. **Multiusuário**: cada pessoa vê só o dela (padrão), ou você quer compartilhar planilha entre casal/família já na v1?
-3. **Moeda/local**: fixo BRL/pt-BR, ou preparar pra i18n depois?
+- **Mobile (<768px)**: topbar fixa (56px) com logo + nome da tela + `SidebarTrigger` (hambúrguer). Sidebar desliza da esquerda como overlay. Bottom safe-area padding.
+- **Desktop (≥768px)**: sidebar fixa 240px à esquerda, sempre visível, com opção de recolher para ícones.
+- Sidebar: logo "💰 Planilha", nome do usuário + avatar, itens (Dashboard, Fluxo Diário, Gastos Fixos, Parcelas, Desejos, Investimentos, Tarefas, Config), badge de saldo atual no rodapé, botão Sair.
+- Item ativo com borda-esquerda mint + fundo `bg-primary/10` + texto mint.
 
-Se responder "padrão em tudo" eu já toco a Fase 1 completa (schema + RLS + seed) no próximo turno.
+## 3. Componente novo: `<DataView>` (toggle Card/Tabela)
 
-## Detalhes técnicos (referência)
+Componente reutilizável que envolve dados tabulares:
+- Header com título + botões pill `[Cards | Tabela]` (padrão Cards no mobile, Tabela no desktop, preferência salva em localStorage).
+- Modo **Tabela**: mantém `sheet-grid` com scroll horizontal + **primeira coluna sticky** (`sticky left-0 bg-card z-10`).
+- Modo **Cards**: renderiza via prop `renderCard(row)` — cada card em `bg-card rounded-2xl p-4` com hierarquia clara (título grande, cifra em destaque, meta em muted).
 
-**Cálculo da Saída Fixa do dia D no mês M/A:**
-```
-saida_fixa(D, M, A) =
-   Σ gastos_fixos.valor WHERE ativo=true AND dia=D
-     AND (frequencia='mensal' OR (frequencia='anual' AND mes_cadastro=M))
- + Σ parcelas.valor_parcela WHERE dia_compra=D
-     AND M/A entre mes_inicio e mes_inicio + qtd_parcelas - parcela_inicial
-```
+Usado em: Gastos Fixos, Parcelas, Desejos, Investimentos, Tarefas.
 
-**Saldo dia D:** `saldo(D-1) + entradas_fixas + entrada_diaria - saida_fixa - saida_diaria`, com `saldo(dia 0 do mês M)` = último saldo do mês M-1, e mês inicial = `profiles.saldo_inicial` (novo campo que vou adicionar).
+## 4. Redesign por tela (mobile-first)
 
-**Tabelas com pequenos ajustes vs seu prompt:**
-- `profiles`: + `saldo_inicial DECIMAL DEFAULT 0`
-- `gastos_fixos`: + `frequencia TEXT DEFAULT 'mensal'`, + `parcela_atual INT`, + `parcela_total INT`
-- `parcelas`: + `parcela_inicial INT DEFAULT 1` (pra quem já pagou algumas)
-- Índices: `(user_id, dia)` em gastos_fixos, `(user_id, data)` em lancamentos e parcelas.
+### Dashboard (`_authenticated/index.tsx`)
+- **Hero stat card**: saldo atual gigante (`text-5xl font-heading tabular-nums`), delta do mês com seta ↑↓ colorida, mini-sparkline dos 6 meses (SVG inline).
+- Grid 2×2 de KPI cards: Entradas mês, Saídas mês, Reserva (%), Investimentos.
+- Card "Meu dinheiro está onde?" — barra empilhada horizontal (Conta / Investimentos / Caixinhas) + legenda.
+- Card "Próximos 6 meses" — no mobile vira lista scrollável horizontal de month-cards (snap-x, cada card = 1 mês com sobra + acumulado + badge status). No desktop mantém tabela.
+- Card "Reserva de emergência" — progress bar grossa mint com % centralizado.
+- Ordem otimizada mobile: saldo → sparkline → reserva → 6 meses → onde está → KPIs.
 
-Todas as tabelas em `public` recebem `GRANT` explícito pra `authenticated`/`service_role` no mesmo migration (regra do Data API).
+### Fluxo Diário (`fluxo.tsx`)
+- Toolbar sticky no topo: seletor mês (chevron ← Nov ▼ →), botão "Hoje", toggle Card/Tabela.
+- **Cards (default mobile)**: um card por dia com data grande à esquerda + entradas/saídas empilhadas + saldo do dia em destaque à direita (verde/vermelho). Dias sem lançamentos colapsados numa linha "5 dias sem movimento".
+- **Tabela (desktop)**: mantém grid dos 6 meses com scroll horizontal, primeira coluna (data) sticky, células com foco neon ring, navegação Tab/Enter preservada.
+- FAB (`fixed bottom-20 right-4`) "+ Lançamento" abre bottom-sheet com data/descrição/valor/tipo.
+
+### Gastos Fixos (`gastos.tsx`)
+- **Cards**: cada gasto = card com ícone da categoria + descrição + dia do mês (pill) + valor grande à direita + switch ativo/inativo.
+- Agrupamento por categoria (accordion collapsible).
+- Total no header sticky: "Total mensal: R$ X.XXX".
+- Botão flutuante "+ Novo gasto".
+
+### Parcelas (`parcelas.tsx`)
+- **Cards**: descrição + progress bar (parcela atual/total) + valor mensal + meses restantes + data fim.
+- Header: total mensal em parcelas + total quitando (soma restante).
+- Import CSV mantém como botão secundário no header.
+
+### Desejos (`desejos.tsx`)
+- Cards de desejo com status badge colorido (verde "PODE COMPRAR", âmbar "X meses para guardar", vermelho "REVER").
+- Seção Caixinhas separada com cards grandes (emoji + nome + progress circular ou linear com %).
+
+### Investimentos (`investimentos.tsx`)
+- Hero card com Posição Total + Rendimento total (% e R$).
+- Card animado "Rendeu hoje: R$ X" com glow mint pulsante.
+- Cards de posição por ativo (nome, tipo, aplicado, atual, rendimento %).
+
+### Tarefas (`tarefas.tsx`)
+- Filtro pills sticky. Cards com checkbox à esquerda + descrição + data/valor. Atrasadas com borda vermelha à esquerda.
+
+### Config (`config.tsx`)
+- Seções agrupadas (Perfil, Dinheiro, Sons, Conta) com labels acima e helper text abaixo. Cards separados, respirando.
+
+### Auth (`auth.tsx`) e Onboarding
+- Redesign com hero mint, logo, cards escuros, botões mint com glow no hover. Onboarding progress-bar mint, botões grandes tocáveis (min h-12).
+
+## 5. Interações e polimento
+
+- Toda ação de sucesso: micro-animação (scale + glow mint 200ms) + som existente.
+- Botões: `min-h-11` no mobile (touch target 44px+), `active:scale-[0.98]`.
+- Inputs de célula: focus com `ring-2 ring-primary/40` + glow.
+- Skeletons animados enquanto carrega (não spinner genérico).
+- Transições de rota: fade curto (150ms).
+
+## Detalhes técnicos
+
+- Fontes: adicionar `<link>` Sora+Manrope no `__root.tsx` `head.links`.
+- Sidebar shadcn: usar `collapsible="offcanvas"` (mobile fecha completo) — no desktop usar variante `collapsible="icon"` opcional. Wrapper `SidebarProvider` com `w-full` e `min-h-svh`.
+- Ao usar CSS vars em widths: usar `w-[var(--sidebar-width)]` (nunca `w-[--sidebar-width]`).
+- `DataView`: hook `useViewMode(key)` com localStorage, default `"cards"` se `window.innerWidth < 768`.
+- Cifras: componente `<Money value={n} />` com `tabular-nums` e cor semântica automática (verde/vermelho/neutro).
+- Sparkline: SVG polyline puro (sem lib) baseado nos 6 saldos.
+- Bottom-sheet: usar `Sheet` do shadcn com `side="bottom"`.
+- FAB não sobrepor bottom-safe-area em iOS: `bottom-[calc(1rem+env(safe-area-inset-bottom))]`.
+- Manter toda lógica atual de `useSounds`, `finance.ts`, `db.ts`, RLS, rotas — só UI muda.
+- Preservar navegação Tab/Enter/setas no `SheetCell` no modo Tabela.
+
+## Arquivos
+
+**Editar**: `src/styles.css`, `src/routes/__root.tsx`, `src/components/AppShell.tsx`, `src/components/SheetCell.tsx`, todas as rotas em `src/routes/_authenticated/*.tsx`, `src/routes/auth.tsx`, `src/routes/onboarding.tsx`.
+
+**Criar**: `src/components/DataView.tsx`, `src/components/Money.tsx`, `src/components/Sparkline.tsx`, `src/components/MonthCard.tsx`, `src/components/StatCard.tsx`, `src/components/EmptyState.tsx`, `src/hooks/useViewMode.ts`.
+
+Sem mudanças de schema, backend ou lógica financeira — puramente UI/UX.
