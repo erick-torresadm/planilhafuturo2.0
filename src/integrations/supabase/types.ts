@@ -14,7 +14,372 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assinaturas: {
+        Row: {
+          created_at: string | null
+          id: string
+          plano: string | null
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          plano?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          plano?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      caixinhas: {
+        Row: {
+          atual: number | null
+          created_at: string | null
+          icone: string | null
+          id: string
+          meta: number | null
+          nome: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          atual?: number | null
+          created_at?: string | null
+          icone?: string | null
+          id?: string
+          meta?: number | null
+          nome: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          atual?: number | null
+          created_at?: string | null
+          icone?: string | null
+          id?: string
+          meta?: number | null
+          nome?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      desejos: {
+        Row: {
+          created_at: string | null
+          id: string
+          item: string
+          observacao: string | null
+          parcelado: boolean | null
+          qtd_parcelas: number | null
+          tipo: string | null
+          updated_at: string | null
+          user_id: string
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item: string
+          observacao?: string | null
+          parcelado?: boolean | null
+          qtd_parcelas?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id: string
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item?: string
+          observacao?: string | null
+          parcelado?: boolean | null
+          qtd_parcelas?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
+      gastos_fixos: {
+        Row: {
+          ativo: boolean | null
+          categoria: string
+          created_at: string | null
+          descricao: string
+          dia: number
+          forma: string | null
+          frequencia: string | null
+          id: string
+          mes_anual: number | null
+          nota: string | null
+          parcela_atual: number | null
+          parcela_total: number | null
+          tipo: string | null
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria: string
+          created_at?: string | null
+          descricao: string
+          dia?: number
+          forma?: string | null
+          frequencia?: string | null
+          id?: string
+          mes_anual?: number | null
+          nota?: string | null
+          parcela_atual?: number | null
+          parcela_total?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string
+          created_at?: string | null
+          descricao?: string
+          dia?: number
+          forma?: string | null
+          frequencia?: string | null
+          id?: string
+          mes_anual?: number | null
+          nota?: string | null
+          parcela_atual?: number | null
+          parcela_total?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      investimentos: {
+        Row: {
+          created_at: string | null
+          data: string | null
+          id: string
+          nome: string
+          posicao_atual: number | null
+          renda: string | null
+          tipo: string | null
+          updated_at: string | null
+          user_id: string
+          valor_aplicado: number | null
+          vencimento: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          nome: string
+          posicao_atual?: number | null
+          renda?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id: string
+          valor_aplicado?: number | null
+          vencimento?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          nome?: string
+          posicao_atual?: number | null
+          renda?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id?: string
+          valor_aplicado?: number | null
+          vencimento?: string | null
+        }
+        Relationships: []
+      }
+      lancamentos: {
+        Row: {
+          created_at: string | null
+          data: string
+          descricao: string | null
+          id: string
+          tipo: string
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          descricao?: string | null
+          id?: string
+          tipo: string
+          updated_at?: string | null
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      parcelas: {
+        Row: {
+          cartao: string | null
+          categoria: string | null
+          created_at: string | null
+          data: string
+          descricao: string
+          id: string
+          nota: string | null
+          parcela_inicial: number | null
+          qtd_parcelas: number
+          updated_at: string | null
+          user_id: string
+          valor_total: number
+        }
+        Insert: {
+          cartao?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          data: string
+          descricao: string
+          id?: string
+          nota?: string | null
+          parcela_inicial?: number | null
+          qtd_parcelas?: number
+          updated_at?: string | null
+          user_id: string
+          valor_total?: number
+        }
+        Update: {
+          cartao?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          nota?: string | null
+          parcela_inicial?: number | null
+          qtd_parcelas?: number
+          updated_at?: string | null
+          user_id?: string
+          valor_total?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          meses_reserva_emergencia: number | null
+          meta_renda_fixa: number | null
+          nome: string | null
+          onboarding_completed: boolean | null
+          plano: string | null
+          renda_mensal: number | null
+          saldo_inicial: number | null
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          meses_reserva_emergencia?: number | null
+          meta_renda_fixa?: number | null
+          nome?: string | null
+          onboarding_completed?: boolean | null
+          plano?: string | null
+          renda_mensal?: number | null
+          saldo_inicial?: number | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          meses_reserva_emergencia?: number | null
+          meta_renda_fixa?: number | null
+          nome?: string | null
+          onboarding_completed?: boolean | null
+          plano?: string | null
+          renda_mensal?: number | null
+          saldo_inicial?: number | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tarefas: {
+        Row: {
+          created_at: string | null
+          data: string | null
+          descricao: string
+          id: string
+          status: string | null
+          tipo: string | null
+          updated_at: string | null
+          user_id: string
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string | null
+          descricao: string
+          id?: string
+          status?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id: string
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string | null
+          descricao?: string
+          id?: string
+          status?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          user_id?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
