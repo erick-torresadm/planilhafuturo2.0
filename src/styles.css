@@ -5,8 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   Planilha — Neon Mint SaaS
-   Deep navy base, mint neon accents, glass cards, mobile-first.
+   Planilha — Refined dark UI. Graphite base, subtle mint accent.
    ============================================================ */
 
 @theme inline {
@@ -59,91 +58,84 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-glow: 0 0 32px -8px oklch(0.82 0.18 165 / 0.35);
-  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 8px 24px -12px oklch(0 0 0 / 0.5);
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.03) inset, 0 6px 20px -14px oklch(0 0 0 / 0.6);
 }
 
-/* Force dark mode always — this is a dark SaaS */
+/* Refined graphite + subtle mint */
 :root, .dark {
   --radius: 0.75rem;
 
-  /* Base: deep navy */
-  --background: oklch(0.19 0.03 240);
-  --foreground: oklch(0.97 0.01 180);
+  --background: oklch(0.16 0.008 250);
+  --foreground: oklch(0.96 0.005 240);
 
-  --surface: oklch(0.23 0.03 235);
-  --surface-2: oklch(0.27 0.035 232);
+  --surface: oklch(0.20 0.008 250);
+  --surface-2: oklch(0.24 0.008 250);
 
-  --card: oklch(0.24 0.035 235);
-  --card-foreground: oklch(0.97 0.01 180);
-  --popover: oklch(0.24 0.035 235);
-  --popover-foreground: oklch(0.97 0.01 180);
+  --card: oklch(0.21 0.008 250);
+  --card-foreground: oklch(0.96 0.005 240);
+  --popover: oklch(0.21 0.008 250);
+  --popover-foreground: oklch(0.96 0.005 240);
 
-  /* Mint neon primary */
-  --mint: oklch(0.82 0.19 165);
-  --mint-glow: oklch(0.9 0.2 160);
-  --primary: oklch(0.82 0.19 165);
-  --primary-foreground: oklch(0.18 0.04 240);
+  --mint: oklch(0.78 0.10 170);
+  --mint-glow: oklch(0.82 0.11 170);
+  --primary: oklch(0.78 0.10 170);
+  --primary-foreground: oklch(0.16 0.008 250);
 
-  --secondary: oklch(0.3 0.03 235);
-  --secondary-foreground: oklch(0.97 0.01 180);
-  --muted: oklch(0.28 0.025 235);
-  --muted-foreground: oklch(0.68 0.02 220);
-  --accent: oklch(0.35 0.06 200);
-  --accent-foreground: oklch(0.97 0.01 180);
+  --secondary: oklch(0.26 0.008 250);
+  --secondary-foreground: oklch(0.96 0.005 240);
+  --muted: oklch(0.24 0.006 250);
+  --muted-foreground: oklch(0.65 0.008 240);
+  --accent: oklch(0.28 0.01 240);
+  --accent-foreground: oklch(0.96 0.005 240);
 
-  --destructive: oklch(0.68 0.22 22);
+  --destructive: oklch(0.66 0.17 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(1 0 0 / 0.08);
-  --input: oklch(1 0 0 / 0.1);
-  --ring: oklch(0.82 0.19 165);
+  --border: oklch(1 0 0 / 0.06);
+  --input: oklch(1 0 0 / 0.08);
+  --ring: oklch(0.78 0.10 170);
 
-  --positive: oklch(0.85 0.19 160);
-  --positive-soft: oklch(0.35 0.09 165 / 0.4);
-  --negative: oklch(0.72 0.2 22);
-  --negative-soft: oklch(0.35 0.1 22 / 0.35);
-  --warning: oklch(0.82 0.15 80);
-  --warning-soft: oklch(0.35 0.08 80 / 0.35);
+  --positive: oklch(0.80 0.11 170);
+  --positive-soft: oklch(0.30 0.05 170 / 0.30);
+  --negative: oklch(0.70 0.16 25);
+  --negative-soft: oklch(0.32 0.08 25 / 0.25);
+  --warning: oklch(0.80 0.09 85);
+  --warning-soft: oklch(0.32 0.05 85 / 0.25);
 
-  --header: oklch(0.28 0.04 235);
-  --header-foreground: oklch(0.92 0.02 170);
-  --row-alt: oklch(0.22 0.03 235);
-  --cell-edit: oklch(0.35 0.1 165 / 0.5);
-  --cell-in: oklch(0.35 0.08 165 / 0.25);
-  --cell-out: oklch(0.35 0.1 22 / 0.18);
+  --header: oklch(0.24 0.008 250);
+  --header-foreground: oklch(0.85 0.008 240);
+  --row-alt: oklch(0.19 0.008 250);
+  --cell-edit: oklch(0.30 0.07 170 / 0.30);
+  --cell-in: oklch(0.28 0.04 170 / 0.15);
+  --cell-out: oklch(0.30 0.07 25 / 0.12);
 
-  --sidebar: oklch(0.17 0.03 240);
-  --sidebar-foreground: oklch(0.9 0.01 180);
-  --sidebar-accent: oklch(0.82 0.19 165);
-  --sidebar-accent-foreground: oklch(0.18 0.04 240);
-  --sidebar-border: oklch(1 0 0 / 0.06);
+  --sidebar: oklch(0.14 0.008 250);
+  --sidebar-foreground: oklch(0.90 0.005 240);
+  --sidebar-accent: oklch(0.78 0.10 170);
+  --sidebar-accent-foreground: oklch(0.16 0.008 250);
+  --sidebar-border: oklch(1 0 0 / 0.05);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
   html { -webkit-tap-highlight-color: transparent; }
   body {
-    background: radial-gradient(1200px 600px at 10% -10%, oklch(0.3 0.08 200 / 0.35), transparent 60%),
-                radial-gradient(900px 500px at 100% 0%, oklch(0.35 0.12 165 / 0.2), transparent 55%),
-                var(--color-background);
-    background-attachment: fixed;
+    background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
   table, .tabular, .num { font-variant-numeric: tabular-nums; }
   ::selection { background: var(--color-mint); color: var(--color-primary-foreground); }
-  /* Custom scrollbars */
   ::-webkit-scrollbar { height: 10px; width: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.08); border-radius: 8px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.15); }
+  ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.06); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.12); }
 }
 
 /* ---------- Sheet primitives ---------- */
@@ -155,20 +147,19 @@
   font-variant-numeric: tabular-nums;
 }
 @utility sheet-th {
-  background: linear-gradient(180deg, oklch(0.3 0.06 200), oklch(0.22 0.05 200));
-  color: oklch(0.98 0.02 165);
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  background: var(--color-header);
+  color: var(--color-header-foreground);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 12px 8px;
+  padding: 12px 10px;
   text-align: left;
-  border-bottom: 2px solid oklch(0.82 0.19 165 / 0.45);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 2;
   white-space: nowrap;
-  text-shadow: 0 1px 2px oklch(0 0 0 / 0.5);
 }
 @utility sheet-td {
   padding: 8px 12px;
@@ -177,30 +168,29 @@
 }
 @utility sheet-row-alt { background: var(--color-row-alt); }
 @utility sheet-total {
-  background: linear-gradient(180deg, oklch(0.3 0.06 200 / 0.6), oklch(0.28 0.05 200 / 0.4));
+  background: var(--color-surface-2);
   color: var(--color-foreground);
   font-weight: 700;
 }
 
-/* ---------- Glass / card system ---------- */
+/* ---------- Card system ---------- */
 @utility glass {
-  background: linear-gradient(180deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.02));
+  background: var(--color-card);
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
 }
 @utility glass-strong {
-  background: linear-gradient(180deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.03));
-  border: 1px solid oklch(1 0 0 / 0.12);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
 @utility mint-glow {
-  box-shadow: 0 0 0 1px oklch(0.82 0.19 165 / 0.4), 0 0 40px -6px oklch(0.82 0.19 165 / 0.5);
+  box-shadow: 0 0 0 1px oklch(0.78 0.10 170 / 0.30);
 }
 @utility mint-gradient {
-  background: linear-gradient(135deg, oklch(0.82 0.19 165), oklch(0.9 0.2 160));
-  color: oklch(0.18 0.04 240);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
 }
 @utility chip {
   display: inline-flex;
@@ -216,10 +206,10 @@
 
 /* ---------- Animations ---------- */
 @keyframes float-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@utility fade-up { animation: float-in 0.35s ease-out both; }
+@utility fade-up { animation: float-in 0.3s ease-out both; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
