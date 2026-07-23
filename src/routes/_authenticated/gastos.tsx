@@ -166,7 +166,7 @@ function GastosPage() {
                     </td>
                     <td className="sheet-td text-center">
                       <button onClick={() => upd.mutate({ id: r.id, patch: { ativo: !r.ativo } })}
-                        className={`chip ${r.ativo ? "bg-positive-soft text-positive" : "bg-white/5 text-muted-foreground"}`}>
+                        className={`chip ${r.ativo ? "bg-positive-soft text-positive" : "bg-black/5 text-muted-foreground"}`}>
                         {r.ativo ? "ON" : "OFF"}
                       </button>
                     </td>

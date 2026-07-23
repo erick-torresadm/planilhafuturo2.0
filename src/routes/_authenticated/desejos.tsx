@@ -124,7 +124,7 @@ function DesejosPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => updDesejo.mutate({ id: d.id, patch: { parcelado: !d.parcelado } })}
-                      className={`chip ${d.parcelado ? "mint-gradient" : "bg-white/5 text-muted-foreground"}`}>
+                      className={`chip ${d.parcelado ? "mint-gradient" : "bg-black/5 text-muted-foreground"}`}>
                       {d.parcelado ? "Parcelado" : "À vista"}
                     </button>
                     {d.parcelado && (
@@ -174,7 +174,7 @@ function DesejosPage() {
                     <Input type="number" defaultValue={c.meta} onBlur={(e) => Number(e.target.value) !== Number(c.meta) && updCaix.mutate({ id: c.id, patch: { meta: Number(e.target.value) } })} className="h-8 w-28 text-right" />
                   </div>
                 </div>
-                <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="mt-3 h-2 rounded-full bg-black/5 overflow-hidden">
                   <div className="h-full mint-gradient transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
                 <div className={`text-xs mt-2 ${done ? "text-primary font-bold" : "text-muted-foreground"}`}>

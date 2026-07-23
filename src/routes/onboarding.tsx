@@ -67,7 +67,7 @@ function Onboarding() {
         {/* Progress */}
         <div className="flex gap-1.5 mb-6">
           {Array.from({ length: total }, (_, i) => (
-            <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i < step ? "mint-gradient" : "bg-white/10"}`} />
+            <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i < step ? "mint-gradient" : "bg-black/10"}`} />
           ))}
         </div>
 
