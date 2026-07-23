@@ -8,7 +8,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
   { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, short: "Fluxo" },
   { to: "/gastos", label: "Gastos Fixos", icon: Receipt, short: "Gastos" },
   { to: "/parcelas", label: "Parcelas", icon: CreditCard, short: "Parc" },
