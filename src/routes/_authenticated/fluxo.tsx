@@ -83,59 +83,92 @@ function FluxoPage() {
     else if (valor > 0) playSound("pop");
   }
 
+  // "Até quando posso gastar" — último mês em que o saldo final ainda é positivo
+  const ultimoMesPositivo = useMemo(() => {
+    let last: { y: number; m: number; saldo: number } | null = null;
+    for (const mm of mesesData) {
+      const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+      if (saldoFim >= 0) last = { y: mm.y, m: mm.m, saldo: saldoFim };
+      else break;
+    }
+    return last;
+  }, [mesesData]);
+
+  const primeiroMesNegativo = useMemo(() => {
+    for (const mm of mesesData) {
+      const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+      if (saldoFim < 0) return { y: mm.y, m: mm.m, saldo: saldoFim };
+    }
+    return null;
+  }, [mesesData]);
+
   return (
     <div className="p-4 lg:p-6 space-y-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="font-display text-2xl lg:text-3xl font-bold">Fluxo Diário</h1>
+          <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">Fluxo Diário</h1>
           <p className="text-sm text-muted-foreground">6 meses de projeção — saldo dia a dia</p>
         </div>
-        <div className="flex items-center gap-1 glass p-1 rounded-lg">
+        <div className="flex items-center rounded-lg border border-border overflow-hidden">
           <button onClick={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}
-            className="tap-target grid place-items-center rounded hover:bg-white/5"><ChevronLeft className="h-4 w-4" /></button>
-          <div className="text-xs font-semibold px-3 min-w-40 text-center">
-            {MESES_ABREV[anchor.m]}/{String(anchor.y).slice(2)} — {MESES_ABREV[meses[5].m]}/{String(meses[5].y).slice(2)}
+            className="h-9 w-9 grid place-items-center hover:bg-white/5" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
+          <div className="text-xs font-medium px-3 tabular-nums">
+            {MESES_ABREV[anchor.m]}/{String(anchor.y).slice(2)} – {MESES_ABREV[meses[5].m]}/{String(meses[5].y).slice(2)}
           </div>
           <button onClick={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}
-            className="tap-target grid place-items-center rounded hover:bg-white/5"><ChevronRight className="h-4 w-4" /></button>
+            className="h-9 w-9 grid place-items-center hover:bg-white/5" aria-label="Próximo"><ChevronRight className="h-4 w-4" /></button>
           <button onClick={() => setAnchor({ y: today.getFullYear(), m: today.getMonth() })}
-            className="text-[11px] font-semibold px-2 text-primary">Hoje</button>
+            className="text-[11px] font-semibold px-3 h-9 border-l border-border text-primary hover:bg-primary/10">Hoje</button>
         </div>
       </div>
 
-      {/* Mobile: month picker + single-month spreadsheet (like desktop) */}
-      <div className="lg:hidden space-y-3">
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
-          {mesesData.map((mm, i) => {
-            const active = i === monthOffset;
-            const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
-            return (
-              <button key={i} onClick={() => setMonthOffset(i)}
-                className={`shrink-0 px-3 py-2 rounded-lg text-left transition-all ${active ? "mint-gradient" : "glass"}`}>
-                <div className="text-[10px] uppercase tracking-widest opacity-70">{MESES_ABREV[mm.m]}/{String(mm.y).slice(2)}</div>
-                <div className={`font-display font-bold text-xs ${saldoFim < 0 ? "text-negative" : ""}`}>{brl(saldoFim)}</div>
-              </button>
-            );
-          })}
+      {/* Hint: até quando posso gastar */}
+      {(ultimoMesPositivo || primeiroMesNegativo) && (
+        <div className="glass px-4 py-3 flex items-center gap-3 text-sm">
+          <div className={`h-2 w-2 rounded-full shrink-0 ${primeiroMesNegativo ? "bg-negative" : "bg-primary"}`} />
+          <div className="min-w-0 flex-1">
+            {primeiroMesNegativo ? (
+              <>
+                Você fica no verde até <b>{MESES[ultimoMesPositivo?.m ?? meses[0].m]} {ultimoMesPositivo?.y ?? meses[0].y}</b>.
+                A partir de <b className="text-negative">{MESES[primeiroMesNegativo.m]} {primeiroMesNegativo.y}</b> o saldo fecha negativo em <b className="text-negative tabular-nums">{brl(primeiroMesNegativo.saldo)}</b>.
+              </>
+            ) : (
+              <>Seu saldo continua positivo até <b>{MESES[ultimoMesPositivo!.m]} {ultimoMesPositivo!.y}</b> ({brl(ultimoMesPositivo!.saldo)}).</>
+            )}
+          </div>
         </div>
+      )}
 
+      {/* Month tabs — funciona em mobile e desktop */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:justify-start">
+        {mesesData.map((mm, i) => {
+          const active = i === monthOffset;
+          const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+          const isToday = mm.y === today.getFullYear() && mm.m === today.getMonth();
+          return (
+            <button key={i} onClick={() => setMonthOffset(i)}
+              className={`shrink-0 px-3 py-2 rounded-lg text-left transition-all border ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border hover:bg-white/5"
+              }`}>
+              <div className={`text-[10px] uppercase tracking-widest ${active ? "opacity-80" : "text-muted-foreground"}`}>
+                {MESES_ABREV[mm.m]}/{String(mm.y).slice(2)} {isToday && !active && <span className="text-primary">•</span>}
+              </div>
+              <div className={`font-semibold text-xs tabular-nums ${!active && saldoFim < 0 ? "text-negative" : ""}`}>{brl(saldoFim)}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Mobile: single-month spreadsheet */}
+      <div className="lg:hidden">
         <MonthSheet mm={mesesData[monthOffset]} today={today} onCommit={commit} mobile />
       </div>
 
-      {/* Desktop: full 6-month grid */}
+      {/* Desktop: mesmo padrão, mês único selecionado (mais focado) */}
       <div className="hidden lg:block glass overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="flex min-w-max">
-            {mesesData.map((mm) => (
-              <div key={`${mm.y}-${mm.m}`} className="border-r border-border last:border-r-0">
-                <div className="bg-header px-3 py-3 text-center text-xs font-bold uppercase tracking-widest text-header-foreground">
-                  {MESES[mm.m]} <span className="opacity-60">{mm.y}</span>
-                </div>
-                <MonthSheet mm={mm} today={today} onCommit={commit} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <MonthSheet mm={mesesData[monthOffset]} today={today} onCommit={commit} />
       </div>
 
       <div className="text-xs text-muted-foreground text-center">
@@ -157,10 +190,10 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
 
   const todayRef = useRef<HTMLTableRowElement>(null);
   useEffect(() => {
-    if (mobile && todayRef.current) {
+    if (todayRef.current) {
       todayRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
     }
-  }, [mobile, mm.y, mm.m]);
+  }, [mm.y, mm.m]);
 
   const wrapClass = mobile ? "glass overflow-hidden" : "";
   const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -213,11 +246,11 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
       <table className="sheet-grid w-full">
         <thead>
           <tr>
-            <th className={`sheet-th ${mobile ? "w-14" : "w-14"} text-center !text-primary`}>Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Dia</th>
+            <th className={`sheet-th ${mobile ? "w-16" : "w-16"} text-center`}>Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent. Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent. Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí. Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí. Dia</th>
             <th className={`sheet-th ${mobile ? "" : "w-28"} text-right`}>Saldo</th>
           </tr>
         </thead>
@@ -235,7 +268,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
                 ? "bg-negative/10"
                 : i % 2 ? "sheet-row-alt" : "";
             return (
-              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`}>
+              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`} style={isToday ? { scrollMarginTop: 120 } : undefined}>
                 <td className={`sheet-td text-center font-bold ${isToday ? "text-primary" : isWeekend ? "text-muted-foreground/70" : "text-foreground"}`}>
                   <div className={`${isToday ? "text-lg" : "text-base"} leading-none`}>{d.dia}</div>
                   <div className="text-[9px] font-semibold uppercase tracking-wider opacity-60 mt-0.5">{wd}</div>
