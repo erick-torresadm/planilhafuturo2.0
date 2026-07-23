@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { toast } from "sonner";
+import { User, Volume2, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/config")({
   head: () => ({ meta: [{ title: "Configurações — Planilha" }] }),
@@ -38,40 +39,60 @@ function ConfigPage() {
   const p = profile.data ?? ({} as any);
 
   return (
-    <div className="p-6 max-w-2xl space-y-8">
+    <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-primary">Configurações</h1>
+        <h1 className="font-display text-2xl lg:text-3xl font-bold">Configurações</h1>
+        <p className="text-sm text-muted-foreground">Ajuste seu perfil e preferências</p>
       </div>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Perfil</h2>
-        <div><Label>Nome</Label><Input defaultValue={p.nome ?? ""} onBlur={(e) => e.target.value !== (p.nome ?? "") && save.mutate({ nome: e.target.value })} /></div>
-        <div><Label>Renda mensal</Label><Input type="number" step="0.01" defaultValue={p.renda_mensal ?? 0} onBlur={(e) => save.mutate({ renda_mensal: Number(e.target.value) })} /></div>
-        <div><Label>Saldo inicial (base do Fluxo Diário)</Label><Input type="number" step="0.01" defaultValue={p.saldo_inicial ?? 0} onBlur={(e) => save.mutate({ saldo_inicial: Number(e.target.value) })} /></div>
-        <div><Label>Meta renda fixa (R$/mês)</Label><Input type="number" step="0.01" defaultValue={p.meta_renda_fixa ?? 0} onBlur={(e) => save.mutate({ meta_renda_fixa: Number(e.target.value) })} /></div>
-        <div><Label>Meses de reserva de emergência</Label><Input type="number" defaultValue={p.meses_reserva_emergencia ?? 6} onBlur={(e) => save.mutate({ meses_reserva_emergencia: Number(e.target.value) })} /></div>
+      <section className="glass-strong p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <User className="h-4 w-4 text-primary" />
+          <h2 className="font-display font-semibold">Perfil</h2>
+        </div>
+        <Field label="Nome"><Input defaultValue={p.nome ?? ""} onBlur={(e) => e.target.value !== (p.nome ?? "") && save.mutate({ nome: e.target.value })} /></Field>
+        <Field label="Renda mensal (R$)"><Input type="number" step="0.01" defaultValue={p.renda_mensal ?? 0} onBlur={(e) => save.mutate({ renda_mensal: Number(e.target.value) })} /></Field>
+        <Field label="Saldo inicial (base do Fluxo Diário)"><Input type="number" step="0.01" defaultValue={p.saldo_inicial ?? 0} onBlur={(e) => save.mutate({ saldo_inicial: Number(e.target.value) })} /></Field>
+        <Field label="Meta renda fixa (R$/mês)"><Input type="number" step="0.01" defaultValue={p.meta_renda_fixa ?? 0} onBlur={(e) => save.mutate({ meta_renda_fixa: Number(e.target.value) })} /></Field>
+        <Field label="Meses de reserva de emergência"><Input type="number" defaultValue={p.meses_reserva_emergencia ?? 6} onBlur={(e) => save.mutate({ meses_reserva_emergencia: Number(e.target.value) })} /></Field>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Sons de dopamina</h2>
+      <section className="glass-strong p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Volume2 className="h-4 w-4 text-primary" />
+          <h2 className="font-display font-semibold">Sons</h2>
+        </div>
         <div className="flex items-center justify-between">
-          <Label>Ligado</Label>
+          <Label className="text-sm">Sons de dopamina</Label>
           <Switch checked={sound.enabled} onCheckedChange={(v) => setSound({ ...sound, enabled: v })} />
         </div>
         <div>
-          <Label>Volume: {Math.round(sound.volume * 100)}%</Label>
+          <div className="flex justify-between mb-2"><Label className="text-sm">Volume</Label><span className="text-xs text-muted-foreground">{Math.round(sound.volume * 100)}%</span></div>
           <Slider value={[sound.volume * 100]} max={100} step={5} onValueChange={(v) => setSound({ ...sound, volume: v[0] / 100 })} />
         </div>
         <div className="flex items-center justify-between">
-          <Label>Modo silencioso (9h-18h, fins de semana)</Label>
+          <Label className="text-sm">Modo silencioso (dia útil)</Label>
           <Switch checked={sound.silentDaytime} onCheckedChange={(v) => setSound({ ...sound, silentDaytime: v })} />
         </div>
-        <div className="flex flex-wrap gap-2 pt-2">
-          {(["moeda","pop","kaching","alerta","celebration","fanfarra","star","ding","bell"] as const).map((s) => (
-            <Button key={s} variant="outline" size="sm" onClick={() => playSound(s)}>{s}</Button>
-          ))}
+        <div>
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Testar sons</div>
+          <div className="flex flex-wrap gap-2">
+            {(["moeda","pop","kaching","alerta","celebration","fanfarra","star","ding","bell"] as const).map((s) => (
+              <button key={s} onClick={() => playSound(s)}
+                className="chip glass hover:mint-glow transition-all capitalize">{s}</button>
+            ))}
+          </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</Label>
+      {children}
     </div>
   );
 }
