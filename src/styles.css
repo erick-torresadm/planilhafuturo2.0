@@ -5,7 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   Planilha — Refined dark UI. Graphite base, subtle mint accent.
+   dindinho — Editorial calm design system
+   Off-white paper base, ink foreground, restrained emerald accent.
+   Inspired by Linear / Notion / Stripe.
    ============================================================ */
 
 @theme inline {
@@ -58,71 +60,71 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: "Epilogue", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Urbanist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --shadow-card:
-    0 1px 0 oklch(1 0 0 / 0.6) inset,
-    0 1px 2px oklch(0.35 0.03 60 / 0.05),
-    0 8px 24px -16px oklch(0.35 0.04 60 / 0.18);
+    0 1px 2px oklch(0.20 0.02 240 / 0.04),
+    0 8px 24px -16px oklch(0.20 0.02 240 / 0.10);
+  --shadow-hero:
+    0 20px 60px -30px oklch(0.20 0.02 240 / 0.18),
+    0 1px 2px oklch(0.20 0.02 240 / 0.04);
 }
 
-/* Emerald Prestige — cream base, deep emerald primary, restrained gold accent */
+/* Paper & Ink — off-white warm paper, near-black ink, emerald accent */
 :root {
-  --radius: 0.75rem;
+  --radius: 0.625rem;
 
-  /* Warm cream base — #f5f0e0 softened toward paper */
-  --background: oklch(0.985 0.008 95);
-  --foreground: oklch(0.20 0.025 160);
+  --background: oklch(0.985 0.004 90);
+  --foreground: oklch(0.18 0.015 250);
 
-  --surface: oklch(0.970 0.012 95);
-  --surface-2: oklch(0.950 0.016 95);
+  --surface: oklch(0.975 0.006 90);
+  --surface-2: oklch(0.960 0.008 90);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.025 160);
+  --card-foreground: oklch(0.18 0.015 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.025 160);
+  --popover-foreground: oklch(0.18 0.015 250);
 
-  /* Deep emerald primary — #064e3b / #0d7a5f */
-  --mint: oklch(0.42 0.09 165);
-  --mint-glow: oklch(0.55 0.11 165);
-  --primary: oklch(0.36 0.085 165);
-  --primary-foreground: oklch(0.985 0.008 95);
+  --mint: oklch(0.48 0.10 165);
+  --mint-glow: oklch(0.60 0.13 165);
+  --primary: oklch(0.42 0.09 165);
+  --primary-foreground: oklch(0.985 0.004 90);
 
-  --secondary: oklch(0.945 0.014 95);
-  --secondary-foreground: oklch(0.24 0.025 160);
-  --muted: oklch(0.960 0.012 95);
-  --muted-foreground: oklch(0.44 0.020 160);
-  --accent: oklch(0.92 0.030 95);
-  --accent-foreground: oklch(0.24 0.025 160);
+  --secondary: oklch(0.955 0.008 90);
+  --secondary-foreground: oklch(0.22 0.015 250);
+  --muted: oklch(0.965 0.006 90);
+  --muted-foreground: oklch(0.48 0.012 250);
+  --accent: oklch(0.94 0.010 90);
+  --accent-foreground: oklch(0.22 0.015 250);
 
-  --destructive: oklch(0.52 0.18 27);
+  --destructive: oklch(0.55 0.19 27);
   --destructive-foreground: oklch(1 0 0);
 
-  --border: oklch(0.24 0.03 160 / 0.11);
-  --input: oklch(0.24 0.03 160 / 0.15);
-  --ring: oklch(0.42 0.09 165);
+  --border: oklch(0.20 0.02 250 / 0.09);
+  --input: oklch(0.20 0.02 250 / 0.14);
+  --ring: oklch(0.48 0.10 165);
 
-  --positive: oklch(0.46 0.11 165);
-  --positive-soft: oklch(0.92 0.05 165 / 0.55);
-  --negative: oklch(0.52 0.18 27);
-  --negative-soft: oklch(0.93 0.06 27 / 0.55);
-  /* Gold accent — #c9a84c */
-  --warning: oklch(0.72 0.12 85);
-  --warning-soft: oklch(0.94 0.08 85 / 0.55);
+  --positive: oklch(0.48 0.11 165);
+  --positive-soft: oklch(0.93 0.05 165 / 0.55);
+  --negative: oklch(0.55 0.19 27);
+  --negative-soft: oklch(0.94 0.06 27 / 0.55);
+  --warning: oklch(0.70 0.13 75);
+  --warning-soft: oklch(0.95 0.08 75 / 0.55);
 
-  --header: oklch(0.960 0.012 95);
-  --header-foreground: oklch(0.28 0.030 160);
-  --row-alt: oklch(0.975 0.010 95);
-  --cell-edit: oklch(0.88 0.06 165 / 0.30);
-  --cell-in: oklch(0.92 0.06 165 / 0.35);
-  --cell-out: oklch(0.93 0.05 27 / 0.28);
+  --header: oklch(0.965 0.008 90);
+  --header-foreground: oklch(0.30 0.02 250);
+  --row-alt: oklch(0.978 0.005 90);
+  --cell-edit: oklch(0.90 0.06 165 / 0.30);
+  --cell-in: oklch(0.93 0.06 165 / 0.35);
+  --cell-out: oklch(0.94 0.05 27 / 0.28);
 
-  --sidebar: oklch(0.968 0.014 95);
-  --sidebar-foreground: oklch(0.24 0.025 160);
-  --sidebar-accent: oklch(0.36 0.085 165);
-  --sidebar-accent-foreground: oklch(0.985 0.008 95);
-  --sidebar-border: oklch(0.24 0.03 160 / 0.10);
+  --sidebar: oklch(0.972 0.006 90);
+  --sidebar-foreground: oklch(0.22 0.015 250);
+  --sidebar-accent: oklch(0.42 0.09 165);
+  --sidebar-accent-foreground: oklch(0.985 0.004 90);
+  --sidebar-border: oklch(0.20 0.02 250 / 0.08);
 }
 
 
@@ -136,16 +138,22 @@
     font-feature-settings: "cv02", "cv03", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 700; }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+    font-weight: 500;
+    font-optical-sizing: auto;
+  }
+  h1 { font-variation-settings: "SOFT" 30, "WONK" 0; }
   table, .tabular, .num { font-variant-numeric: tabular-nums; }
-  ::selection { background: oklch(0.88 0.055 65); color: var(--color-foreground); }
+  ::selection { background: oklch(0.85 0.08 165); color: var(--color-foreground); }
   ::-webkit-scrollbar { height: 10px; width: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(0.55 0.03 65 / 0.20); border-radius: 8px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(0.45 0.04 65 / 0.35); }
+  ::-webkit-scrollbar-thumb { background: oklch(0.55 0.02 250 / 0.15); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.45 0.02 250 / 0.30); }
 }
 
-/* ---------- Sheet primitives ---------- */
+/* ---------- Sheet primitives (spreadsheet feel) ---------- */
 @utility sheet-grid {
   border-collapse: separate;
   border-spacing: 0;
@@ -154,7 +162,7 @@
   font-variant-numeric: tabular-nums;
 }
 @utility sheet-th {
-  background: linear-gradient(to bottom, var(--color-header), color-mix(in oklab, var(--color-header) 92%, black));
+  background: var(--color-header);
   color: var(--color-header-foreground);
   font-weight: 600;
   font-size: 10.5px;
@@ -168,7 +176,6 @@
   top: var(--sticky-top, 56px);
   z-index: 5;
   white-space: nowrap;
-  box-shadow: 0 1px 0 var(--color-border);
 }
 @utility sheet-th-last { border-right: 0; }
 @utility sheet-td {
@@ -186,28 +193,19 @@
   font-weight: 700;
 }
 
-/* Row hover + focus-within highlight (spreadsheet feel) */
 .sheet-grid tbody tr:hover td { background: color-mix(in oklab, var(--color-primary) 5%, transparent); }
-.sheet-grid tbody tr:focus-within td {
-  background: color-mix(in oklab, var(--color-primary) 8%, transparent);
-  box-shadow: inset 0 0 0 0 transparent;
-}
 .sheet-grid tbody td:focus-within {
   background: color-mix(in oklab, var(--color-primary) 12%, transparent) !important;
   box-shadow: inset 0 0 0 2px var(--color-primary);
   border-radius: 2px;
 }
 
-/* Cell inputs — invisible until focus */
 .cell-input {
-  height: 100%;
-  width: 100%;
+  height: 100%; width: 100%;
   padding: 0 4px;
   background: transparent;
-  border: 0;
-  outline: 0;
-  font: inherit;
-  color: inherit;
+  border: 0; outline: 0;
+  font: inherit; color: inherit;
   border-radius: 4px;
   transition: background 0.12s ease;
 }
@@ -215,14 +213,14 @@
 .cell-input:focus { background: color-mix(in oklab, var(--color-primary) 8%, transparent); box-shadow: 0 0 0 1px var(--color-primary) inset; }
 
 
-/* ---------- Card system ---------- */
+/* ---------- Card / surface system ---------- */
 @utility glass {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
 }
 @utility glass-strong {
-  background: var(--color-surface);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
@@ -245,6 +243,15 @@
   letter-spacing: 0.02em;
 }
 @utility tap-target { min-height: 44px; min-width: 44px; }
+@utility divider-hair {
+  height: 1px;
+  background: var(--color-border);
+}
+@utility num-lg {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
 
 /* ---------- Animations ---------- */
 @keyframes float-in {
@@ -252,6 +259,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 @utility fade-up { animation: float-in 0.3s ease-out both; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@utility marquee { animation: marquee 30s linear infinite; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -261,4 +274,15 @@
   background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.05), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+@keyframes gridfade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, oklch(0.20 0.02 250 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.20 0.02 250 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
 }

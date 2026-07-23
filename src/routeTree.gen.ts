@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
 import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
@@ -20,6 +19,7 @@ import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
 import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -34,11 +34,6 @@ const AuthRoute = AuthRouteImport.update({
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   id: '/tarefas',
@@ -76,11 +71,17 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
@@ -90,8 +91,10 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof AuthenticatedTarefasRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
@@ -99,13 +102,13 @@ export interface FileRoutesByTo {
   '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
-  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/desejos': typeof AuthenticatedDesejosRoute
   '/_authenticated/fluxo': typeof AuthenticatedFluxoRoute
@@ -113,7 +116,6 @@ export interface FileRoutesById {
   '/_authenticated/investimentos': typeof AuthenticatedInvestimentosRoute
   '/_authenticated/parcelas': typeof AuthenticatedParcelasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/app'
     | '/config'
     | '/desejos'
     | '/fluxo'
@@ -130,8 +133,10 @@ export interface FileRouteTypes {
     | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
     | '/onboarding'
+    | '/app'
     | '/config'
     | '/desejos'
     | '/fluxo'
@@ -139,12 +144,12 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/parcelas'
     | '/tarefas'
-    | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/onboarding'
+    | '/_authenticated/app'
     | '/_authenticated/config'
     | '/_authenticated/desejos'
     | '/_authenticated/fluxo'
@@ -152,7 +157,6 @@ export interface FileRouteTypes {
     | '/_authenticated/investimentos'
     | '/_authenticated/parcelas'
     | '/_authenticated/tarefas'
-    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,13 +187,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tarefas': {
       id: '/_authenticated/tarefas'
@@ -240,10 +237,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDesejosRoute: typeof AuthenticatedDesejosRoute
   AuthenticatedFluxoRoute: typeof AuthenticatedFluxoRoute
@@ -251,10 +256,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvestimentosRoute: typeof AuthenticatedInvestimentosRoute
   AuthenticatedParcelasRoute: typeof AuthenticatedParcelasRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDesejosRoute: AuthenticatedDesejosRoute,
   AuthenticatedFluxoRoute: AuthenticatedFluxoRoute,
@@ -262,7 +267,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvestimentosRoute: AuthenticatedInvestimentosRoute,
   AuthenticatedParcelasRoute: AuthenticatedParcelasRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
