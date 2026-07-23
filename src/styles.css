@@ -137,13 +137,13 @@
     font-feature-settings: "cv02", "cv03", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 700; }
   table, .tabular, .num { font-variant-numeric: tabular-nums; }
-  ::selection { background: oklch(0.90 0.06 170); color: var(--color-foreground); }
+  ::selection { background: oklch(0.88 0.055 65); color: var(--color-foreground); }
   ::-webkit-scrollbar { height: 10px; width: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(0.22 0.01 250 / 0.15); border-radius: 8px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(0.22 0.01 250 / 0.28); }
+  ::-webkit-scrollbar-thumb { background: oklch(0.55 0.03 65 / 0.20); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.45 0.04 65 / 0.35); }
 }
 
 /* ---------- Sheet primitives ---------- */
