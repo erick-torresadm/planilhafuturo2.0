@@ -4,14 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Design system — Planilha do Erick
-   Cores baseadas na planilha: azul escuro header, verde positivo, vermelho negativo,
-   linhas alternadas cinza suave, cara de spreadsheet financeira. */
+/* ============================================================
+   Planilha — Neon Mint SaaS
+   Deep navy base, mint neon accents, glass cards, mobile-first.
+   ============================================================ */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -31,118 +34,119 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
   --color-negative: var(--negative);
   --color-negative-soft: var(--negative-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-header: var(--header);
   --color-header-foreground: var(--header-foreground);
   --color-row-alt: var(--row-alt);
   --color-cell-edit: var(--cell-edit);
   --color-cell-in: var(--cell-in);
   --color-cell-out: var(--cell-out);
+  --color-mint: var(--mint);
+  --color-mint-glow: var(--mint-glow);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-glow: 0 0 32px -8px oklch(0.82 0.18 165 / 0.35);
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 8px 24px -12px oklch(0 0 0 / 0.5);
 }
 
-:root {
-  --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.18 0.02 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 260);
+/* Force dark mode always — this is a dark SaaS */
+:root, .dark {
+  --radius: 0.75rem;
 
-  /* Azul escuro Planilha do Erick #0D47A1 */
-  --primary: oklch(0.42 0.15 258);
-  --primary-foreground: oklch(0.99 0 0);
+  /* Base: deep navy */
+  --background: oklch(0.19 0.03 240);
+  --foreground: oklch(0.97 0.01 180);
 
-  --secondary: oklch(0.97 0.01 250);
-  --secondary-foreground: oklch(0.22 0.03 260);
-  --muted: oklch(0.97 0.01 250);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.95 0.02 250);
-  --accent-foreground: oklch(0.22 0.03 260);
+  --surface: oklch(0.23 0.03 235);
+  --surface-2: oklch(0.27 0.035 232);
 
-  --destructive: oklch(0.55 0.22 27);
+  --card: oklch(0.24 0.035 235);
+  --card-foreground: oklch(0.97 0.01 180);
+  --popover: oklch(0.24 0.035 235);
+  --popover-foreground: oklch(0.97 0.01 180);
+
+  /* Mint neon primary */
+  --mint: oklch(0.82 0.19 165);
+  --mint-glow: oklch(0.9 0.2 160);
+  --primary: oklch(0.82 0.19 165);
+  --primary-foreground: oklch(0.18 0.04 240);
+
+  --secondary: oklch(0.3 0.03 235);
+  --secondary-foreground: oklch(0.97 0.01 180);
+  --muted: oklch(0.28 0.025 235);
+  --muted-foreground: oklch(0.68 0.02 220);
+  --accent: oklch(0.35 0.06 200);
+  --accent-foreground: oklch(0.97 0.01 180);
+
+  --destructive: oklch(0.68 0.22 22);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.9 0.01 255);
-  --input: oklch(0.93 0.01 255);
-  --ring: oklch(0.42 0.15 258);
 
-  /* Semânticas da planilha */
-  --positive: oklch(0.5 0.15 155);       /* #2E7D32 */
-  --positive-soft: oklch(0.95 0.05 155);
-  --negative: oklch(0.55 0.22 27);       /* #C62828 */
-  --negative-soft: oklch(0.96 0.04 27);
-  --header: oklch(0.32 0.13 258);        /* #0D47A1 */
-  --header-foreground: oklch(0.99 0 0);
-  --row-alt: oklch(0.985 0.005 250);     /* #F8F9FA */
-  --cell-edit: oklch(0.96 0.05 235);
-  --cell-in: oklch(0.96 0.06 155);
-  --cell-out: oklch(0.97 0.04 27);
+  --border: oklch(1 0 0 / 0.08);
+  --input: oklch(1 0 0 / 0.1);
+  --ring: oklch(0.82 0.19 165);
 
-  --sidebar: oklch(0.32 0.13 258);
-  --sidebar-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.28 0.13 258);
-  --sidebar-accent-foreground: oklch(0.99 0 0);
-  --sidebar-border: oklch(0.4 0.13 258);
-}
+  --positive: oklch(0.85 0.19 160);
+  --positive-soft: oklch(0.35 0.09 165 / 0.4);
+  --negative: oklch(0.72 0.2 22);
+  --negative-soft: oklch(0.35 0.1 22 / 0.35);
+  --warning: oklch(0.82 0.15 80);
+  --warning-soft: oklch(0.35 0.08 80 / 0.35);
 
-.dark {
-  --background: oklch(0.16 0.02 260);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.2 0.02 260);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.2 0.02 260);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.65 0.15 258);
-  --primary-foreground: oklch(0.15 0.02 260);
-  --secondary: oklch(0.26 0.02 260);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.26 0.02 260);
-  --muted-foreground: oklch(0.7 0.02 260);
-  --accent: oklch(0.26 0.02 260);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.7 0.19 22);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.15 258);
-  --positive: oklch(0.7 0.18 155);
-  --positive-soft: oklch(0.3 0.08 155);
-  --negative: oklch(0.7 0.2 27);
-  --negative-soft: oklch(0.3 0.08 27);
-  --header: oklch(0.28 0.13 258);
-  --header-foreground: oklch(0.99 0 0);
-  --row-alt: oklch(0.22 0.02 260);
-  --cell-edit: oklch(0.28 0.06 235);
-  --cell-in: oklch(0.28 0.08 155);
-  --cell-out: oklch(0.28 0.06 27);
-  --sidebar: oklch(0.2 0.02 260);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.26 0.02 260);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --header: oklch(0.28 0.04 235);
+  --header-foreground: oklch(0.92 0.02 170);
+  --row-alt: oklch(0.22 0.03 235);
+  --cell-edit: oklch(0.35 0.1 165 / 0.5);
+  --cell-in: oklch(0.35 0.08 165 / 0.25);
+  --cell-out: oklch(0.35 0.1 22 / 0.18);
+
+  --sidebar: oklch(0.17 0.03 240);
+  --sidebar-foreground: oklch(0.9 0.01 180);
+  --sidebar-accent: oklch(0.82 0.19 165);
+  --sidebar-accent-foreground: oklch(0.18 0.04 240);
+  --sidebar-border: oklch(1 0 0 / 0.06);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
+  html { -webkit-tap-highlight-color: transparent; }
   body {
-    background-color: var(--color-background);
+    background: radial-gradient(1200px 600px at 10% -10%, oklch(0.3 0.08 200 / 0.35), transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, oklch(0.35 0.12 165 / 0.2), transparent 55%),
+                var(--color-background);
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "cv02", "cv03", "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
   }
-  /* Números tabulares em toda a app */
-  table, .tabular { font-variant-numeric: tabular-nums; }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  table, .tabular, .num { font-variant-numeric: tabular-nums; }
+  ::selection { background: var(--color-mint); color: var(--color-primary-foreground); }
+  /* Custom scrollbars */
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.08); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.15); }
 }
 
+/* ---------- Sheet primitives ---------- */
 @utility sheet-grid {
   border-collapse: separate;
   border-spacing: 0;
@@ -154,25 +158,74 @@
   background: var(--color-header);
   color: var(--color-header-foreground);
   font-weight: 600;
-  padding: 6px 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 12px;
   text-align: left;
-  border-right: 1px solid oklch(1 0 0 / 15%);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 2;
   white-space: nowrap;
 }
 @utility sheet-td {
-  padding: 4px 10px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
-  border-right: 1px solid var(--color-border);
-  height: 30px;
+  height: 40px;
 }
-@utility sheet-row-alt {
-  background: var(--color-row-alt);
-}
+@utility sheet-row-alt { background: var(--color-row-alt); }
 @utility sheet-total {
-  background: var(--color-header);
-  color: var(--color-header-foreground);
+  background: linear-gradient(180deg, oklch(0.3 0.06 200 / 0.6), oklch(0.28 0.05 200 / 0.4));
+  color: var(--color-foreground);
   font-weight: 700;
+}
+
+/* ---------- Glass / card system ---------- */
+@utility glass {
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.02));
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+}
+@utility glass-strong {
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.03));
+  border: 1px solid oklch(1 0 0 / 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+@utility mint-glow {
+  box-shadow: 0 0 0 1px oklch(0.82 0.19 165 / 0.4), 0 0 40px -6px oklch(0.82 0.19 165 / 0.5);
+}
+@utility mint-gradient {
+  background: linear-gradient(135deg, oklch(0.82 0.19 165), oklch(0.9 0.2 160));
+  color: oklch(0.18 0.04 240);
+}
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+@utility tap-target { min-height: 44px; min-width: 44px; }
+
+/* ---------- Animations ---------- */
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@utility fade-up { animation: float-in 0.35s ease-out both; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@utility shimmer {
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
