@@ -151,6 +151,9 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
   const totalSF = mm.dias.reduce((a: number, d: any) => a + d.saidaFixa, 0);
   const totalSD = mm.dias.reduce((a: number, d: any) => a + d.saidaDiaria, 0);
   const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+  const saldoMin = mm.dias.length ? Math.min(...mm.dias.map((d: any) => d.saldo)) : 0;
+  const saldoMax = mm.dias.length ? Math.max(...mm.dias.map((d: any) => d.saldo)) : 0;
+  const diasNegativos = mm.dias.filter((d: any) => d.saldo < 0).length;
 
   const todayRef = useRef<HTMLTableRowElement>(null);
   useEffect(() => {
@@ -160,17 +163,61 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
   }, [mobile, mm.y, mm.m]);
 
   const wrapClass = mobile ? "glass overflow-hidden" : "";
+  const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
+
+  // Sparkline of balance across month
+  const range = saldoMax - saldoMin || 1;
+  const spark = mm.dias.map((d: any, i: number) => {
+    const x = (i / Math.max(mm.dias.length - 1, 1)) * 100;
+    const y = 100 - ((d.saldo - saldoMin) / range) * 100;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const zeroY = 100 - ((0 - saldoMin) / range) * 100;
 
   return (
     <div className={wrapClass}>
+      {/* Future summary strip */}
+      <div className="px-3 py-2.5 border-b border-border bg-gradient-to-r from-transparent via-white/[0.02] to-transparent">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0 grid grid-cols-3 gap-2 text-[10px] uppercase tracking-wider">
+            <div>
+              <div className="text-muted-foreground/70 font-semibold">Fim do mês</div>
+              <div className={`text-sm font-black tabular-nums ${saldoFim < 0 ? "text-negative" : "text-positive"}`}>{brl(saldoFim)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground/70 font-semibold">Pior dia</div>
+              <div className={`text-sm font-black tabular-nums ${saldoMin < 0 ? "text-negative" : "text-positive"}`}>{brl(saldoMin)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground/70 font-semibold">Dias neg.</div>
+              <div className={`text-sm font-black tabular-nums ${diasNegativos > 0 ? "text-negative" : "text-positive"}`}>{diasNegativos}</div>
+            </div>
+          </div>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-10 w-24 shrink-0">
+            {saldoMin < 0 && saldoMax > 0 && (
+              <line x1="0" y1={zeroY} x2="100" y2={zeroY} stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" className="text-muted-foreground/40" />
+            )}
+            <polyline
+              points={spark}
+              fill="none"
+              stroke={saldoFim < 0 ? "oklch(0.68 0.22 25)" : "oklch(0.82 0.19 165)"}
+              strokeWidth="2.5"
+              vectorEffect="non-scaling-stroke"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+
       <table className="sheet-grid w-full">
         <thead>
           <tr>
-            <th className={`sheet-th ${mobile ? "w-12" : "w-10"} text-center`}>Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent.Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí.Dia</th>
+            <th className={`sheet-th ${mobile ? "w-14" : "w-14"} text-center !text-primary`}>Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Dia</th>
             <th className={`sheet-th ${mobile ? "" : "w-28"} text-right`}>Saldo</th>
           </tr>
         </thead>
@@ -178,12 +225,21 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
           {mm.dias.map((d: any, i: number) => {
             const isToday = isoDate(mm.y, mm.m, d.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
             const rowSize = isToday ? "text-base md:text-sm" : mobile ? "text-sm" : "";
+            const dt = new Date(mm.y, mm.m, d.dia);
+            const wd = WEEKDAY[dt.getDay()];
+            const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
+            const negRow = d.saldo < 0 && !isToday;
             const rowExtra = isToday
               ? "bg-primary/15 ring-2 ring-primary ring-inset shadow-[0_0_20px_rgba(45,212,168,0.35)] font-bold"
-              : i % 2 ? "sheet-row-alt" : "";
+              : negRow
+                ? "bg-negative/10"
+                : i % 2 ? "sheet-row-alt" : "";
             return (
               <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`}>
-                <td className={`sheet-td text-center font-semibold ${isToday ? "text-primary text-lg" : "text-muted-foreground"}`}>{d.dia}</td>
+                <td className={`sheet-td text-center font-bold ${isToday ? "text-primary" : isWeekend ? "text-muted-foreground/70" : "text-foreground"}`}>
+                  <div className={`${isToday ? "text-lg" : "text-base"} leading-none`}>{d.dia}</div>
+                  <div className="text-[9px] font-semibold uppercase tracking-wider opacity-60 mt-0.5">{wd}</div>
+                </td>
                 <td className="sheet-td p-0 bg-cell-in">
                   <SheetCell value={d.entradaFixa} onCommit={(v) => onCommit(d.data, "entrada_fixa", v, d.entradaFixa)} />
                 </td>

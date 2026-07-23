@@ -155,19 +155,20 @@
   font-variant-numeric: tabular-nums;
 }
 @utility sheet-th {
-  background: var(--color-header);
-  color: var(--color-header-foreground);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, oklch(0.3 0.06 200), oklch(0.22 0.05 200));
+  color: oklch(0.98 0.02 165);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 10px 12px;
+  padding: 12px 8px;
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 2px solid oklch(0.82 0.19 165 / 0.45);
   position: sticky;
   top: 0;
   z-index: 2;
   white-space: nowrap;
+  text-shadow: 0 1px 2px oklch(0 0 0 / 0.5);
 }
 @utility sheet-td {
   padding: 8px 12px;
