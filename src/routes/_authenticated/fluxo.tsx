@@ -188,6 +188,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
   const saldoMax = mm.dias.length ? Math.max(...mm.dias.map((d: any) => d.saldo)) : 0;
   const diasNegativos = mm.dias.filter((d: any) => d.saldo < 0).length;
 
+  const todayRef = useRef<HTMLTableRowElement>(null);
   useEffect(() => {
     if (todayRef.current) {
       todayRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
