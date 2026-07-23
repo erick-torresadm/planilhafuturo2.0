@@ -246,11 +246,11 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
       <table className="sheet-grid w-full">
         <thead>
           <tr>
-            <th className={`sheet-th ${mobile ? "w-14" : "w-14"} text-center !text-primary`}>Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-positive/90`}>Ent.Dia</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Fixa</th>
-            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right !text-negative/90`}>Saí.Dia</th>
+            <th className={`sheet-th ${mobile ? "w-16" : "w-16"} text-center`}>Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent. Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Ent. Dia</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí. Fixa</th>
+            <th className={`sheet-th ${mobile ? "" : "w-24"} text-right`}>Saí. Dia</th>
             <th className={`sheet-th ${mobile ? "" : "w-28"} text-right`}>Saldo</th>
           </tr>
         </thead>
