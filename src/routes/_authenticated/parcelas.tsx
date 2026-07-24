@@ -68,8 +68,8 @@ function ParcelasPage() {
           <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold truncate">Parcelas</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Compras parceladas do cartão</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shrink-0">
-          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Nova</span>
+        <Button onClick={() => setOpenNew(true)} className="mint-gradient font-semibold shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Nova parcela</span>
         </Button>
       </div>
 
