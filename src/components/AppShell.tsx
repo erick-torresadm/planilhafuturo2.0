@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="px-5 py-5 flex items-center gap-2">
           <Logo size={28} withWordmark={false} />
           <div>
-            <div className="font-display text-lg leading-tight">dindinho</div>
+            <div className="font-display text-lg leading-tight">planilhafuturo</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
           </div>
         </div>
@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             <div className="flex items-center gap-2 lg:hidden">
               <Logo size={24} withWordmark={false} />
-              <div className="font-display text-lg">dindinho</div>
+              <div className="font-display text-lg">planilhafuturo</div>
             </div>
             <div className="hidden lg:block">
               <div className="text-xs text-muted-foreground">Você está em</div>
@@ -134,7 +134,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-2">
                 <Logo size={28} withWordmark={false} />
                 <div>
-                  <div className="font-display text-lg">dindinho</div>
+                  <div className="font-display text-lg">planilhafuturo</div>
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
                 </div>
               </div>

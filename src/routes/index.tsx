@@ -12,9 +12,9 @@ import { joinWaitlist } from "@/lib/waitlist.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "dindinho — Planejamento financeiro em 6 meses, sem planilha" },
+      { title: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
       { name: "description", content: "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { property: "og:title", content: "dindinho — Seu dinheiro nos próximos 6 meses" },
+      { property: "og:title", content: "planilhafuturo — Seu dinheiro nos próximos 6 meses" },
       { property: "og:description", content: "O SaaS que substitui aquela planilha complicada. Simples, visual, mobile-first." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -122,7 +122,7 @@ function Hero() {
               <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.75_0.15_25)]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.85_0.12_80)]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.75_0.10_150)]" />
-              <span className="ml-3 text-[11px] text-muted-foreground font-mono">dindinho.com.br/app</span>
+              <span className="ml-3 text-[11px] text-muted-foreground font-mono">planilhafuturo.com.br/app</span>
             </div>
             <MockupContent />
           </div>
@@ -222,7 +222,7 @@ function Compare() {
           </ul>
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="rounded-2xl border border-primary/40 p-8 bg-primary/[0.04]" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="text-xs uppercase tracking-widest text-primary mb-4">Agora — dindinho</div>
+          <div className="text-xs uppercase tracking-widest text-primary mb-4">Agora — planilhafuturo</div>
           <ul className="space-y-3 text-sm">
             {["Tudo já conectado, sem fórmula", "Você só preenche os valores", "Feito pra celular primeiro", "Avisa antes do vencimento", "Sincroniza sozinho"].map((t) => (
               <li key={t} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {t}</li>
@@ -445,7 +445,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} dindinho. Feito no Brasil.</div>
+          <div>© {new Date().getFullYear()} planilhafuturo. Feito no Brasil.</div>
           <div className="font-mono">v0.1 · beta</div>
         </div>
       </Section>
