@@ -62,6 +62,7 @@ function Nav() {
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#features" className="hover:text-foreground transition">Produto</a>
           <a href="#pricing" className="hover:text-foreground transition">Preços</a>
+          <Link to="/docs" className="hover:text-foreground transition">Documentação</Link>
           <a href="#faq" className="hover:text-foreground transition">Perguntas</a>
         </nav>
         <div className="flex items-center gap-2">
