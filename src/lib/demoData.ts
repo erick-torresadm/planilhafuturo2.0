@@ -58,23 +58,23 @@ export type DemoParcela = {
 
 // Datas ajustadas para 2026-07 (janela atual da planilha)
 export const DEMO_PARCELAS: DemoParcela[] = [
-  { id: "p1",  data: "2026-07-20", descricao: "Cachorro Bulldog",     valor_total: 3600,   qtd_parcelas: 5,  parcela_inicial: 1, cartao: "Nubank", categoria: "Casa" },
-  { id: "p2",  data: "2026-07-24", descricao: "Jim.com — Kevin",      valor_total: 1740.2, qtd_parcelas: 10, parcela_inicial: 2, cartao: "Nubank", categoria: "Transporte" },
-  { id: "p3",  data: "2026-07-11", descricao: "Amazon compra",        valor_total: 538.9,  qtd_parcelas: 10, parcela_inicial: 1, cartao: "XP",     categoria: "Compras" },
-  { id: "p4",  data: "2026-07-12", descricao: "MercadoLivre XP",      valor_total: 335.72, qtd_parcelas: 7,  parcela_inicial: 1, cartao: "XP",     categoria: "Compras" },
-  { id: "p5",  data: "2026-07-14", descricao: "Polo AR Star",         valor_total: 3046.4, qtd_parcelas: 10, parcela_inicial: 8, cartao: "Nubank", categoria: "Casa" },
-  { id: "p6",  data: "2026-07-12", descricao: "Culligan Latam",       valor_total: 513.72, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Nubank", categoria: "Casa" },
-  { id: "p7",  data: "2026-07-12", descricao: "Hubla Porquim",        valor_total: 120,    qtd_parcelas: 12, parcela_inicial: 7, cartao: "Nubank", categoria: "Casa" },
-  { id: "p8",  data: "2026-07-08", descricao: "Kingstar",             valor_total: 1498.77,qtd_parcelas: 10, parcela_inicial: 7, cartao: "Nubank", categoria: "Tecnologia" },
-  { id: "p9",  data: "2026-07-28", descricao: "Bianca — 53854325",    valor_total: 3277.2, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Nubank", categoria: "Casa" },
-  { id: "p10", data: "2026-07-26", descricao: "MercadoLivre Nubank",  valor_total: 295,    qtd_parcelas: 6,  parcela_inicial: 3, cartao: "Nubank", categoria: "Compras" },
+  { id: "p1",  data: "2026-07-20", descricao: "Cachorro Bulldog",     valor_total: 3600,   qtd_parcelas: 5,  parcela_inicial: 1, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p2",  data: "2026-07-24", descricao: "Jim.com — Kevin",      valor_total: 1740.2, qtd_parcelas: 10, parcela_inicial: 2, cartao: "Cartão 1", categoria: "Transporte" },
+  { id: "p3",  data: "2026-07-11", descricao: "Compra online",        valor_total: 538.9,  qtd_parcelas: 10, parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
+  { id: "p4",  data: "2026-07-12", descricao: "Compra online 2",      valor_total: 335.72, qtd_parcelas: 7,  parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
+  { id: "p5",  data: "2026-07-14", descricao: "Polo AR Star",         valor_total: 3046.4, qtd_parcelas: 10, parcela_inicial: 8, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p6",  data: "2026-07-12", descricao: "Culligan Latam",       valor_total: 513.72, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p7",  data: "2026-07-12", descricao: "Hubla Porquim",        valor_total: 120,    qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p8",  data: "2026-07-08", descricao: "Kingstar",             valor_total: 1498.77,qtd_parcelas: 10, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Tecnologia" },
+  { id: "p9",  data: "2026-07-28", descricao: "Bianca — 53854325",    valor_total: 3277.2, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p10", data: "2026-07-26", descricao: "Compra online 3",      valor_total: 295,    qtd_parcelas: 6,  parcela_inicial: 3, cartao: "Cartão 1", categoria: "Compras" },
 ];
 
 export const DEMO_INVEST = [
-  { id: "i1", data: "2026-07-21", nome: "Trend Investback Fundo", tipo: "Fundo", renda: "Pós-Fixado",  valor_aplicado: 326.81,  posicao_atual: 352.82,   vencimento: "Resgate D+0" },
-  { id: "i2", data: "2026-04-22", nome: "CDB Banco Volkswagen",   tipo: "CDB",   renda: "100,25% CDI", valor_aplicado: 22000,   posicao_atual: 22750.85, vencimento: "22/04/2027" },
-  { id: "i3", data: "2026-06-23", nome: "CDB Banco XP S.A.",      tipo: "CDB",   renda: "100% CDI",    valor_aplicado: 1851,    posicao_atual: 1870.54,  vencimento: "23/06/2028" },
-  { id: "i4", data: "2026-07-03", nome: "CDB Banco XP S.A.",      tipo: "CDB",   renda: "100% CDI",    valor_aplicado: 8500,    posicao_atual: 8558.23,  vencimento: "03/07/2028" },
+  { id: "i1", data: "2026-07-21", nome: "Fundo Investimento 1", tipo: "Fundo", renda: "Pós-Fixado",  valor_aplicado: 326.81,  posicao_atual: 352.82,   vencimento: "Resgate D+0" },
+  { id: "i2", data: "2026-04-22", nome: "CDB Banco A",          tipo: "CDB",   renda: "100,25% CDI", valor_aplicado: 22000,   posicao_atual: 22750.85, vencimento: "22/04/2027" },
+  { id: "i3", data: "2026-06-23", nome: "CDB Banco B",          tipo: "CDB",   renda: "100% CDI",    valor_aplicado: 1851,    posicao_atual: 1870.54,  vencimento: "23/06/2028" },
+  { id: "i4", data: "2026-07-03", nome: "CDB Banco B",          tipo: "CDB",   renda: "100% CDI",    valor_aplicado: 8500,    posicao_atual: 8558.23,  vencimento: "03/07/2028" },
 ];
 
 export const DEMO_DESEJOS = [
