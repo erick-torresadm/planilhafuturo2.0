@@ -270,6 +270,113 @@ function GastosPage() {
           </div>
         }
       />
+
+      <NewGastoDialog open={openNew} onOpenChange={setOpenNew} onSave={(data) => add.mutate(data)} saving={add.isPending} />
     </div>
+  );
+}
+
+function NewGastoDialog({ open, onOpenChange, onSave, saving }: { open: boolean; onOpenChange: (o: boolean) => void; onSave: (data: any) => void; saving: boolean }) {
+  const [form, setForm] = useState({
+    descricao: "",
+    categoria: "Outros",
+    valor: "",
+    tipo: "A",
+    frequencia: "mensal" as "mensal" | "anual",
+    dia: 1,
+    mes_anual: 1,
+    forma: "Pix",
+  });
+
+  function reset() {
+    setForm({ descricao: "", categoria: "Outros", valor: "", tipo: "A", frequencia: "mensal", dia: 1, mes_anual: 1, forma: "Pix" });
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.descricao.trim()) return;
+    onSave({
+      descricao: form.descricao.trim(),
+      categoria: form.categoria,
+      valor: Number(String(form.valor).replace(",", ".")) || 0,
+      tipo: form.tipo,
+      frequencia: form.frequencia,
+      dia: Number(form.dia) || 1,
+      mes_anual: form.frequencia === "anual" ? Number(form.mes_anual) || 1 : null,
+      forma: form.forma,
+      ativo: true,
+    });
+    reset();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Novo gasto fixo</DialogTitle>
+          <DialogDescription>Preencha os dados para adicionar ao seu fluxo mensal.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="g-desc">Descrição</Label>
+            <Input id="g-desc" autoFocus value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Ex: Aluguel, Netflix…" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="g-valor">Valor (R$)</Label>
+              <Input id="g-valor" inputMode="decimal" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CATEGORIAS.map((c) => <option key={c} value={c}>{CAT_EMOJI[c]} {c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Frequência</Label>
+              <select value={form.frequencia} onChange={(e) => setForm({ ...form, frequencia: e.target.value as any })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm capitalize">
+                {FREQ.map((f) => <option key={f} value={f} className="capitalize">{f}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Dia do mês</Label>
+              <select value={form.dia} onChange={(e) => setForm({ ...form, dia: Number(e.target.value) })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+          </div>
+          {form.frequencia === "anual" && (
+            <div className="space-y-1.5">
+              <Label>Mês do ano</Label>
+              <select value={form.mes_anual} onChange={(e) => setForm({ ...form, mes_anual: Number(e.target.value) })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Tipo</Label>
+              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {TIPOS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Forma</Label>
+              <select value={form.forma} onChange={(e) => setForm({ ...form, forma: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {FORMAS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={saving} className="mint-gradient font-semibold">
+              {saving ? "Salvando…" : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
