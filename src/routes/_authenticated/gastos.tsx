@@ -9,6 +9,9 @@ import { Money } from "@/components/Money";
 import { DataView } from "@/components/DataView";
 import type { GastoFixo } from "@/lib/finance";
 import { useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/gastos")({
   head: () => ({ meta: [{ title: "Gastos Fixos — Planilha" }] }),
