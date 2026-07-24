@@ -62,14 +62,14 @@ function ParcelasPage() {
   const totalGeral = rows.reduce((a, p) => a + Number(p.valor_total), 0);
 
   return (
-    <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl font-bold">Parcelas</h1>
-          <p className="text-sm text-muted-foreground">Compras parceladas do cartão</p>
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-5 max-w-7xl mx-auto">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold truncate">Parcelas</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Compras parceladas do cartão</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold">
-          <Plus className="h-4 w-4 mr-1" />Nova
+        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Nova</span>
         </Button>
       </div>
 

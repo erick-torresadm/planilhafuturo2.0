@@ -75,14 +75,14 @@ function GastosPage() {
   }, [allRows]);
 
   return (
-    <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl font-bold tracking-tight">Gastos Fixos</h1>
-          <p className="text-sm text-muted-foreground mt-1">Alimenta seu fluxo diário automaticamente</p>
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-5 max-w-7xl mx-auto">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Gastos Fixos</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Alimenta seu fluxo diário automaticamente</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shadow-sm">
-          <Plus className="h-4 w-4 mr-1" />Novo
+        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shadow-sm shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Novo</span>
         </Button>
       </div>
 

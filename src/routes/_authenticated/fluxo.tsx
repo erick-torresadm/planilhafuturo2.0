@@ -103,16 +103,16 @@ function FluxoPage() {
   }, [mesesData]);
 
   return (
-    <div className="p-4 lg:p-6 space-y-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">Fluxo Diário</h1>
-          <p className="text-sm text-muted-foreground">6 meses de projeção — saldo dia a dia</p>
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 max-w-7xl mx-auto">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight truncate">Fluxo Diário</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">6 meses de projeção — saldo dia a dia</p>
         </div>
-        <div className="flex items-center rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center rounded-lg border border-border overflow-hidden shrink-0 bg-card">
           <button onClick={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}
             className="h-9 w-9 grid place-items-center hover:bg-black/5" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
-          <div className="text-xs font-medium px-3 tabular-nums">
+          <div className="hidden sm:block text-xs font-medium px-3 tabular-nums">
             {MESES_ABREV[anchor.m]}/{String(anchor.y).slice(2)} – {MESES_ABREV[meses[5].m]}/{String(meses[5].y).slice(2)}
           </div>
           <button onClick={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); }}

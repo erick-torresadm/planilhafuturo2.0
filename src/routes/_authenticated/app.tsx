@@ -80,37 +80,37 @@ function DashboardPage() {
   const mesLabel = `${MESES_ABREV[m0]}/${String(y).slice(2)}`;
 
   return (
-    <div className="p-4 lg:p-8 space-y-5 max-w-3xl mx-auto">
+    <div className="p-3 sm:p-4 lg:p-8 space-y-4 sm:space-y-5 max-w-3xl mx-auto">
       {/* Header — chip do dia + navegação de mês + avatar */}
-      <div className="flex items-center justify-between gap-3 fade-up">
-        <div className="h-11 w-11 rounded-xl bg-white border border-border shadow-sm grid place-items-center relative">
-          <CalendarDays className="h-5 w-5 text-foreground/60" />
+      <div className="flex items-center justify-between gap-2 sm:gap-3 fade-up">
+        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-white border border-border shadow-sm grid place-items-center relative shrink-0">
+          <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-foreground/60" />
           <span className="absolute bottom-0.5 right-1 text-[9px] font-bold tabular-nums text-foreground/80">
             {hoje.getDate()}
           </span>
         </div>
 
-        <div className="flex-1 flex items-center justify-center gap-3">
+        <div className="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-3">
           <button
             onClick={() => setOffset(offset - 1)}
-            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-black/5 text-foreground/60"
+            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-black/5 text-foreground/60 shrink-0"
             aria-label="Mês anterior"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="font-display text-2xl font-bold tracking-tight tabular-nums capitalize">
+          <div className="font-display text-xl sm:text-2xl font-bold tracking-tight tabular-nums capitalize truncate">
             {mesLabel}
           </div>
           <button
             onClick={() => setOffset(offset + 1)}
-            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-black/5 text-foreground/60"
+            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-black/5 text-foreground/60 shrink-0"
             aria-label="Próximo mês"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="h-11 w-11 rounded-xl bg-white border border-border shadow-sm grid place-items-center text-lg">
+        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-white border border-border shadow-sm grid place-items-center text-base sm:text-lg shrink-0">
           🤓
         </div>
       </div>
