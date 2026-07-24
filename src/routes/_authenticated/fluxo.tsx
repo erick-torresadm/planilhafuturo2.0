@@ -306,3 +306,146 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
     </div>
   );
 }
+
+function MonthDayFocus({ mm, today, onCommit }: { mm: any; today: Date; onCommit: (d: string, t: string, v: number, p: number) => void }) {
+  const WEEKDAY = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const isCurrentMonth = mm.y === today.getFullYear() && mm.m === today.getMonth();
+  const initialDay = isCurrentMonth ? today.getDate() : 1;
+  const [selectedDay, setSelectedDay] = useState<number>(initialDay);
+
+  useEffect(() => {
+    setSelectedDay(isCurrentMonth ? today.getDate() : 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mm.y, mm.m]);
+
+  const chipsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-day="${selectedDay}"]`);
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [selectedDay]);
+
+  const day = mm.dias.find((d: any) => d.dia === selectedDay) ?? mm.dias[0];
+  const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+  const saldoMin = mm.dias.length ? Math.min(...mm.dias.map((d: any) => d.saldo)) : 0;
+  const diasNegativos = mm.dias.filter((d: any) => d.saldo < 0).length;
+
+  const dt = new Date(mm.y, mm.m, day.dia);
+  const isToday = isoDate(mm.y, mm.m, day.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+  const rows: { key: string; label: string; hint: string; value: number; readOnly?: boolean; tone: "in" | "out"; tipo?: string }[] = [
+    { key: "ef", label: "Entrada fixa", hint: "Salário, renda recorrente", value: day.entradaFixa, tone: "in", tipo: "entrada_fixa" },
+    { key: "ed", label: "Entrada do dia", hint: "Extras, freelas, presentes", value: day.entradaDiaria, tone: "in", tipo: "entrada_diaria" },
+    { key: "sf", label: "Saída fixa", hint: "Contas e parcelas do dia", value: day.saidaFixa, tone: "out", readOnly: true },
+    { key: "sd", label: "Saída do dia", hint: "Gastos avulsos de hoje", value: day.saidaDiaria, tone: "out", tipo: "saida_diaria" },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {/* Compact month summary */}
+      <div className="glass px-3 py-2.5 grid grid-cols-3 gap-2 text-[10px] uppercase tracking-wider">
+        <div>
+          <div className="text-muted-foreground/70 font-semibold">Fim do mês</div>
+          <div className={`text-sm font-black tabular-nums ${saldoFim < 0 ? "text-negative" : "text-positive"}`}>{brl(saldoFim)}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground/70 font-semibold">Pior dia</div>
+          <div className={`text-sm font-black tabular-nums ${saldoMin < 0 ? "text-negative" : "text-positive"}`}>{brl(saldoMin)}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground/70 font-semibold">Dias neg.</div>
+          <div className={`text-sm font-black tabular-nums ${diasNegativos > 0 ? "text-negative" : "text-positive"}`}>{diasNegativos}</div>
+        </div>
+      </div>
+
+      {/* Horizontal day chips */}
+      <div ref={chipsRef} className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scroll-smooth">
+        {mm.dias.map((d: any) => {
+          const dd = new Date(mm.y, mm.m, d.dia);
+          const wk = WEEKDAY[dd.getDay()][0];
+          const isTd = isoDate(mm.y, mm.m, d.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+          const active = d.dia === selectedDay;
+          const neg = d.saldo < 0;
+          return (
+            <button
+              key={d.dia}
+              data-day={d.dia}
+              onClick={() => setSelectedDay(d.dia)}
+              className={`shrink-0 w-11 h-14 rounded-lg border flex flex-col items-center justify-center gap-0.5 transition-all ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary shadow-md scale-105"
+                  : isTd
+                    ? "border-primary/60 bg-primary/10 text-primary"
+                    : neg
+                      ? "border-negative/30 bg-negative/5 text-negative"
+                      : "border-border bg-card hover:bg-black/5"
+              }`}
+            >
+              <span className={`text-[9px] font-semibold uppercase ${active ? "opacity-80" : "opacity-60"}`}>{wk}</span>
+              <span className="text-base font-black leading-none tabular-nums">{d.dia}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Big day card */}
+      <div className={`glass overflow-hidden ${isToday ? "ring-2 ring-primary shadow-[0_0_30px_rgba(45,212,168,0.25)]" : ""}`}>
+        <div className={`px-4 py-3 flex items-center justify-between border-b border-border ${isToday ? "bg-primary/10" : "bg-black/[0.02]"}`}>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-3xl font-black tabular-nums ${isToday ? "text-primary" : ""}`}>{day.dia}</span>
+            <span className="text-sm font-semibold text-muted-foreground">{WEEKDAY[dt.getDay()]}</span>
+            {isToday && <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Hoje</span>}
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo</div>
+            <div className={`text-lg font-black tabular-nums ${day.saldo < 0 ? "text-negative" : "text-positive"}`}>{brl(day.saldo)}</div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border">
+          {rows.map((r) => (
+            <div key={r.key} className={`flex items-center gap-3 px-4 py-3 ${r.tone === "in" ? "bg-cell-in/40" : "bg-cell-out/40"}`}>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-bold leading-tight">{r.label}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{r.hint}</div>
+              </div>
+              <div className={`shrink-0 w-40 h-11 rounded-md border ${r.tone === "in" ? "border-positive/30" : "border-negative/30"} bg-background overflow-hidden`}>
+                <SheetCell
+                  value={r.value}
+                  onCommit={(v) => r.tipo && onCommit(day.data, r.tipo, v, r.value)}
+                  readOnly={r.readOnly}
+                  className="text-base font-bold h-full"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick nav */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-black/[0.02]">
+          <button
+            disabled={selectedDay <= 1}
+            onClick={() => setSelectedDay((d) => Math.max(1, d - 1))}
+            className="h-9 px-3 rounded-md border border-border text-sm font-semibold flex items-center gap-1 disabled:opacity-40 hover:bg-black/5"
+          >
+            <ChevronLeft className="h-4 w-4" /> Dia ant.
+          </button>
+          {!isToday && isCurrentMonth && (
+            <button
+              onClick={() => setSelectedDay(today.getDate())}
+              className="h-9 px-3 rounded-md text-sm font-bold text-primary hover:bg-primary/10"
+            >
+              Ir para hoje
+            </button>
+          )}
+          <button
+            disabled={selectedDay >= mm.dias.length}
+            onClick={() => setSelectedDay((d) => Math.min(mm.dias.length, d + 1))}
+            className="h-9 px-3 rounded-md border border-border text-sm font-semibold flex items-center gap-1 disabled:opacity-40 hover:bg-black/5"
+          >
+            Próx. dia <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
