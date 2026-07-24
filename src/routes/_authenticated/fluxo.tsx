@@ -161,12 +161,12 @@ function FluxoPage() {
         })}
       </div>
 
-      {/* Mobile: single-month spreadsheet */}
+      {/* Mobile: day-focused view */}
       <div className="lg:hidden">
-        <MonthSheet mm={mesesData[monthOffset]} today={today} onCommit={commit} mobile />
+        <MonthDayFocus mm={mesesData[monthOffset]} today={today} onCommit={commit} />
       </div>
 
-      {/* Desktop: mesmo padrão, mês único selecionado (mais focado) */}
+      {/* Desktop: full spreadsheet */}
       <div className="hidden lg:block glass">
         <MonthSheet mm={mesesData[monthOffset]} today={today} onCommit={commit} />
       </div>
