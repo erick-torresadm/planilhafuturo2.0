@@ -83,8 +83,8 @@ function GastosPage() {
           <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Gastos Fixos</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Alimenta seu fluxo diário automaticamente</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shadow-sm shrink-0">
-          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Novo</span>
+        <Button onClick={() => setOpenNew(true)} className="mint-gradient font-semibold shadow-sm shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Novo gasto</span>
         </Button>
       </div>
 
