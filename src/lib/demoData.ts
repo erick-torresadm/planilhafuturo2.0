@@ -32,15 +32,15 @@ export type DemoGasto = {
 };
 
 export const DEMO_GASTOS: DemoGasto[] = [
-  { id: "g1", categoria: "Moradia",    descricao: "Internet Allgar", valor: 130,    pilar: "S", frequencia: "mensal", dia: 1,  forma: "Pix",    ativo: true },
-  { id: "g2", categoria: "Telefonia",  descricao: "TIM",             valor: 51.8,   pilar: "S", frequencia: "mensal", dia: 1,  forma: "Cartão", ativo: true },
-  { id: "g3", categoria: "Saúde",      descricao: "Hapvida",         valor: 311.57, pilar: "S", frequencia: "mensal", dia: 1,  forma: "Cartão", ativo: true },
-  { id: "g4", categoria: "Saúde",      descricao: "Odonto",          valor: 150,    pilar: "S", frequencia: "mensal", dia: 1,  forma: "Pix",    ativo: true },
+  { id: "g1", categoria: "Moradia",    descricao: "Internet",        valor: 130,    pilar: "S", frequencia: "mensal", dia: 1,  forma: "Pix",    ativo: true },
+  { id: "g2", categoria: "Telefonia",  descricao: "Celular",         valor: 51.8,   pilar: "S", frequencia: "mensal", dia: 1,  forma: "Cartão", ativo: true },
+  { id: "g3", categoria: "Saúde",      descricao: "Plano de saúde",  valor: 311.57, pilar: "S", frequencia: "mensal", dia: 1,  forma: "Cartão", ativo: true },
+  { id: "g4", categoria: "Saúde",      descricao: "Plano odontológico", valor: 150, pilar: "S", frequencia: "mensal", dia: 1,  forma: "Pix",    ativo: true },
   { id: "g5", categoria: "Saúde",      descricao: "Academia",        valor: 140,    pilar: "S", frequencia: "mensal", dia: 16, forma: "Cartão", ativo: true },
-  { id: "g6", categoria: "Lazer",      descricao: "Netflix",         valor: 60,     pilar: "L", frequencia: "mensal", dia: 16, forma: "Cartão", ativo: true },
-  { id: "g7", categoria: "Lazer",      descricao: "YouTube Premium", valor: 17,     pilar: "L", frequencia: "mensal", dia: 7,  forma: "Cartão", ativo: true },
-  { id: "g8", categoria: "Lazer",      descricao: "iCloud",          valor: 66.9,   pilar: "L", frequencia: "mensal", dia: 29, forma: "Cartão", ativo: true },
-  { id: "g9", categoria: "Lazer",      descricao: "Claude AI",       valor: 114.34, pilar: "L", frequencia: "anual",  dia: 31, mes_anual: 1, forma: "Cartão", ativo: true },
+  { id: "g6", categoria: "Lazer",      descricao: "Streaming",       valor: 60,     pilar: "L", frequencia: "mensal", dia: 16, forma: "Cartão", ativo: true },
+  { id: "g7", categoria: "Lazer",      descricao: "Streaming música", valor: 17,    pilar: "L", frequencia: "mensal", dia: 7,  forma: "Cartão", ativo: true },
+  { id: "g8", categoria: "Lazer",      descricao: "Nuvem",           valor: 66.9,   pilar: "L", frequencia: "mensal", dia: 29, forma: "Cartão", ativo: true },
+  { id: "g9", categoria: "Lazer",      descricao: "Assistente IA",   valor: 114.34, pilar: "L", frequencia: "anual",  dia: 31, mes_anual: 1, forma: "Cartão", ativo: true },
   { id: "g10", categoria: "Transporte", descricao: "Carro",          valor: 1800,   pilar: "S", frequencia: "mensal", dia: 1,  forma: "Débito", ativo: true },
   { id: "g11", categoria: "Imposto",    descricao: "IPTU",           valor: 188.17, pilar: "S", frequencia: "anual",  dia: 8, mes_anual: 3, forma: "Boleto", ativo: true },
 ];
@@ -58,8 +58,8 @@ export type DemoParcela = {
 
 // Datas ajustadas para 2026-07 (janela atual da planilha)
 export const DEMO_PARCELAS: DemoParcela[] = [
-  { id: "p1",  data: "2026-07-20", descricao: "Cachorro Bulldog",     valor_total: 3600,   qtd_parcelas: 5,  parcela_inicial: 1, cartao: "Cartão 1", categoria: "Casa" },
-  { id: "p2",  data: "2026-07-24", descricao: "Jim.com — Kevin",      valor_total: 1740.2, qtd_parcelas: 10, parcela_inicial: 2, cartao: "Cartão 1", categoria: "Transporte" },
+  { id: "p1",  data: "2026-07-20", descricao: "Pet shop",             valor_total: 3600,   qtd_parcelas: 5,  parcela_inicial: 1, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p2",  data: "2026-07-24", descricao: "Manutenção veículo",   valor_total: 1740.2, qtd_parcelas: 10, parcela_inicial: 2, cartao: "Cartão 1", categoria: "Transporte" },
   { id: "p3",  data: "2026-07-11", descricao: "Compra online",        valor_total: 538.9,  qtd_parcelas: 10, parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
   { id: "p4",  data: "2026-07-12", descricao: "Compra online 2",      valor_total: 335.72, qtd_parcelas: 7,  parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
   { id: "p5",  data: "2026-07-14", descricao: "Eletrodoméstico",      valor_total: 3046.4, qtd_parcelas: 10, parcela_inicial: 8, cartao: "Cartão 1", categoria: "Casa" },
@@ -78,8 +78,8 @@ export const DEMO_INVEST = [
 ];
 
 export const DEMO_DESEJOS = [
-  { id: "d1", item: "Monitor Ultrawide",  valor: 2500, tipo: "Tecnologia", parcelado: false, parcelas: 0, obs: "Trabalho/escritório" },
-  { id: "d2", item: "iPhone 16 Pro",      valor: 6500, tipo: "Tecnologia", parcelado: false, parcelas: 0, obs: "Trocar atual" },
+  { id: "d1", item: "Monitor novo",       valor: 2500, tipo: "Tecnologia", parcelado: false, parcelas: 0, obs: "Trabalho/escritório" },
+  { id: "d2", item: "Smartphone novo",    valor: 6500, tipo: "Tecnologia", parcelado: false, parcelas: 0, obs: "Trocar atual" },
   { id: "d3", item: "Viagem exterior",    valor: 8000, tipo: "Lazer",      parcelado: false, parcelas: 0, obs: "Férias" },
   { id: "d4", item: "Notebook novo",      valor: 5000, tipo: "Tecnologia", parcelado: true,  parcelas: 10, obs: "Se parcela cabe no orçamento" },
   { id: "d5", item: "Sofá",               valor: 3000, tipo: "Casa",       parcelado: true,  parcelas: 6,  obs: "Ver se parcela cabe" },
