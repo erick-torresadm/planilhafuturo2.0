@@ -263,10 +263,10 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
                 ? "bg-negative/10"
                 : i % 2 ? "sheet-row-alt" : "";
             return (
-              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`} style={isToday ? { scrollMarginTop: 120 } : undefined}>
+              <tr key={d.dia} ref={isToday ? todayRef : undefined} className={`${rowExtra} ${rowSize}`} style={isToday ? { scrollMarginTop: 120, height: 64 } : undefined}>
                 <td className={`sheet-td text-center font-bold ${isToday ? "text-primary" : isWeekend ? "text-muted-foreground/70" : "text-foreground"}`}>
-                  <div className={`${isToday ? "text-lg" : "text-base"} leading-none`}>{d.dia}</div>
-                  <div className="text-[9px] font-semibold uppercase tracking-wider opacity-60 mt-0.5">{wd}</div>
+                  <div className={`${isToday ? "text-2xl" : "text-base"} leading-none`}>{d.dia}</div>
+                  <div className={`${isToday ? "text-[10px]" : "text-[9px]"} font-semibold uppercase tracking-wider opacity-70 mt-1`}>{wd}</div>
                 </td>
                 <td className="sheet-td p-0 bg-cell-in">
                   <SheetCell value={d.entradaFixa} onCommit={(v) => onCommit(d.data, "entrada_fixa", v, d.entradaFixa)} />
