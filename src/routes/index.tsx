@@ -299,51 +299,85 @@ function Steps() {
 
 /* ============ PRICING ============ */
 function Pricing() {
-  const [annual, setAnnual] = useState(false);
   const plans = [
-    { name: "Grátis", price: 0, priceYear: 0, features: ["Até 3 meses de projeção", "Fluxo diário completo", "Gastos e parcelas", "1 usuário"] },
-    { name: "Pro", price: 19, priceYear: 15, badge: "Mais usado", features: ["6 meses de projeção", "Desejos e caixinhas", "Investimentos e patrimônio", "Lembretes por e-mail", "Exportar CSV"] },
+    {
+      name: "Grátis",
+      price: 0,
+      period: "para sempre",
+      cta: "Começar grátis",
+      features: [
+        "1 mês de projeção (mês atual)",
+        "Fluxo diário e gastos fixos",
+        "Visualização básica",
+      ],
+      limits: [
+        "Sem parcelas futuras",
+        "Sem desejos e caixinhas",
+        "Sem investimentos e patrimônio",
+        "Sem lembretes e exportação",
+      ],
+    },
+    {
+      name: "Pro Anual",
+      price: 12,
+      yearTotal: 144,
+      period: "/mês",
+      badge: "Recomendado",
+      cta: "Assinar Pro",
+      features: [
+        "6 meses de projeção completa",
+        "Parcelas e cartões ilimitados",
+        "Desejos, caixinhas e metas",
+        "Investimentos e patrimônio",
+        "Lembretes por e-mail",
+        "Exportar CSV",
+        "Suporte prioritário",
+      ],
+    },
   ];
   return (
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">Preços</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Menos que um café por semana.</h2>
-        <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-border p-1 bg-card text-sm">
-          <button onClick={() => setAnnual(false)} className={`px-4 py-1.5 rounded-full transition ${!annual ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Mensal</button>
-          <button onClick={() => setAnnual(true)} className={`px-4 py-1.5 rounded-full transition inline-flex items-center gap-1.5 ${annual ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-            Anual <span className={`text-[10px] font-mono ${annual ? "opacity-80" : "text-primary"}`}>-20%</span>
-          </button>
-        </div>
+        <h2 className="font-display text-4xl sm:text-5xl">Um plano. Um ano. Um preço justo.</h2>
+        <p className="mt-4 text-muted-foreground">Cobrança anual — porque planejamento financeiro não se faz em 30 dias.</p>
       </div>
       <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
         {plans.map((p) => {
-          const price = annual ? p.priceYear : p.price;
-          const isPro = p.name === "Pro";
+          const isPro = p.name.startsWith("Pro");
           return (
             <div key={p.name} className={`rounded-2xl border p-8 relative ${isPro ? "border-primary/40 bg-primary/[0.03]" : "border-border bg-card"}`} style={isPro ? { boxShadow: "var(--shadow-card)" } : {}}>
               {p.badge && <div className="absolute -top-3 left-8 chip bg-primary text-primary-foreground">{p.badge}</div>}
               <div className="font-display text-2xl">{p.name}</div>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="font-display text-5xl num-lg">R${price}</span>
-                <span className="text-sm text-muted-foreground">/mês</span>
+                <span className="font-display text-5xl num-lg">R${p.price}</span>
+                <span className="text-sm text-muted-foreground">{p.period}</span>
               </div>
-              {annual && p.price > 0 && <div className="text-xs text-muted-foreground mt-1">Cobrado R$ {p.priceYear * 12} por ano</div>}
+              {p.yearTotal ? (
+                <div className="text-xs text-muted-foreground mt-1">Cobrado R$ {p.yearTotal} uma vez por ano</div>
+              ) : (
+                <div className="text-xs text-muted-foreground mt-1">Sem cartão. Sem prazo.</div>
+              )}
               <Link to="/auth" className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
-                {p.price === 0 ? "Começar grátis" : "Assinar Pro"} <ArrowRight className="h-3.5 w-3.5" />
+                {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <ul className="mt-6 space-y-2.5 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {f}</li>
+                ))}
+                {p.limits?.map((f) => (
+                  <li key={f} className="flex gap-2 text-muted-foreground/70"><span className="h-4 w-4 shrink-0 mt-0.5 text-center">—</span> {f}</li>
                 ))}
               </ul>
             </div>
           );
         })}
       </div>
+      <p className="text-center text-xs text-muted-foreground mt-8">Garantia de 7 dias. Cancele quando quiser, sem multa.</p>
     </Section>
   );
 }
+
 
 /* ============ FAQ ============ */
 function Faq() {
@@ -353,7 +387,8 @@ function Faq() {
     { q: "É igual à planilha que eu uso hoje?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
     { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. 80% dos nossos usuários usam no ônibus." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
-    { q: "Tem versão grátis pra sempre?", a: "Tem. O plano Grátis atende quem quer só ver os próximos 3 meses. Pro é pra quem quer os 6 meses e caixinhas." },
+    { q: "Tem versão grátis?", a: "Tem. O plano Grátis mostra o mês atual com fluxo diário e gastos fixos — perfeito pra testar. Pro libera 6 meses de projeção, parcelas, desejos, investimentos e lembretes." },
+    { q: "Por que só cobrança anual no Pro?", a: "Planejamento financeiro só faz sentido no longo prazo. Preço anual sai mais barato pra você e nos ajuda a construir uma ferramenta séria, sem depender de investidor." },
     { q: "Suporte se eu travar?", a: "Sim, humano de verdade. Responde em até 24h por e-mail." },
     { q: "Vocês vão sumir daqui a 6 meses?", a: "Não. É um SaaS pago com receita — a gente sobrevive dos assinantes, não de investidor." },
   ];
