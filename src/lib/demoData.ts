@@ -1,8 +1,8 @@
 /**
- * Dados reais do Erick (extraídos da planilha) usados como fallback
+ * Dados de demonstração genéricos usados como fallback
  * enquanto a autenticação está desligada para testes.
  *
- * Categoria de pilar (método Breno):
+ * Categoria de pilar:
  *   S = Sobrevivência   (essencial: moradia, saúde, transporte, contas básicas)
  *   P = Proteção        (seguros, reserva, investimentos base)
  *   L = Liberdade       (lazer, streaming, hobbies, desejos)
@@ -11,7 +11,7 @@
 export type Pilar = "S" | "P" | "L";
 
 export const DEMO_PROFILE = {
-  nome: "Erick",
+  nome: "Você",
   renda_mensal: 7000,
   saldo_inicial: 0,
   meses_reserva_emergencia: 6,
