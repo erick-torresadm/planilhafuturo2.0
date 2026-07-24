@@ -100,10 +100,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 min-w-0 pb-24 lg:pb-6">{children}</main>
+        <main className="flex-1 min-w-0 pb-28 lg:pb-6">{children}</main>
 
         {/* Bottom nav (mobile only) */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 backdrop-blur-xl bg-background/85 border-t border-border">
+        <nav
+          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.04)]"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
           <div className="grid grid-cols-5">
             {BOTTOM.map((n) => {
               const a = active(n.to);
@@ -111,13 +114,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               return (
                 <Link key={n.to} to={n.to}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium tap-target",
+                    "relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium tap-target",
                     a ? "text-primary" : "text-muted-foreground",
                   )}
                 >
+                  {a && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" />}
                   <Icon className={cn("h-5 w-5", a && "drop-shadow-[0_0_8px_oklch(0.82_0.19_165)]")} />
                   {n.short}
-                  {a && <span className="absolute top-0 h-0.5 w-8 rounded-full mint-gradient" />}
                 </Link>
               );
             })}

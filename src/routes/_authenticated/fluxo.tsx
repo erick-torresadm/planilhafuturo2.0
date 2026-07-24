@@ -191,7 +191,7 @@ function MonthSheet({ mm, today, onCommit, mobile }: { mm: any; today: Date; onC
   const todayRef = useRef<HTMLTableRowElement>(null);
   useEffect(() => {
     if (todayRef.current) {
-      todayRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
+      todayRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
   }, [mm.y, mm.m]);
 
