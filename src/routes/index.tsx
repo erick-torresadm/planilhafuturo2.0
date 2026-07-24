@@ -190,7 +190,7 @@ function SocialProof() {
     "“Finalmente entendi pra onde vai meu dinheiro.”",
     "“Uso todo dia no ônibus.”",
     "“Meu marido virou fã.”",
-    "“Melhor que Mobills pra quem gosta de planilha.”",
+    "“Finalmente um app que parece uma planilha de verdade.”",
     "“Sério, é lindo de usar.”",
   ];
   return (
@@ -248,7 +248,7 @@ function Features() {
     <Section id="features" className="py-24">
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="max-w-2xl mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">O que tem dentro</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Tudo que a planilha do Breno faz.<br /><span className="italic text-muted-foreground">Mais alguma coisa.</span></h2>
+        <h2 className="font-display text-4xl sm:text-5xl">Tudo que sua planilha financeira fazia.<br /><span className="italic text-muted-foreground">Só que sem quebrar.</span></h2>
       </motion.div>
       <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-3">
         {items.map((f, i) => {
@@ -350,7 +350,7 @@ function Faq() {
   const items = [
     { q: "Meus dados ficam seguros?", a: "Ficam. Tudo criptografado, rodando na infraestrutura da Supabase. Só você acessa sua conta." },
     { q: "Preciso conectar meu banco?", a: "Não. Você digita — é rápido, e você fica no controle. Integração com Open Finance vem em 2026." },
-    { q: "É igual à planilha do Breno?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
+    { q: "É igual à planilha que eu uso hoje?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
     { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. 80% dos nossos usuários usam no ônibus." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
     { q: "Tem versão grátis pra sempre?", a: "Tem. O plano Grátis atende quem quer só ver os próximos 3 meses. Pro é pra quem quer os 6 meses e caixinhas." },

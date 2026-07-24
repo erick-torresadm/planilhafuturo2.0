@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/parcelas")({
   component: ParcelasPage,
 });
 
-const CARTOES = ["Nubank","XP","Itau","Bradesco","Outro"];
+const CARTOES = ["Cartão 1","Cartão 2","Cartão 3","Cartão 4","Outro"];
 const CATEGORIAS = ["Tecnologia","Casa","Lazer","Educacao","Saude","Vestuario","Transporte","Compras","Outros"];
 
 function ParcelasPage() {
@@ -35,7 +35,7 @@ function ParcelasPage() {
     mutationFn: () => insertRow("parcelas", {
       data: new Date().toISOString().slice(0, 10),
       descricao: "Nova compra", valor_total: 0, qtd_parcelas: 1, parcela_inicial: 1,
-      cartao: "Nubank", categoria: "Outros",
+      cartao: "Cartão 1", categoria: "Outros",
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas"] }); playSound("pop"); },
   });
