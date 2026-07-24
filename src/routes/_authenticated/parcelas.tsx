@@ -10,6 +10,9 @@ import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
 import { DataView } from "@/components/DataView";
 import type { Parcela } from "@/lib/finance";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/parcelas")({
   head: () => ({ meta: [{ title: "Parcelas — Planilha" }] }),
