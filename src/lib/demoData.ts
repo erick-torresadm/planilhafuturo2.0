@@ -62,11 +62,11 @@ export const DEMO_PARCELAS: DemoParcela[] = [
   { id: "p2",  data: "2026-07-24", descricao: "Jim.com — Kevin",      valor_total: 1740.2, qtd_parcelas: 10, parcela_inicial: 2, cartao: "Cartão 1", categoria: "Transporte" },
   { id: "p3",  data: "2026-07-11", descricao: "Compra online",        valor_total: 538.9,  qtd_parcelas: 10, parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
   { id: "p4",  data: "2026-07-12", descricao: "Compra online 2",      valor_total: 335.72, qtd_parcelas: 7,  parcela_inicial: 1, cartao: "Cartão 2", categoria: "Compras" },
-  { id: "p5",  data: "2026-07-14", descricao: "Polo AR Star",         valor_total: 3046.4, qtd_parcelas: 10, parcela_inicial: 8, cartao: "Cartão 1", categoria: "Casa" },
-  { id: "p6",  data: "2026-07-12", descricao: "Culligan Latam",       valor_total: 513.72, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
-  { id: "p7",  data: "2026-07-12", descricao: "Hubla Porquim",        valor_total: 120,    qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
-  { id: "p8",  data: "2026-07-08", descricao: "Kingstar",             valor_total: 1498.77,qtd_parcelas: 10, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Tecnologia" },
-  { id: "p9",  data: "2026-07-28", descricao: "Bianca — 53854325",    valor_total: 3277.2, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p5",  data: "2026-07-14", descricao: "Eletrodoméstico",      valor_total: 3046.4, qtd_parcelas: 10, parcela_inicial: 8, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p6",  data: "2026-07-12", descricao: "Filtro de água",       valor_total: 513.72, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p7",  data: "2026-07-12", descricao: "Assinatura serviço",   valor_total: 120,    qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
+  { id: "p8",  data: "2026-07-08", descricao: "Equipamento tech",     valor_total: 1498.77,qtd_parcelas: 10, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Tecnologia" },
+  { id: "p9",  data: "2026-07-28", descricao: "Reforma quarto",       valor_total: 3277.2, qtd_parcelas: 12, parcela_inicial: 7, cartao: "Cartão 1", categoria: "Casa" },
   { id: "p10", data: "2026-07-26", descricao: "Compra online 3",      valor_total: 295,    qtd_parcelas: 6,  parcela_inicial: 3, cartao: "Cartão 1", categoria: "Compras" },
 ];
 
