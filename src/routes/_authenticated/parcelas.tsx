@@ -26,6 +26,7 @@ function ParcelasPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
   const [anchor] = useState({ y: new Date().getFullYear(), m: new Date().getMonth() });
+  const [openNew, setOpenNew] = useState(false);
 
   const q = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const rows: Parcela[] = (q.data ?? []) as any;
@@ -35,12 +36,8 @@ function ParcelasPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["parcelas"] }),
   });
   const add = useMutation({
-    mutationFn: () => insertRow("parcelas", {
-      data: new Date().toISOString().slice(0, 10),
-      descricao: "Nova compra", valor_total: 0, qtd_parcelas: 1, parcela_inicial: 1,
-      cartao: "Cartão 1", categoria: "Outros",
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas"] }); playSound("pop"); },
+    mutationFn: (data: any) => insertRow("parcelas", data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas"] }); playSound("pop"); toast.success("Parcela criada"); setOpenNew(false); },
   });
   const del = useMutation({
     mutationFn: (id: string) => deleteRow("parcelas", id),
