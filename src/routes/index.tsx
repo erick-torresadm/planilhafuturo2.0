@@ -14,8 +14,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
       { name: "description", content: "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { property: "og:title", content: "planilhafuturo — Seu dinheiro nos próximos 6 meses" },
-      { property: "og:description", content: "O SaaS que substitui aquela planilha complicada. Simples, visual, mobile-first." },
+      { property: "og:title", content: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
+      { property: "og:description", content: "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
