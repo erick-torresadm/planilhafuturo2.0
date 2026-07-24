@@ -41,6 +41,8 @@ function GastosPage() {
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("Todas");
 
+  const [openNew, setOpenNew] = useState(false);
+
   const q = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const allRows: GastoFixo[] = ((q.data ?? []) as any).slice().sort((a: any, b: any) => a.dia - b.dia);
 
@@ -55,11 +57,8 @@ function GastosPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gastos_fixos"] }),
   });
   const add = useMutation({
-    mutationFn: () => insertRow("gastos_fixos", {
-      categoria: "Outros", descricao: "Novo gasto", valor: 0, tipo: "A", frequencia: "mensal",
-      dia: 1, forma: "Pix", ativo: true,
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["gastos_fixos"] }); playSound("moeda"); toast.success("Gasto criado"); },
+    mutationFn: (data: any) => insertRow("gastos_fixos", data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["gastos_fixos"] }); playSound("moeda"); toast.success("Gasto criado"); setOpenNew(false); },
   });
   const del = useMutation({
     mutationFn: (id: string) => deleteRow("gastos_fixos", id),
