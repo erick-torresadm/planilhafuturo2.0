@@ -190,7 +190,7 @@ function SocialProof() {
     "“Finalmente entendi pra onde vai meu dinheiro.”",
     "“Uso todo dia no ônibus.”",
     "“Meu marido virou fã.”",
-    "“Melhor que Mobills pra quem gosta de planilha.”",
+    "“Finalmente um app que parece uma planilha de verdade.”",
     "“Sério, é lindo de usar.”",
   ];
   return (
