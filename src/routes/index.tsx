@@ -302,37 +302,35 @@ function Steps() {
 function Pricing() {
   const plans = [
     {
-      name: "Grátis",
-      price: 0,
-      period: "para sempre",
-      cta: "Começar grátis",
-      features: [
-        "1 mês de projeção (mês atual)",
-        "Fluxo diário e gastos fixos",
-        "Visualização básica",
-      ],
-      limits: [
-        "Sem parcelas futuras",
-        "Sem desejos e caixinhas",
-        "Sem investimentos e patrimônio",
-        "Sem lembretes e exportação",
-      ],
-    },
-    {
-      name: "Pro Anual",
-      price: 12,
-      yearTotal: 144,
-      period: "/mês",
-      badge: "Recomendado",
-      cta: "Assinar Pro",
+      name: "Anual",
+      price: 300,
+      period: "/ano",
+      priceNote: "R$ 25/mês equivalente",
+      cta: "Assinar Anual",
       features: [
         "6 meses de projeção completa",
+        "Fluxo diário e gastos fixos",
         "Parcelas e cartões ilimitados",
         "Desejos, caixinhas e metas",
         "Investimentos e patrimônio",
         "Lembretes por e-mail",
         "Exportar CSV",
+        "Suporte por e-mail",
+      ],
+    },
+    {
+      name: "Vitalício",
+      price: 800,
+      period: "pagamento único",
+      priceNote: "Sem mensalidade. Para sempre.",
+      badge: "Melhor valor",
+      cta: "Comprar Vitalício",
+      features: [
+        "Tudo do plano Anual",
+        "Acesso vitalício, sem renovar",
+        "Todas as atualizações futuras",
         "Suporte prioritário",
+        "Selo de membro fundador",
       ],
     },
   ];
@@ -340,44 +338,38 @@ function Pricing() {
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">Preços</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Um plano. Um ano. Um preço justo.</h2>
-        <p className="mt-4 text-muted-foreground">Cobrança anual — porque planejamento financeiro não se faz em 30 dias.</p>
+        <h2 className="font-display text-4xl sm:text-5xl">Dois planos. Zero mensalidade escondida.</h2>
+        <p className="mt-4 text-muted-foreground">Escolha pagar por ano ou uma vez só e nunca mais.</p>
       </div>
       <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
         {plans.map((p) => {
-          const isPro = p.name.startsWith("Pro");
+          const isFeatured = p.name === "Vitalício";
           return (
-            <div key={p.name} className={`rounded-2xl border p-8 relative ${isPro ? "border-primary/40 bg-primary/[0.03]" : "border-border bg-card"}`} style={isPro ? { boxShadow: "var(--shadow-card)" } : {}}>
+            <div key={p.name} className={`rounded-2xl border p-8 relative ${isFeatured ? "border-primary/40 bg-primary/[0.03]" : "border-border bg-card"}`} style={isFeatured ? { boxShadow: "var(--shadow-card)" } : {}}>
               {p.badge && <div className="absolute -top-3 left-8 chip bg-primary text-primary-foreground">{p.badge}</div>}
               <div className="font-display text-2xl">{p.name}</div>
               <div className="mt-4 flex items-baseline gap-1">
                 <span className="font-display text-5xl num-lg">R${p.price}</span>
                 <span className="text-sm text-muted-foreground">{p.period}</span>
               </div>
-              {p.yearTotal ? (
-                <div className="text-xs text-muted-foreground mt-1">Cobrado R$ {p.yearTotal} uma vez por ano</div>
-              ) : (
-                <div className="text-xs text-muted-foreground mt-1">Sem cartão. Sem prazo.</div>
-              )}
-              <Link to="/auth" className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
+              <div className="text-xs text-muted-foreground mt-1">{p.priceNote}</div>
+              <Link to="/auth" className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition ${isFeatured ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
                 {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <ul className="mt-6 space-y-2.5 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {f}</li>
                 ))}
-                {p.limits?.map((f) => (
-                  <li key={f} className="flex gap-2 text-muted-foreground/70"><span className="h-4 w-4 shrink-0 mt-0.5 text-center">—</span> {f}</li>
-                ))}
               </ul>
             </div>
           );
         })}
       </div>
-      <p className="text-center text-xs text-muted-foreground mt-8">Garantia de 7 dias. Cancele quando quiser, sem multa.</p>
+      <p className="text-center text-xs text-muted-foreground mt-8">Garantia de 7 dias em qualquer plano. Reembolso sem burocracia.</p>
     </Section>
   );
 }
+
 
 
 /* ============ FAQ ============ */
