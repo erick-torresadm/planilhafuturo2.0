@@ -10,6 +10,9 @@ import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
 import { DataView } from "@/components/DataView";
 import type { Parcela } from "@/lib/finance";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/parcelas")({
   head: () => ({ meta: [{ title: "Parcelas — Planilha" }] }),
@@ -23,6 +26,7 @@ function ParcelasPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
   const [anchor] = useState({ y: new Date().getFullYear(), m: new Date().getMonth() });
+  const [openNew, setOpenNew] = useState(false);
 
   const q = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const rows: Parcela[] = (q.data ?? []) as any;
@@ -32,12 +36,8 @@ function ParcelasPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["parcelas"] }),
   });
   const add = useMutation({
-    mutationFn: () => insertRow("parcelas", {
-      data: new Date().toISOString().slice(0, 10),
-      descricao: "Nova compra", valor_total: 0, qtd_parcelas: 1, parcela_inicial: 1,
-      cartao: "Cartão 1", categoria: "Outros",
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas"] }); playSound("pop"); },
+    mutationFn: (data: any) => insertRow("parcelas", data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas"] }); playSound("pop"); toast.success("Parcela criada"); setOpenNew(false); },
   });
   const del = useMutation({
     mutationFn: (id: string) => deleteRow("parcelas", id),
@@ -68,8 +68,8 @@ function ParcelasPage() {
           <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold truncate">Parcelas</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Compras parceladas do cartão</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shrink-0">
-          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Nova</span>
+        <Button onClick={() => setOpenNew(true)} className="mint-gradient font-semibold shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Nova parcela</span>
         </Button>
       </div>
 
@@ -180,6 +180,112 @@ function ParcelasPage() {
           </div>
         }
       />
+
+      <NewParcelaDialog open={openNew} onOpenChange={setOpenNew} onSave={(data) => add.mutate(data)} saving={add.isPending} />
     </div>
+  );
+}
+
+function NewParcelaDialog({ open, onOpenChange, onSave, saving }: { open: boolean; onOpenChange: (o: boolean) => void; onSave: (data: any) => void; saving: boolean }) {
+  const [form, setForm] = useState({
+    descricao: "",
+    data: new Date().toISOString().slice(0, 10),
+    valor_total: "",
+    qtd_parcelas: 1,
+    parcela_inicial: 1,
+    cartao: "Cartão 1",
+    categoria: "Outros",
+  });
+
+  function reset() {
+    setForm({
+      descricao: "",
+      data: new Date().toISOString().slice(0, 10),
+      valor_total: "",
+      qtd_parcelas: 1,
+      parcela_inicial: 1,
+      cartao: "Cartão 1",
+      categoria: "Outros",
+    });
+  }
+
+  const valorParcela = (Number(String(form.valor_total).replace(",", ".")) || 0) / Math.max(1, Number(form.qtd_parcelas));
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.descricao.trim()) return;
+    onSave({
+      descricao: form.descricao.trim(),
+      data: form.data,
+      valor_total: Number(String(form.valor_total).replace(",", ".")) || 0,
+      qtd_parcelas: Number(form.qtd_parcelas) || 1,
+      parcela_inicial: Number(form.parcela_inicial) || 1,
+      cartao: form.cartao,
+      categoria: form.categoria,
+    });
+    reset();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Nova parcela</DialogTitle>
+          <DialogDescription>Cadastre uma compra parcelada para distribuir no fluxo dos próximos meses.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="p-desc">Descrição</Label>
+            <Input id="p-desc" autoFocus value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Ex: Notebook, Sofá…" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="p-data">Data da compra</Label>
+              <Input id="p-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="p-total">Valor total (R$)</Label>
+              <Input id="p-total" inputMode="decimal" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: e.target.value })} placeholder="0,00" required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="p-qtd">Qtd. parcelas</Label>
+              <Input id="p-qtd" type="number" min={1} value={form.qtd_parcelas} onChange={(e) => setForm({ ...form, qtd_parcelas: Number(e.target.value) })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="p-ini">Parcela inicial</Label>
+              <Input id="p-ini" type="number" min={1} value={form.parcela_inicial} onChange={(e) => setForm({ ...form, parcela_inicial: Number(e.target.value) })} required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Cartão</Label>
+              <select value={form.cartao} onChange={(e) => setForm({ ...form, cartao: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CARTOES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          {valorParcela > 0 && (
+            <div className="rounded-md bg-primary/10 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Cada parcela: </span>
+              <b className="text-primary tabular-nums"><Money value={valorParcela} /></b>
+            </div>
+          )}
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={saving} className="mint-gradient font-semibold">
+              {saving ? "Salvando…" : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

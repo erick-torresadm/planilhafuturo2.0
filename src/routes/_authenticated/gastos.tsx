@@ -9,6 +9,9 @@ import { Money } from "@/components/Money";
 import { DataView } from "@/components/DataView";
 import type { GastoFixo } from "@/lib/finance";
 import { useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/gastos")({
   head: () => ({ meta: [{ title: "Gastos Fixos — Planilha" }] }),
@@ -38,6 +41,8 @@ function GastosPage() {
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("Todas");
 
+  const [openNew, setOpenNew] = useState(false);
+
   const q = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const allRows: GastoFixo[] = ((q.data ?? []) as any).slice().sort((a: any, b: any) => a.dia - b.dia);
 
@@ -52,11 +57,8 @@ function GastosPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gastos_fixos"] }),
   });
   const add = useMutation({
-    mutationFn: () => insertRow("gastos_fixos", {
-      categoria: "Outros", descricao: "Novo gasto", valor: 0, tipo: "A", frequencia: "mensal",
-      dia: 1, forma: "Pix", ativo: true,
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["gastos_fixos"] }); playSound("moeda"); toast.success("Gasto criado"); },
+    mutationFn: (data: any) => insertRow("gastos_fixos", data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["gastos_fixos"] }); playSound("moeda"); toast.success("Gasto criado"); setOpenNew(false); },
   });
   const del = useMutation({
     mutationFn: (id: string) => deleteRow("gastos_fixos", id),
@@ -81,8 +83,8 @@ function GastosPage() {
           <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Gastos Fixos</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Alimenta seu fluxo diário automaticamente</p>
         </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold shadow-sm shrink-0">
-          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Novo</span>
+        <Button onClick={() => setOpenNew(true)} className="mint-gradient font-semibold shadow-sm shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Novo gasto</span>
         </Button>
       </div>
 
@@ -268,6 +270,113 @@ function GastosPage() {
           </div>
         }
       />
+
+      <NewGastoDialog open={openNew} onOpenChange={setOpenNew} onSave={(data) => add.mutate(data)} saving={add.isPending} />
     </div>
+  );
+}
+
+function NewGastoDialog({ open, onOpenChange, onSave, saving }: { open: boolean; onOpenChange: (o: boolean) => void; onSave: (data: any) => void; saving: boolean }) {
+  const [form, setForm] = useState({
+    descricao: "",
+    categoria: "Outros",
+    valor: "",
+    tipo: "A",
+    frequencia: "mensal" as "mensal" | "anual",
+    dia: 1,
+    mes_anual: 1,
+    forma: "Pix",
+  });
+
+  function reset() {
+    setForm({ descricao: "", categoria: "Outros", valor: "", tipo: "A", frequencia: "mensal", dia: 1, mes_anual: 1, forma: "Pix" });
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.descricao.trim()) return;
+    onSave({
+      descricao: form.descricao.trim(),
+      categoria: form.categoria,
+      valor: Number(String(form.valor).replace(",", ".")) || 0,
+      tipo: form.tipo,
+      frequencia: form.frequencia,
+      dia: Number(form.dia) || 1,
+      mes_anual: form.frequencia === "anual" ? Number(form.mes_anual) || 1 : null,
+      forma: form.forma,
+      ativo: true,
+    });
+    reset();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Novo gasto fixo</DialogTitle>
+          <DialogDescription>Preencha os dados para adicionar ao seu fluxo mensal.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="g-desc">Descrição</Label>
+            <Input id="g-desc" autoFocus value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Ex: Aluguel, Netflix…" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="g-valor">Valor (R$)</Label>
+              <Input id="g-valor" inputMode="decimal" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CATEGORIAS.map((c) => <option key={c} value={c}>{CAT_EMOJI[c]} {c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Frequência</Label>
+              <select value={form.frequencia} onChange={(e) => setForm({ ...form, frequencia: e.target.value as any })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm capitalize">
+                {FREQ.map((f) => <option key={f} value={f} className="capitalize">{f}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Dia do mês</Label>
+              <select value={form.dia} onChange={(e) => setForm({ ...form, dia: Number(e.target.value) })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+          </div>
+          {form.frequencia === "anual" && (
+            <div className="space-y-1.5">
+              <Label>Mês do ano</Label>
+              <select value={form.mes_anual} onChange={(e) => setForm({ ...form, mes_anual: Number(e.target.value) })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Tipo</Label>
+              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {TIPOS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Forma</Label>
+              <select value={form.forma} onChange={(e) => setForm({ ...form, forma: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {FORMAS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={saving} className="mint-gradient font-semibold">
+              {saving ? "Salvando…" : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
