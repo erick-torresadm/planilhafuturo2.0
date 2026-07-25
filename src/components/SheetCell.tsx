@@ -31,7 +31,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
 
   if (readOnly) {
     return (
-      <div className={cn("px-2 py-1 h-full flex items-center", align === "right" && "justify-end", className)}>
+      <div className={cn("px-2 py-1 h-full flex items-center text-[13px] tabular-nums", align === "right" && "justify-end", className)}>
         {value ? brl(value) : <span className="text-muted-foreground/50">—</span>}
       </div>
     );
@@ -44,7 +44,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
         onClick={() => { setDraft(value ? String(value).replace(".", ",") : ""); setEditing(true); }}
         onFocus={() => { setDraft(value ? String(value).replace(".", ",") : ""); setEditing(true); }}
         className={cn(
-          "px-2 py-1 h-full w-full text-left flex items-center focus:outline-none focus:ring-2 focus:ring-ring",
+          "px-2 py-1 h-full w-full text-left flex items-center tabular-nums text-[13px] hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40",
           align === "right" && "justify-end",
           className,
         )}
@@ -67,7 +67,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
       inputMode="decimal"
       spellCheck={false}
       className={cn(
-        "px-2 py-1 h-full w-full bg-cell-edit border-2 border-primary/50 focus:outline-none",
+        "px-2 py-1 h-full w-full bg-cell-edit border-2 border-primary focus:outline-none text-[13px] tabular-nums font-mono",
         align === "right" && "text-right",
       )}
     />
