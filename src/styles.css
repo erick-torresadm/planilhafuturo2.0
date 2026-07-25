@@ -2,57 +2,47 @@
 @source "../src";
 @import "tw-animate-css";
 
-/* ============ LP — White mode (Editorial Mint) ============ */
+/* ============ LP — mantida (Editorial Mint white) ============ */
 .lp-dark {
   --background: #ffffff;
   --foreground: #0a0a0a;
-
   --surface: #fafafa;
   --surface-2: #f4f4f5;
-
   --card: #ffffff;
   --card-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
-
   --primary: #10b981;
   --primary-foreground: #ffffff;
   --mint: #10b981;
   --mint-glow: #34d399;
-
   --secondary: #f4f4f5;
   --secondary-foreground: #0a0a0a;
   --muted: #f4f4f5;
   --muted-foreground: #52525b;
   --accent: #ecfdf5;
   --accent-foreground: #065f46;
-
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-
   --border: #ececee;
   --input: #e4e4e7;
   --ring: #10b981;
-
   --positive: #10b981;
   --positive-soft: #ecfdf5;
   --negative: #ef4444;
   --negative-soft: #fef2f2;
   --warning: #f59e0b;
   --warning-soft: #fffbeb;
-
   --header: #fafafa;
   --header-foreground: #18181b;
   --row-alt: #fafafa;
   --cell-edit: #ecfdf5;
   --cell-in: #d1fae5;
   --cell-out: #fee2e2;
-
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
-
 
 .lp-dark { font-family: var(--font-sans); }
 .lp-dark h1, .lp-dark h2, .lp-dark h3, .lp-dark h4 {
@@ -70,33 +60,13 @@
   color: transparent;
 }
 
-
-/* keyframes */
-@keyframes lp-grid-pulse {
-  0%, 100% { opacity: 0.22; }
-  50% { opacity: 0.45; }
-}
-@keyframes lp-orb-a {
-  0%, 100% { transform: translate3d(0,0,0) scale(1); }
-  33% { transform: translate3d(60px,-40px,0) scale(1.15); }
-  66% { transform: translate3d(-30px,50px,0) scale(0.9); }
-}
-@keyframes lp-orb-b {
-  0%, 100% { transform: translate3d(0,0,0) scale(1); }
-  50% { transform: translate3d(-80px,60px,0) scale(1.2); }
-}
-@keyframes lp-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(45,212,168,0.4), 0 0 60px -10px rgba(45,212,168,0.35); }
-  50% { box-shadow: 0 0 0 1px rgba(115,255,184,0.7), 0 0 90px -8px rgba(115,255,184,0.55); }
-}
-@keyframes lp-ticker-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-@keyframes lp-scan {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(2400%); }
-}
+/* LP keyframes/utilities (mantidos) */
+@keyframes lp-grid-pulse { 0%,100% { opacity: 0.22 } 50% { opacity: 0.45 } }
+@keyframes lp-orb-a { 0%,100% { transform: translate3d(0,0,0) scale(1) } 33% { transform: translate3d(60px,-40px,0) scale(1.15) } 66% { transform: translate3d(-30px,50px,0) scale(0.9) } }
+@keyframes lp-orb-b { 0%,100% { transform: translate3d(0,0,0) scale(1) } 50% { transform: translate3d(-80px,60px,0) scale(1.2) } }
+@keyframes lp-glow-pulse { 0%,100% { box-shadow: 0 0 0 1px rgba(45,212,168,0.4), 0 0 60px -10px rgba(45,212,168,0.35) } 50% { box-shadow: 0 0 0 1px rgba(115,255,184,0.7), 0 0 90px -8px rgba(115,255,184,0.55) } }
+@keyframes lp-ticker-blink { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+@keyframes lp-scan { 0% { transform: translateY(-100%) } 100% { transform: translateY(2400%) } }
 
 @utility lp-grid-anim {
   background-image:
@@ -107,31 +77,13 @@
   mask-image: radial-gradient(ellipse at 50% 0%, black 0%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 0%, transparent 75%);
 }
-@utility lp-orb-mint {
-  background: radial-gradient(circle at 30% 30%, rgba(52,211,153,0.45), rgba(16,185,129,0.12) 40%, transparent 70%);
-  filter: blur(70px);
-  animation: lp-orb-a 18s ease-in-out infinite;
-}
-@utility lp-orb-cyan {
-  background: radial-gradient(circle at 70% 70%, rgba(103,232,249,0.35), rgba(16,185,129,0.10) 45%, transparent 70%);
-  filter: blur(80px);
-  animation: lp-orb-b 22s ease-in-out infinite;
-}
+@utility lp-orb-mint { background: radial-gradient(circle at 30% 30%, rgba(52,211,153,0.45), rgba(16,185,129,0.12) 40%, transparent 70%); filter: blur(70px); animation: lp-orb-a 18s ease-in-out infinite; }
+@utility lp-orb-cyan { background: radial-gradient(circle at 70% 70%, rgba(103,232,249,0.35), rgba(16,185,129,0.10) 45%, transparent 70%); filter: blur(80px); animation: lp-orb-b 22s ease-in-out infinite; }
 @utility lp-glow-pulse { animation: lp-glow-pulse 3.5s ease-in-out infinite; }
 @utility lp-ticker-blink { animation: lp-ticker-blink 1.2s ease-in-out infinite; }
-@utility lp-noise {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
-  opacity: 0.035;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-@utility lp-scan-line {
-  background: linear-gradient(180deg, transparent, rgba(16,185,129,0.5), transparent);
-  height: 2px;
-  animation: lp-scan 4s linear infinite;
-}
+@utility lp-noise { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>"); opacity: 0.035; mix-blend-mode: multiply; pointer-events: none; }
+@utility lp-scan-line { background: linear-gradient(180deg, transparent, rgba(16,185,129,0.5), transparent); height: 2px; animation: lp-scan 4s linear infinite; }
 
-/* Card hover glow inside LP */
 .lp-dark .lp-card {
   background: linear-gradient(180deg, rgba(16,185,129,0.02), rgba(16,185,129,0) 60%), var(--card);
   border: 1px solid var(--border);
@@ -144,22 +96,21 @@
   box-shadow: 0 20px 60px -20px rgba(16,185,129,0.20);
 }
 
-
-
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   planilhafuturo V2 — Mint Editorial
-   Plus Jakarta Sans · Lora · IBM Plex Mono
-   Primary: #51f0a8 sobre off-white quase puro (radius 1.4rem)
+   APP — Hope UI (SaaS dashboard clássico)
+   Base: iqonicdesignofficial/hope-ui-design-system
+   Azul primário · Verde sucesso · Cinza-azulado suave
+   Headings: JetBrains Mono · Body: Work Sans
    ============================================================ */
 
 @theme inline {
-  --radius: 1.4rem;
-  --radius-sm: calc(var(--radius) - 1rem);
-  --radius-md: calc(var(--radius) - 0.7rem);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 0.4rem);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -205,118 +156,106 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Lora", ui-serif, Georgia, serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 3px oklch(0 0 0 / 0.05);
-  --shadow-hero: 0 24px 60px -30px oklch(0 0 0 / 0.20), 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-card: 0 1px 2px rgba(15,23,42,0.03), 0 2px 8px rgba(15,23,42,0.05);
+  --shadow-hero: 0 8px 32px -12px rgba(58,87,232,0.20);
 }
 
-/* Light — Monetra-inspired: off-white surface, lime-mint primary, ink text */
+/* Hope UI light theme */
 :root {
-  --background: #f4f5f7;
-  --foreground: #0b0f0a;
+  --background: #f5f7fb;
+  --foreground: #232d42;
 
   --surface: #ffffff;
-  --surface-2: #eef0f3;
+  --surface-2: #eef1f7;
 
   --card: #ffffff;
-  --card-foreground: #0b0f0a;
+  --card-foreground: #232d42;
   --popover: #ffffff;
-  --popover-foreground: #0b0f0a;
+  --popover-foreground: #232d42;
 
-  /* Lime-mint like Monetra "Add New" pill */
-  --primary: #86efac;
-  --primary-foreground: #05261a;
-  --mint: #4ade80;
-  --mint-glow: #a7f3d0;
+  --primary: #3a57e8;
+  --primary-foreground: #ffffff;
+  --mint: #1aa053;
+  --mint-glow: #4bc27c;
 
-  --secondary: #eef0f3;
-  --secondary-foreground: #0b0f0a;
-  --muted: #eef0f3;
-  --muted-foreground: #64748b;
-  --accent: #ecfdf5;
-  --accent-foreground: #065f46;
+  --secondary: #eef1f7;
+  --secondary-foreground: #232d42;
+  --muted: #f0f2f7;
+  --muted-foreground: #8a92a6;
+  --accent: #eaeeff;
+  --accent-foreground: #2f47c4;
 
-  --destructive: #ef4444;
+  --destructive: #c03221;
   --destructive-foreground: #ffffff;
 
-  --border: #e6e8ec;
-  --input: #dfe3e8;
-  --ring: #4ade80;
+  --border: #e6eaf2;
+  --input: #dde2ed;
+  --ring: #3a57e8;
 
-  --positive: #16a34a;
-  --positive-soft: #dcfce7;
-  --negative: #ef4444;
-  --negative-soft: #fee2e2;
-  --warning: #f59e0b;
-  --warning-soft: #fffbeb;
+  --positive: #1aa053;
+  --positive-soft: #e6f5ec;
+  --negative: #c03221;
+  --negative-soft: #fbeae7;
+  --warning: #f16a1b;
+  --warning-soft: #fdefe4;
 
-  --header: #fafbfc;
-  --header-foreground: #18181b;
-  --row-alt: #fafbfc;
-  --cell-edit: #ecfdf5;
-  --cell-in: #dcfce7;
-  --cell-out: #fee2e2;
+  --header: #f9fafd;
+  --header-foreground: #4b5675;
+  --row-alt: #fbfcfe;
+  --cell-edit: #eaeeff;
+  --cell-in: #f0f9f4;
+  --cell-out: #fdf3f1;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #0b0f0a;
-  --sidebar-accent: #ecfdf5;
-  --sidebar-accent-foreground: #065f46;
-  --sidebar-border: #e6e8ec;
+  --sidebar-foreground: #4b5675;
+  --sidebar-accent: #eaeeff;
+  --sidebar-accent-foreground: #3a57e8;
+  --sidebar-border: #eef1f7;
 }
 
-
-
 .dark {
-  --background: #000000;
-  --foreground: #f0f0f0;
-
-  --surface: #0a0a0a;
-  --surface-2: #141414;
-
-  --card: #0a0a0a;
-  --card-foreground: #f0f0f0;
-  --popover: #1a1b1b;
-  --popover-foreground: #f0f0f0;
-
-  --primary: #51f0a8;
-  --primary-foreground: #062617;
-
-  --secondary: #216a49;
-  --secondary-foreground: #f0f0f0;
-  --muted: #252527;
-  --muted-foreground: #969696;
-  --accent: #093723;
-  --accent-foreground: #fefefe;
-
-  --destructive: #ff78a5;
+  --background: #0e1220;
+  --foreground: #e6e9f2;
+  --surface: #171b2d;
+  --surface-2: #1f2440;
+  --card: #171b2d;
+  --card-foreground: #e6e9f2;
+  --popover: #1a1e33;
+  --popover-foreground: #e6e9f2;
+  --primary: #6b83ff;
+  --primary-foreground: #0e1220;
+  --secondary: #1f2440;
+  --secondary-foreground: #e6e9f2;
+  --muted: #1f2440;
+  --muted-foreground: #8a92a6;
+  --accent: #232a4a;
+  --accent-foreground: #b8c5ff;
+  --destructive: #f87171;
   --destructive-foreground: #ffffff;
-
-  --border: #19191a;
-  --input: #3b3b3b;
-  --ring: #51f0a8;
-
-  --positive: #51f0a8;
-  --positive-soft: #093723;
-  --negative: #ff78a5;
-  --negative-soft: #2a0d18;
-  --warning: #ffb188;
-  --warning-soft: #2a1810;
-
-  --header: #0a0a0a;
-  --header-foreground: #f0f0f0;
-  --row-alt: #0d0d0d;
-  --cell-edit: #093723;
-  --cell-in: #0c4a2f;
-  --cell-out: #2a0d18;
-
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #f0f0f0;
-  --sidebar-accent: #00331b;
-  --sidebar-accent-foreground: #51f0a8;
-  --sidebar-border: #19191a;
+  --border: #232a4a;
+  --input: #2a3157;
+  --ring: #6b83ff;
+  --positive: #4ade80;
+  --positive-soft: #0f2a1c;
+  --negative: #f87171;
+  --negative-soft: #2a1010;
+  --warning: #fbbf24;
+  --warning-soft: #2a1f0a;
+  --header: #171b2d;
+  --header-foreground: #b0b8cc;
+  --row-alt: #1a1e33;
+  --cell-edit: #202750;
+  --cell-in: #0f2a1c;
+  --cell-out: #2a1010;
+  --sidebar: #171b2d;
+  --sidebar-foreground: #b0b8cc;
+  --sidebar-accent: #232a4a;
+  --sidebar-accent-foreground: #6b83ff;
+  --sidebar-border: #1f2440;
 }
 
 @layer base {
@@ -326,23 +265,25 @@
     background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
+    font-size: 14px;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--color-foreground);
   }
   table, .tabular, .num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
-  ::selection { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .num-lg { font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-weight: 600; letter-spacing: -0.01em; }
+  ::selection { background: color-mix(in oklab, var(--color-primary) 30%, transparent); color: var(--color-foreground); }
   ::-webkit-scrollbar { height: 10px; width: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--color-foreground) 12%, transparent); border-radius: 8px; }
   ::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--color-foreground) 24%, transparent); }
 }
 
-/* ---------- Sheet primitives ---------- */
+/* ---------- Sheet primitives (planilha densa) ---------- */
 @utility sheet-grid {
   border-collapse: separate;
   border-spacing: 0;
@@ -350,21 +291,22 @@
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
+  color: var(--color-foreground);
 }
 @utility sheet-th {
   background: var(--color-header);
   color: var(--color-header-foreground);
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 10.5px;
-  letter-spacing: 0.10em;
+  font-size: 11px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 12px 12px;
+  padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
-  border-right: 1px solid color-mix(in oklab, var(--color-border) 55%, transparent);
+  border-right: 1px solid color-mix(in oklab, var(--color-border) 60%, transparent);
   position: sticky;
-  top: var(--sticky-top, 56px);
+  top: var(--sticky-top, 0);
   z-index: 5;
   white-space: nowrap;
 }
@@ -372,7 +314,7 @@
 @utility sheet-td {
   padding: 0 12px;
   border-bottom: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
-  border-right: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+  border-right: 1px solid color-mix(in oklab, var(--color-border) 45%, transparent);
   height: 44px;
   transition: background 0.12s ease;
 }
@@ -384,11 +326,11 @@
   font-weight: 700;
 }
 
-.sheet-grid tbody tr:hover td { background: color-mix(in oklab, var(--color-primary) 8%, transparent); }
+.sheet-grid tbody tr:hover td { background: color-mix(in oklab, var(--color-primary) 5%, transparent); }
 .sheet-grid tbody td:focus-within {
-  background: color-mix(in oklab, var(--color-primary) 18%, transparent) !important;
+  background: color-mix(in oklab, var(--color-primary) 12%, transparent) !important;
   box-shadow: inset 0 0 0 2px var(--color-primary);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .cell-input {
@@ -397,13 +339,13 @@
   background: transparent;
   border: 0; outline: 0;
   font: inherit; color: inherit;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: background 0.12s ease;
 }
 .cell-input:hover { background: color-mix(in oklab, var(--color-foreground) 3%, transparent); }
-.cell-input:focus { background: color-mix(in oklab, var(--color-primary) 12%, transparent); box-shadow: 0 0 0 1px var(--color-primary) inset; }
+.cell-input:focus { background: color-mix(in oklab, var(--color-primary) 10%, transparent); box-shadow: 0 0 0 1px var(--color-primary) inset; }
 
-/* ---------- Card / surface system ---------- */
+/* ---------- Card / surface (Hope) ---------- */
 @utility glass {
   background: var(--color-card);
   border: 1px solid var(--color-border);
@@ -415,20 +357,45 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
+@utility hope-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+.hope-card:hover {
+  border-color: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+  box-shadow: 0 4px 16px rgba(58,87,232,0.10), 0 1px 2px rgba(15,23,42,0.04);
+}
+
 @utility mint-glow {
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-primary) 40%, transparent),
-              0 8px 30px -12px color-mix(in oklab, var(--color-primary) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-primary) 30%, transparent),
+              0 6px 20px -8px color-mix(in oklab, var(--color-primary) 40%, transparent);
 }
 @utility mint-gradient {
   background: var(--color-primary);
   color: var(--color-primary-foreground);
   font-weight: 600;
 }
+@utility hope-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; padding: 0 14px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-md);
+  font-weight: 600; font-size: 13px;
+  box-shadow: 0 2px 6px -1px color-mix(in oklab, var(--color-primary) 40%, transparent);
+  transition: filter .15s ease, transform .15s ease;
+}
+.hope-btn:hover { filter: brightness(0.94); }
+.hope-btn:active { transform: translateY(1px); }
+
 @utility chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
@@ -439,22 +406,37 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-muted-foreground);
 }
-@utility tap-target { min-height: 44px; min-width: 44px; }
-@utility divider-hair {
-  height: 1px;
-  background: var(--color-border);
-}
-@utility num-lg {
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-display);
-  letter-spacing: -0.03em;
+@utility tap-target { min-height: 40px; min-width: 40px; display: inline-flex; align-items: center; justify-content: center; }
+@utility divider-hair { height: 1px; background: var(--color-border); }
+
+/* ---------- Sidebar item ---------- */
+@utility sidebar-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 500;
+  color: var(--color-sidebar-foreground);
+  transition: background .12s ease, color .12s ease;
+  position: relative;
+}
+.sidebar-item:hover { background: var(--color-sidebar-accent); color: var(--color-sidebar-accent-foreground); }
+@utility sidebar-item-active {
+  background: var(--color-sidebar-accent);
+  color: var(--color-sidebar-accent-foreground);
+  font-weight: 600;
+}
+.sidebar-item-active::before {
+  content: "";
+  position: absolute; left: -12px; top: 6px; bottom: 6px;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--color-primary);
 }
 
 /* ---------- Animations ---------- */
@@ -462,7 +444,7 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@utility fade-up { animation: float-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@utility fade-up { animation: float-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @keyframes marquee {
   from { transform: translateX(0); }
@@ -475,7 +457,7 @@
   100% { background-position: 200% 0; }
 }
 @utility shimmer {
-  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -491,3 +473,8 @@
   background-image: radial-gradient(color-mix(in oklab, var(--color-foreground) 12%, transparent) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
