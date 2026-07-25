@@ -841,6 +841,51 @@ function PriceStack() {
         </Link>
       </div>
 
+      {/* Starter — barreira baixa */}
+      <div className="mt-6 rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-display text-xl font-black">Starter</span>
+            <span className="chip bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest">Barreira baixa</span>
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">Testa o app com 1 mês de projeção. Fluxo, gastos e parcelas — sem suporte em call.</div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-baseline gap-1">
+            <span className="font-display text-3xl font-black num-lg">R$ 69,90</span>
+            <span className="text-xs text-muted-foreground">/ano</span>
+          </div>
+          <Link to="/auth" className="inline-flex items-center gap-2 rounded-full border border-foreground text-foreground px-4 py-2.5 text-sm font-bold hover:bg-foreground hover:text-background transition">
+            Começar <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Planilha original */}
+      <div className="mt-6 rounded-3xl border-2 border-dashed border-border bg-surface-2 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-display text-xl font-black">Só a planilha</span>
+            <span className="chip bg-foreground text-background text-[10px] font-bold uppercase tracking-widest">Excel + Sheets</span>
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">Prefere planilha? A original que deu origem ao app — offline, personalizável, pagamento único.</div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-baseline gap-1">
+            <span className="font-display text-3xl font-black num-lg">R$ 129,90</span>
+            <span className="text-xs text-muted-foreground">único</span>
+          </div>
+          <a
+            href="https://wa.me/5599999999999?text=Ol%C3%A1%21%20Quero%20comprar%20a%20planilha%20por%20R%24%20129%2C90"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-bold hover:brightness-110 transition"
+          >
+            Quero a planilha <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+
       <div className="mt-8 flex items-center justify-center gap-2 text-sm text-primary font-bold">
         <Flame className="h-4 w-4" /> Vagas limitadas na sala de suporte semanal
       </div>
