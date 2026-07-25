@@ -115,9 +115,13 @@ function TarefasPage() {
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <Input type="number" step="0.01" defaultValue={r.valor ?? 0}
-                  onBlur={(e) => Number(e.target.value) !== Number(r.valor ?? 0) && upd.mutate({ id: r.id, patch: { valor: Number(e.target.value) } })}
-                  className="h-7 w-24 border-0 bg-transparent shadow-none focus-visible:ring-1 text-right font-bold text-primary" />
+                <MoneyInput
+                  value={Number(r.valor ?? 0)}
+                  onCommit={(v) => v !== Number(r.valor ?? 0) && upd.mutate({ id: r.id, patch: { valor: v } })}
+                  size="sm"
+                  align="right"
+                  inputClassName="font-bold text-primary"
+                />
               </div>
               <button onClick={() => confirm("Deletar?") && del.mutate(r.id)} className="text-negative/70 hover:text-negative shrink-0"><Trash2 className="h-4 w-4" /></button>
             </div>

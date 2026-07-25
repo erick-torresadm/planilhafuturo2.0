@@ -170,9 +170,13 @@ function GastosPage() {
                   </button>
                 </div>
                 <div className="mt-3 flex items-end justify-between">
-                  <input type="number" step="0.01" defaultValue={r.valor}
-                    onBlur={(e) => Number(e.target.value) !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: Number(e.target.value) } })}
-                    className="cell-input h-9 w-32 text-lg font-bold text-primary tabular-nums" />
+                  <MoneyInput
+                    value={Number(r.valor) || 0}
+                    onCommit={(v) => v !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: v } })}
+                    size="md"
+                    align="left"
+                    inputClassName="text-lg font-bold text-primary"
+                  />
                   <button onClick={() => confirm("Deletar?") && del.mutate(r.id)}
                     className="tap-target grid place-items-center text-negative/70 hover:text-negative">
                     <Trash2 className="h-4 w-4" />
@@ -218,7 +222,14 @@ function GastosPage() {
                       <input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="cell-input font-medium" />
                     </td>
                     <td className="sheet-td text-right">
-                      <input type="number" step="0.01" defaultValue={r.valor} onBlur={(e) => Number(e.target.value) !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: Number(e.target.value) } })} className="cell-input text-right font-semibold tabular-nums" />
+                      <MoneyInput
+                        value={Number(r.valor) || 0}
+                        onCommit={(v) => v !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: v } })}
+                        size="sm"
+                        align="right"
+                        inputClassName="font-semibold"
+                        className="w-full"
+                      />
                     </td>
                     <td className="sheet-td">
                       <select value={r.tipo} onChange={(e) => upd.mutate({ id: r.id, patch: { tipo: e.target.value } })} className="cell-input">

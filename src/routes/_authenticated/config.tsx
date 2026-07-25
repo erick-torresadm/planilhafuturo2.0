@@ -51,9 +51,9 @@ function ConfigPage() {
           <h2 className="font-display font-semibold">Perfil</h2>
         </div>
         <Field label="Nome"><Input defaultValue={p.nome ?? ""} onBlur={(e) => e.target.value !== (p.nome ?? "") && save.mutate({ nome: e.target.value })} /></Field>
-        <Field label="Renda mensal (R$)"><Input type="number" step="0.01" defaultValue={p.renda_mensal ?? 0} onBlur={(e) => save.mutate({ renda_mensal: Number(e.target.value) })} /></Field>
-        <Field label="Saldo inicial (base do Fluxo Diário)"><Input type="number" step="0.01" defaultValue={p.saldo_inicial ?? 0} onBlur={(e) => save.mutate({ saldo_inicial: Number(e.target.value) })} /></Field>
-        <Field label="Meta renda fixa (R$/mês)"><Input type="number" step="0.01" defaultValue={p.meta_renda_fixa ?? 0} onBlur={(e) => save.mutate({ meta_renda_fixa: Number(e.target.value) })} /></Field>
+        <Field label="Renda mensal"><MoneyInput value={Number(p.renda_mensal) || 0} onCommit={(v) => save.mutate({ renda_mensal: v })} align="left" size="md" /></Field>
+        <Field label="Saldo inicial (base do Fluxo Diário)"><MoneyInput value={Number(p.saldo_inicial) || 0} onCommit={(v) => save.mutate({ saldo_inicial: v })} align="left" size="md" /></Field>
+        <Field label="Meta renda fixa (por mês)"><MoneyInput value={Number(p.meta_renda_fixa) || 0} onCommit={(v) => save.mutate({ meta_renda_fixa: v })} align="left" size="md" /></Field>
         <Field label="Meses de reserva de emergência"><Input type="number" defaultValue={p.meses_reserva_emergencia ?? 6} onBlur={(e) => save.mutate({ meses_reserva_emergencia: Number(e.target.value) })} /></Field>
       </section>
 
