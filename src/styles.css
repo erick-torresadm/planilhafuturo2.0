@@ -478,3 +478,10 @@
   scrollbar-width: none;
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+@utility pb-nav {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+}
+@utility safe-top { padding-top: env(safe-area-inset-top); }
+@utility safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
