@@ -826,9 +826,15 @@ function PriceStack() {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-          {["Todas as atualizações", "Suporte em call comigo", "Suporte prioritário", "Selo de fundador"].map((t) => (
-            <div key={t} className="flex items-center gap-2 opacity-90"><Check className="h-3.5 w-3.5" /> {t}</div>
-          ))}
+          {["Todas as atualizações", "Suporte em call comigo", "Suporte prioritário", "Selo de fundador"].map((t) => {
+            const isCall = t.includes("Suporte em call");
+            return (
+              <div key={t} className={`flex items-center gap-2 ${isCall ? "text-primary font-bold" : "opacity-90"}`}>
+                {isCall ? <Headphones className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
+                {t}
+              </div>
+            );
+          })}
         </div>
         <Link to="/auth" className="mt-6 inline-flex items-center gap-2 rounded-full bg-background text-foreground px-5 py-3 text-sm font-bold hover:brightness-95 transition">
           Comprar vitalício <ArrowRight className="h-4 w-4" />

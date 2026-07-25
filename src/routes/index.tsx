@@ -358,9 +358,15 @@ function Pricing() {
                 {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <ul className="mt-6 space-y-2.5 text-sm">
-                {p.features.map((f) => (
-                  <li key={f} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {f}</li>
-                ))}
+                {p.features.map((f) => {
+                  const isCall = f.includes("Suporte exclusivo em call");
+                  return (
+                    <li key={f} className={`flex gap-2 items-start ${isCall ? "text-primary font-medium" : ""}`}>
+                      {isCall ? <Star className="h-4 w-4 text-primary shrink-0 mt-0.5" /> : <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />}
+                      {f}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           );
