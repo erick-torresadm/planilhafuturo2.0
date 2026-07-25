@@ -46,6 +46,7 @@ function Landing() {
       <Features />
       <Steps />
       <Pricing />
+      <PlanilhaOffer />
       <Faq />
       <Cta />
       <Footer />
