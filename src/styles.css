@@ -156,65 +156,66 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --shadow-card: 0 1px 2px rgba(15,23,42,0.03), 0 2px 8px rgba(15,23,42,0.05);
-  --shadow-hero: 0 8px 32px -12px rgba(58,87,232,0.20);
+  --shadow-card: 0 1px 0 rgba(17,17,17,0.04), 0 1px 2px rgba(17,17,17,0.04), 0 8px 24px -14px rgba(17,17,17,0.10);
+  --shadow-hero: 0 30px 80px -40px rgba(17,17,17,0.35), 0 1px 0 rgba(17,17,17,0.04);
 }
 
-/* Hope UI light theme */
+/* App theme — Ink & Emerald (editorial fintech) */
 :root {
-  --background: #f5f7fb;
-  --foreground: #232d42;
+  --background: #f6f5f1;         /* warm paper */
+  --foreground: #0e0f10;         /* deep ink */
 
   --surface: #ffffff;
-  --surface-2: #eef1f7;
+  --surface-2: #efece5;
 
   --card: #ffffff;
-  --card-foreground: #232d42;
+  --card-foreground: #0e0f10;
   --popover: #ffffff;
-  --popover-foreground: #232d42;
+  --popover-foreground: #0e0f10;
 
-  --primary: #3a57e8;
-  --primary-foreground: #ffffff;
-  --mint: #1aa053;
-  --mint-glow: #4bc27c;
+  --primary: #0e0f10;            /* ink primary — sophisticated, mono */
+  --primary-foreground: #f6f5f1;
 
-  --secondary: #eef1f7;
-  --secondary-foreground: #232d42;
-  --muted: #f0f2f7;
-  --muted-foreground: #8a92a6;
-  --accent: #eaeeff;
-  --accent-foreground: #2f47c4;
+  --mint: #047857;
+  --mint-glow: #10b981;
 
-  --destructive: #c03221;
+  --secondary: #efece5;
+  --secondary-foreground: #0e0f10;
+  --muted: #f0ede6;
+  --muted-foreground: #6b6a63;
+  --accent: #ecf5f0;
+  --accent-foreground: #064e3b;
+
+  --destructive: #b02a1c;
   --destructive-foreground: #ffffff;
 
-  --border: #e6eaf2;
-  --input: #dde2ed;
-  --ring: #3a57e8;
+  --border: #e6e2d8;
+  --input: #d9d5cb;
+  --ring: #0e0f10;
 
-  --positive: #1aa053;
-  --positive-soft: #e6f5ec;
-  --negative: #c03221;
-  --negative-soft: #fbeae7;
-  --warning: #f16a1b;
-  --warning-soft: #fdefe4;
+  --positive: #047857;
+  --positive-soft: #ecf5f0;
+  --negative: #b02a1c;
+  --negative-soft: #f7ece9;
+  --warning: #b45309;
+  --warning-soft: #f8efe0;
 
-  --header: #f9fafd;
-  --header-foreground: #4b5675;
-  --row-alt: #fbfcfe;
-  --cell-edit: #eaeeff;
-  --cell-in: #f0f9f4;
-  --cell-out: #fdf3f1;
+  --header: #f0ede6;
+  --header-foreground: #4a4842;
+  --row-alt: #fbfaf6;
+  --cell-edit: #ecf5f0;
+  --cell-in: #e6f1ea;
+  --cell-out: #f5e6e2;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #4b5675;
-  --sidebar-accent: #eaeeff;
-  --sidebar-accent-foreground: #3a57e8;
-  --sidebar-border: #eef1f7;
+  --sidebar: #f2efe8;
+  --sidebar-foreground: #4a4842;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #0e0f10;
+  --sidebar-border: #e6e2d8;
 }
 
 .dark {
