@@ -249,8 +249,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* Silent unused imports keepers */}
-      <span className="hidden">{drawerOpen ? "" : ""}{Menu ? "" : ""}</span>
     </div>
   );
 }
+
