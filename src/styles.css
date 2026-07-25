@@ -53,13 +53,21 @@
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
+.lp-dark { font-family: var(--font-sans); }
 .lp-dark h1, .lp-dark h2, .lp-dark h3, .lp-dark h4 {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.035em;
 }
 .lp-dark .font-display { font-family: var(--font-display) !important; font-weight: 600; letter-spacing: -0.035em; }
-.lp-dark .italic { font-style: normal; background: linear-gradient(135deg, #2dd4a8, #73ffb8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lp-dark .font-mono, .lp-dark .num, .lp-dark .num-lg { font-family: var(--font-mono) !important; }
+.lp-dark h1 .italic, .lp-dark h2 .italic, .lp-dark h3 .italic, .lp-dark .grad-text {
+  font-style: normal;
+  background: linear-gradient(135deg, #2dd4a8 0%, #73ffb8 60%, #a5f3fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 /* keyframes */
 @keyframes lp-grid-pulse {
