@@ -43,34 +43,35 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex w-full">
       {/* ============ Desktop Sidebar ============ */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border sticky top-0 h-screen">
-        <div className="px-5 py-5 flex items-center gap-2">
-          <Logo size={28} withWordmark={false} />
+        <div className="px-5 py-5 flex items-center gap-2.5">
+          <Logo size={30} withWordmark={false} />
           <div>
-            <div className="font-display text-lg leading-tight">planilhafuturo</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
+            <div className="font-display text-lg leading-tight tracking-tight">planilhafuturo</div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">v2 · finanças</div>
           </div>
         </div>
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
           {NAV.map((n) => {
             const a = active(n.to);
             const Icon = n.icon;
             return (
               <Link key={n.to} to={n.to}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+                  "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all",
                   a
-                    ? "bg-primary/15 text-primary font-semibold ring-1 ring-primary/30"
-                    : "text-sidebar-foreground/80 hover:bg-black/5 hover:text-foreground",
+                    ? "bg-sidebar-accent text-foreground font-semibold"
+                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-foreground",
                 )}
               >
-                <Icon className={cn("h-4 w-4", a && "drop-shadow-[0_0_6px_oklch(0.82_0.19_165)]")} />
+                {a && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-primary" />}
+                <Icon className={cn("h-4 w-4", a && "text-primary")} />
                 {n.label}
               </Link>
             );
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border">
-          <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-black/5 hover:text-foreground">
+          <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-sidebar-accent/40 hover:text-foreground transition">
             <LogOut className="h-4 w-4" /> Sair
           </button>
         </div>
@@ -116,11 +117,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link key={n.to} to={n.to}
                   className={cn(
                     "relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium tap-target",
-                    a ? "text-primary" : "text-muted-foreground",
+                    a ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
-                  {a && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" />}
-                  <Icon className={cn("h-5 w-5", a && "drop-shadow-[0_0_8px_oklch(0.82_0.19_165)]")} />
+                  {a && <span className="absolute -top-px h-1 w-10 rounded-full bg-primary" />}
+                  <div className={cn("grid place-items-center rounded-xl transition-all", a ? "bg-accent text-primary h-8 w-10" : "")}>
+                    <Icon className="h-5 w-5" />
+                  </div>
                   {n.short}
                 </Link>
               );
