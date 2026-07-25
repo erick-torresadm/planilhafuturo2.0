@@ -51,11 +51,19 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Conta criada! Vamos configurar sua planilha.");
+        toast.success("Se o e-mail for válido, você receberá um link de confirmação.");
         nav({ to: "/onboarding" });
       }
     } catch (err: any) {
-      toast.error(err?.message ?? "Erro ao autenticar");
+      // Mensagem genérica para evitar enumeração de usuários / vazamento de detalhes
+      const msg = String(err?.message ?? "").toLowerCase();
+      if (msg.includes("rate") || msg.includes("too many")) {
+        toast.error("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
+      } else if (mode === "login") {
+        toast.error("Credenciais inválidas.");
+      } else {
+        toast.error("Não foi possível concluir o cadastro. Verifique os dados e tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
