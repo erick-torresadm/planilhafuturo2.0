@@ -1,47 +1,106 @@
-## Objetivo
+## Redesign da Landing Page — Fintech Dark / Motion-heavy
 
-Reduzir barreira de entrada trocando o plano gratuito por um Anual Starter (R$69,90 com só 1 mês de projeção) e adicionar a venda da planilha original por R$129,90 na landing.
+Vou reconstruir a `/` (e as seções compartilhadas) com a cara de uma fintech moderna tipo Stripe/Ramp/Mercury/Linear, mantendo escopo restrito à landing page (produto interno em `/app` fica intacto).
 
-## 1. Reestruturação dos planos
+### 1. Design tokens (src/styles.css)
 
-Substituir a estrutura atual (Anual R$300 / Vitalício R$800) por **três tiers**:
+Paleta **Neon Mint Dark** aplicada só à LP via classe `.lp-dark` no wrapper (não muda o produto):
+- `--lp-bg: #05100a` (quase preto, tinta verde)
+- `--lp-surface: #0d1b2a`
+- `--lp-surface-2: #1b4332`
+- `--lp-border: rgba(115,255,184,0.12)`
+- `--lp-primary: #2dd4a8`
+- `--lp-primary-glow: #73ffb8`
+- `--lp-text: #e6faf1`
+- `--lp-muted: #7a9088`
+- Gradientes: `--lp-gradient-mint`, `--lp-gradient-glow`, `--lp-noise` (grão sutil).
 
-| Tier | Preço | O que libera |
-|---|---|---|
-| **Starter** | R$69,90/ano | Fluxo diário limitado a **1 mês** de projeção · Gastos fixos · Parcelas · Dashboard básico. Sem Produtividade, sem Investimentos avançados, sem Desejos, sem suporte em call. |
-| **Anual** | R$300/ano | Tudo · 6 meses · Suporte em call com erick |
-| **Vitalício** | R$800 uma vez | Tudo · para sempre · Suporte em call com erick · fita "Fundador" |
+### 2. Tipografia (fintech tech moderna)
 
-- Copy do Starter enfatiza "comece por menos de R$6/mês, veja seu próximo mês inteiro".
-- Anual continua como plano recomendado (badge "Mais escolhido").
-- Vitalício mantém destaque "Fundador".
+Pesquisei o padrão que Vercel/Linear/Ramp/Stripe usam. Vou combinar:
+- **Headings:** `Space Grotesk` (geométrica, tech, muito usada em fintech 2024–2026)
+- **Body:** `Inter` (já carregado, neutro)
+- **Números/dados:** `JetBrains Mono` para preços, KPIs, contadores animados — reforça o ar terminal/dados.
 
-Arquivos: `src/routes/index.tsx` (seção pricing) e `src/routes/pv2.tsx` (stack de oferta) — só apresentação, sem lógica de billing ainda.
+Fontes carregadas via `<link>` em `__root.tsx` (regra Tailwind v4).
 
-## 2. Seção "Prefere a planilha?"
+### 3. Estrutura Full-width Sections
 
-Novo bloco na landing (`/` e `/pv2`), logo abaixo do pricing:
+Todas as seções ocupam a largura toda, empilhadas em bandas cinematográficas com transições suaves entre elas:
 
-- Layout split: à esquerda copy editorial ("Prefere planilha? A original que deu origem ao app."), à direita mockup do arquivo `.xlsx` (screenshot da primeira aba renderizada).
-- Preço grande em Lora: **R$129,90** · pagamento único · arquivo Excel + Google Sheets.
-- Bullets: "Mesma metodologia E-S-D-E-C", "Funciona offline", "Você personaliza como quiser", "Suporte por email".
-- CTA **placeholder** ("Quero a planilha") que por enquanto abre WhatsApp ou um `mailto:` — sem checkout real ainda. Deixo o link fácil de trocar depois.
-- Bloco também mencionado discretamente dentro do pricing ("Não quer app? [Compre só a planilha →](#planilha)").
+```text
+┌──────────────────────────────────────────┐
+│ NAV translúcida (blur + border mint)     │
+├──────────────────────────────────────────┤
+│ HERO: eyebrow pill + headline gigante    │
+│  gradient mint, sub, dois CTAs, mockup   │
+│  da planilha flutuando com parallax      │
+├──────────────────────────────────────────┤
+│ LOGO CLOUD / social proof scrolling      │
+├──────────────────────────────────────────┤
+│ FEATURES: 3 bandas horizontais alternadas│
+│  com números grandes 01/02/03 mono       │
+├──────────────────────────────────────────┤
+│ PRODUCT SHOWCASE: mockup animado grande  │
+│  com highlights que aparecem ao scroll   │
+├──────────────────────────────────────────┤
+│ COMPARE (planilha caseira vs futuro)     │
+├──────────────────────────────────────────┤
+│ STEPS (E-S-D-E-C badges animados)        │
+├──────────────────────────────────────────┤
+│ DEPOIMENTOS (colunas em loop — mantém)   │
+├──────────────────────────────────────────┤
+│ PRICING (3 tiers, Vitalício em destaque) │
+├──────────────────────────────────────────┤
+│ PLANILHA OFFER + FAQ + CTA final         │
+├──────────────────────────────────────────┤
+│ FOOTER dark                              │
+└──────────────────────────────────────────┘
+```
 
-## 3. Assets da planilha
+### 4. Motion design (motion/react já instalado)
 
-- Subir `Planilha_do_Erick_3-3.xlsx` como Lovable Asset e gerar screenshot da primeira aba (via LibreOffice/openpyxl) para usar como mockup visual na seção — sem expor o arquivo publicamente antes do checkout.
-- Guardar o pointer JSON em `src/assets/planilha.asset.json` só para referência futura (não linkar download direto).
+Camadas de animação — respeitando `useReducedMotion`:
+- **Grid animado** de fundo no hero (linhas mint pulsando lentamente, CSS puro).
+- **Gradient orbs** flutuando com blur atrás do headline (2 blobs, animação infinita 20s).
+- **Headline com stagger** — palavra por palavra fade + slide-up.
+- **Ticker numérico** no hero mostrando "R$ +3.240" contando (usa `useMotionValue` + `animate`).
+- **Scroll-triggered reveals** em cada seção (`whileInView`, `once: true`, spring soft).
+- **Parallax leve** no mockup da planilha (rotate 3D no `mouseMove`, ~5°).
+- **Marquee** infinito na logo cloud e nos depoimentos.
+- **Cards com hover glow** — border mint acende + leve translate-y.
+- **Section dividers** com linha mint que desenha ao entrar na viewport (`pathLength`).
+- **Pricing card destacado** com aura pulsante (box-shadow animado).
+- **CTA final** com botão magnético (segue o cursor levemente).
 
-## 4. Fora de escopo (agora)
+### 5. Componentes novos
 
-- Nada de Stripe/checkout real — botão é placeholder até você decidir provedor.
-- Sem mudança em rotas autenticadas, schema, RLS ou lógica de negócio.
-- Sem alterar gating do app (o limite de 1 mês do Starter é comunicado na LP; enforcement em runtime fica para outra rodada quando plugarmos billing).
+- `src/components/lp/HeroGrid.tsx` — grid SVG animado de fundo.
+- `src/components/lp/GradientOrbs.tsx` — blobs de gradient.
+- `src/components/lp/AnimatedNumber.tsx` — contador com JetBrains Mono.
+- `src/components/lp/MagneticButton.tsx` — CTA que segue cursor.
+- `src/components/lp/MarqueeRow.tsx` — logo/tag cloud infinito.
+- `src/components/lp/SheetMockup.tsx` — mockup 3D da planilha com parallax e highlights animados.
+- `src/components/lp/SectionReveal.tsx` — wrapper de reveal padrão.
 
-## Ordem de execução
+### 6. Arquivos alterados
 
-1. Editar `index.tsx` — 3 cards de pricing + bloco planilha.
-2. Editar `pv2.tsx` — mesma estrutura no formato VSL.
-3. Subir asset da planilha + gerar mockup.
-4. QA responsivo (375 / 768 / 1280).
+- `src/styles.css` — tokens `.lp-dark`, keyframes (grid-pulse, orb-float, marquee, glow-pulse), utility `@utility lp-glow`.
+- `src/routes/__root.tsx` — `<link>` Space Grotesk + JetBrains Mono.
+- `src/routes/index.tsx` — reescrita completa das seções Nav/Hero/SocialProof/Features/Compare/Steps/Pricing/PlanilhaOffer/Faq/Cta/Footer usando os novos componentes e tokens `lp-*`.
+- `src/routes/pv2.tsx` — aplica a mesma paleta e motion design (mantém copy VSL).
+- `src/components/Testimonials.tsx` — ajusta cores para o dark mint.
+
+### 7. Fora de escopo
+
+- Rotas do produto (`/app`, `/fluxo`, `/produtividade`, `/auth`, `/docs`) permanecem no tema atual claro. O `.lp-dark` isola a paleta na LP.
+- Sem mudança de copy, preços ou lógica — só visual + motion.
+- Sem novas dependências (usa `motion/react` que já existe).
+
+### 8. Detalhes técnicos importantes
+
+- Fontes via `<link>` no `__root.tsx` — nunca `@import` URL no styles.css (regra Tailwind v4).
+- Tokens novos vão em `:root .lp-dark { ... }` + registrados em `@theme inline` como `--color-lp-*` pra habilitar `bg-lp-primary`, `text-lp-text`, etc.
+- Todas as animações checam `useReducedMotion()` antes de rodar loops infinitos.
+- Nenhuma cor hex hardcoded nos componentes — só classes semânticas `lp-*`.
+- Responsivo: mobile pega grid simplificado, orbs menores, parallax desligado no touch.
