@@ -1,3 +1,4 @@
+import { MoneyInput } from "@/components/MoneyInput";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
@@ -100,11 +101,11 @@ function InvestPage() {
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Aplicado</div>
-                      <Input type="number" step="0.01" defaultValue={r.valor_aplicado} onBlur={(e) => Number(e.target.value) !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: Number(e.target.value) } })} className="h-8" />
+                      <MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} align="left" size="sm" />
                     </div>
                     <div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Posição</div>
-                      <Input type="number" step="0.01" defaultValue={r.posicao_atual} onBlur={(e) => Number(e.target.value) !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: Number(e.target.value) } })} className="h-8 text-primary font-bold" />
+                      <MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} align="left" size="sm" inputClassName="text-primary font-bold" />
                     </div>
                   </div>
                   <div className={`mt-2 chip ${rend >= 0 ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"} w-fit`}>
@@ -141,8 +142,8 @@ function InvestPage() {
                       <td className="sheet-td"><Input defaultValue={r.nome} onBlur={(e) => e.target.value !== r.nome && upd.mutate({ id: r.id, patch: { nome: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
                       <td className="sheet-td"><select value={r.tipo ?? "CDB"} onChange={(e) => upd.mutate({ id: r.id, patch: { tipo: e.target.value } })} className="bg-transparent w-full outline-none">{TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}</select></td>
                       <td className="sheet-td"><Input defaultValue={r.renda ?? ""} onBlur={(e) => e.target.value !== r.renda && upd.mutate({ id: r.id, patch: { renda: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                      <td className="sheet-td text-right"><Input type="number" step="0.01" defaultValue={r.valor_aplicado} onBlur={(e) => Number(e.target.value) !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: Number(e.target.value) } })} className="h-7 w-24 ml-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-right" /></td>
-                      <td className="sheet-td text-right"><Input type="number" step="0.01" defaultValue={r.posicao_atual} onBlur={(e) => Number(e.target.value) !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: Number(e.target.value) } })} className="h-7 w-24 ml-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-right font-semibold" /></td>
+                      <td className="sheet-td text-right"><MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} size="sm" align="right" className="w-full" /></td>
+                      <td className="sheet-td text-right"><MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} size="sm" align="right" className="w-full" inputClassName="font-semibold" /></td>
                       <td className={`sheet-td text-right font-bold ${rend >= 0 ? "text-positive" : "text-negative"}`}><Money value={rend} signed showSign /></td>
                       <td className="sheet-td"><Input type="date" defaultValue={r.vencimento ?? ""} onBlur={(e) => e.target.value !== r.vencimento && upd.mutate({ id: r.id, patch: { vencimento: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
                       <td className="sheet-td text-center"><button onClick={() => confirm("Deletar?") && del.mutate(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>

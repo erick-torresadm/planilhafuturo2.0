@@ -1,3 +1,4 @@
+import { MoneyInput } from "@/components/MoneyInput";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
@@ -154,7 +155,7 @@ function ParcelasPage() {
                   <tr key={r.id} className={i % 2 ? "sheet-row-alt" : ""}>
                     <td className="sheet-td"><Input type="date" defaultValue={r.data} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
                     <td className="sheet-td"><Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                    <td className="sheet-td text-right"><Input type="number" step="0.01" defaultValue={r.valor_total} onBlur={(e) => Number(e.target.value) !== Number(r.valor_total) && upd.mutate({ id: r.id, patch: { valor_total: Number(e.target.value) } })} className="h-7 w-24 ml-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-right" /></td>
+                    <td className="sheet-td text-right"><MoneyInput value={Number(r.valor_total) || 0} onCommit={(v) => v !== Number(r.valor_total) && upd.mutate({ id: r.id, patch: { valor_total: v } })} size="sm" align="right" className="w-full" /></td>
                     <td className="sheet-td text-center"><Input type="number" min={1} defaultValue={r.qtd_parcelas} onBlur={(e) => Number(e.target.value) !== r.qtd_parcelas && upd.mutate({ id: r.id, patch: { qtd_parcelas: Number(e.target.value) } })} className="h-7 w-14 mx-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-center" /></td>
                     <td className="sheet-td text-center"><Input type="number" min={1} defaultValue={r.parcela_inicial} onBlur={(e) => Number(e.target.value) !== r.parcela_inicial && upd.mutate({ id: r.id, patch: { parcela_inicial: Number(e.target.value) } })} className="h-7 w-14 mx-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-center" /></td>
                     <td className="sheet-td text-right font-semibold text-primary"><Money value={Number(r.valor_total) / Math.max(1, r.qtd_parcelas)} /></td>

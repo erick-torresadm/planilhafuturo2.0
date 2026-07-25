@@ -1,3 +1,4 @@
+import { MoneyInput } from "@/components/MoneyInput";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
@@ -120,7 +121,7 @@ function DesejosPage() {
                 <div className="mt-3 flex items-end justify-between gap-2">
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Valor</div>
-                    <Input type="number" step="0.01" defaultValue={valor} onBlur={(e) => Number(e.target.value) !== valor && updDesejo.mutate({ id: d.id, patch: { valor: Number(e.target.value) } })} className="h-8 w-28 text-lg font-bold text-primary tabular-nums" />
+                    <MoneyInput value={valor} onCommit={(v) => v !== valor && updDesejo.mutate({ id: d.id, patch: { valor: v } })} size="md" align="left" inputClassName="text-lg font-bold text-primary" />
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => updDesejo.mutate({ id: d.id, patch: { parcelado: !d.parcelado } })}
@@ -167,11 +168,11 @@ function DesejosPage() {
                 <div className="mt-3 flex justify-between items-end">
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Atual</div>
-                    <Input type="number" defaultValue={c.atual} onBlur={(e) => Number(e.target.value) !== Number(c.atual) && updCaix.mutate({ id: c.id, patch: { atual: Number(e.target.value) } })} className="h-8 w-28 text-primary font-bold" />
+                    <MoneyInput value={Number(c.atual) || 0} onCommit={(v) => v !== Number(c.atual) && updCaix.mutate({ id: c.id, patch: { atual: v } })} size="sm" align="left" inputClassName="text-primary font-bold" />
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Meta</div>
-                    <Input type="number" defaultValue={c.meta} onBlur={(e) => Number(e.target.value) !== Number(c.meta) && updCaix.mutate({ id: c.id, patch: { meta: Number(e.target.value) } })} className="h-8 w-28 text-right" />
+                    <MoneyInput value={Number(c.meta) || 0} onCommit={(v) => v !== Number(c.meta) && updCaix.mutate({ id: c.id, patch: { meta: v } })} size="sm" align="right" />
                   </div>
                 </div>
                 <div className="mt-3 h-2 rounded-full bg-black/5 overflow-hidden">
