@@ -1,102 +1,80 @@
 
-# Plano — rebrand, landing page e polimento SaaS
+# V2 — Redesign Completo
 
-Decisões que assumi (você pulou as perguntas):
-- **Nome**: `meudindin` como preferência, `meucofrin` como fallback. Verifico `.com.br` no registro.br antes de fechar o logo.
-- **Direção visual**: **editorial calmo** (Linear/Notion/Stripe) — off-white quente, serif discreto nos títulos, sans geométrico no corpo, muito respiro, verde-esmeralda só como acento. Sai da cara de "IA seco" sem virar fintech neon.
-- **E2E**: Playwright completo em todas as telas, com screenshots.
-- **Landing**: hero + prova visual + comparativo com planilha + features + FAQ + waitlist. Motion sutil (fade/parallax/tilt/marquee), nada exagerado.
+Nova identidade baseada nos tokens que você passou: verde-menta vibrante (#51f0a8) como primário sobre off-white quase puro, cantos generosos (1.4rem), sombras suaves, tipografia Plus Jakarta Sans + Lora (destaques editoriais) + IBM Plex Mono (números/planilha). Suporte a dark mode nativo desde o início.
 
----
+## 1. Fundação de design (`src/styles.css`)
 
-## 1. Pesquisa de referência (rápida, antes de codar)
+Substituir o tema "Emerald Prestige" atual pelo seu:
 
-Rodo em paralelo (subagents) 3 pesquisas curtas:
-- Landing pages fintech BR/US premium (Linear, Copilot Money, Monarch, Cushion, Rocket Money, Organizze, Mobills).
-- Componentes de motion prontos (Aceternity UI, Magic UI, Motion Primitives, shadcnblocks).
-- Padrões de "planilha bonita" (Causal, Sigma, Rows.com, Airtable).
+- Tokens `:root` e `.dark` copiados literalmente do CSS enviado, adaptados ao `@theme inline` do Tailwind v4 (mapear cada `--*` para `--color-*`).
+- Radius base `1.4rem` → utilidades `rounded-lg/xl/2xl` ficam com pill/soft-square.
+- Sombras: sistema `--shadow-*` do seu preset (blur 3px, offset-y 1px, opacity 0.1) traduzido para `--shadow-card` / `--shadow-hero` mais suaves.
+- Fontes carregadas via `<link>` no `__root.tsx` (Google Fonts: Plus Jakarta Sans, Lora, IBM Plex Mono) — nunca `@import` de URL.
+- Manter tokens semânticos existentes (`--positive`, `--negative`, cell states) mas realinhados à nova paleta (positive = primary mint, negative = destructive rosa/vermelho `#f54a88`).
+- Toggle de dark mode global (persistido em localStorage, classe `.dark` no `<html>`).
 
-Consolido em 1 moodboard interno (comentário no PR) — não vira arquivo do projeto.
+## 2. Componentes base (shadcn refinados)
 
-## 2. Marca
+- `Button`, `Card`, `Input`, `Dialog`, `Badge`, `Tabs` reajustados para o novo radius e sombra.
+- Nova variante `Button variant="mint"` (primário sólido preto sobre mint) e `variant="ghost-mint"`.
+- `Card` ganha borda `--border` quase invisível + sombra hairline (Tailgrids style).
+- Nova primitiva `Section` (spacing consistente vertical), `Eyebrow` (label monospace uppercase), `Stat` (número Lora + label Jakarta).
 
-- Verifico disponibilidade `meudindin.com.br` / `meucofrin.com.br` via registro.br.
-- Gero logo com `imagegen` (premium, transparente): cofrinho minimalista + wordmark. 2 variações → escolho a melhor.
-- Salvo em `src/assets/logo.svg` (ou via `lovable-assets` se PNG).
-- Atualizo favicon (`public/favicon.png`), `<title>`, meta og.
+## 3. Landing Page V2 (`/` e `/pv2`)
 
-## 3. Design system (refinar, não reinventar)
+Inspiração Tailgrids — blocos densos, tipografia grande, muito respiro, ícones lineares.
 
-`src/styles.css`:
-- Base **Paper & Ink cálido**: `--background: oklch(0.985 0.005 85)` (off-white), `--foreground: oklch(0.18 0.01 240)` (quase preto azulado).
-- Acento **esmeralda restrito**: `--primary: oklch(0.45 0.09 165)` (só CTAs, foco, estados positivos).
-- Cinzas em escala 50→900 baseada em oklch para bordas, sombras, muted.
-- Tipografia: **Fraunces** (display, serif variable) + **Geist Sans** (corpo) + **Geist Mono** (números). Substitui Urbanist/Epilogue.
-- Radius padrão `10px`, sombras `0 1px 2px / 0 8px 24px -12px` (nada de glow neon).
-- Novos utilitários: `.card-quiet`, `.divider-hair`, `.num-lg` (tabular + tracking negativo).
+- **Hero**: split assimétrico. Esquerda: eyebrow monospace, H1 Lora display 72px, subtítulo Jakarta, dupla CTA (mint sólido + ghost). Direita: mockup da planilha em card flutuante com sombra suave e chip "hoje" destacado.
+- **Faixa de logos/prova social** com marquee suave.
+- **Features bento** (6 cards, alturas variadas) com ícones lineares + microdemo animado (motion/react) em cada.
+- **Como funciona** — 3 steps numerados grandes, layout zigzag.
+- **Metodologia E-S-D-E-C** em cards horizontais coloridos com o mint.
+- **Comparativo antes/depois** repaginado (tabela limpa em vez de blocos).
+- **Depoimentos** em masonry (3 colunas desktop, 1 mobile) estilo WhatsApp cards com nova moldura.
+- **Pricing V2** — 2 cards (Anual R$300 / Vitalício R$800) lado a lado, Vitalício com fita "Fundador", destaque forte no "Suporte em call com erick" (badge mint pulsante).
+- **FAQ** com accordion shadcn refinado.
+- **Footer** editorial com wordmark grande em Lora.
+- `/pv2` mantém elementos VSL (vídeo, urgência, floating WhatsApp) mas com o novo visual.
 
-## 4. Landing page (`/` público)
+## 4. App interno (todas rotas `_authenticated/*`)
 
-Movo o dashboard atual pra `/app` e libero `/` para a LP. Rotas novas: `src/routes/index.tsx` (LP), `src/routes/_app/` mantém área logada.
+Sensação "planilha premium" — clean, com detalhes mint só onde importa.
 
-Seções da LP (todas com motion via `motion/react` — já compatível com stack):
-1. **Nav** — logo + links (Produto, Preços, FAQ) + CTA "Entrar" e "Começar grátis". Blur sticky ao scrollar.
-2. **Hero** — headline serif grande ("Veja seus próximos 6 meses de dinheiro. Sem planilha."), sub, 2 CTAs, mockup do app com **tilt suave no mouse** e badge "feito pra quem já usa a planilha do Breno".
-3. **Prova social** — marquee com logos/depoimentos (fake temporário, marcado como placeholder).
-4. **Comparativo planilha × meudindin** — split screen animado com transição de screenshot da planilha Excel → screenshot do app ao entrar no viewport.
-5. **Features (4 cards bento)** — Fluxo diário, Gastos fixos, Parcelas, Desejos & caixinhas. Cada card com micro-animação (Framer `whileInView`).
-6. **Como funciona** — 3 passos numerados com stagger reveal.
-7. **Screenshots ao vivo** — carrossel horizontal com scroll-linked animation dos 4 principais telas.
-8. **Pricing** — 2 planos (Grátis / Pro R$ 19/mês). Toggle mensal/anual.
-9. **FAQ** — accordion (shadcn) com 8 perguntas.
-10. **CTA final** — waitlist com input de e-mail (grava em tabela `waitlist` no Supabase).
-11. **Footer** — minimalista, links legais + logo.
+- **AppShell**: sidebar desktop com fundo `--sidebar` branco puro, item ativo com pill `--sidebar-accent` (verde clarinho) + barra lateral mint. Bottom nav mobile com indicador mint arredondado e ícones outline mais finos. Toggle de tema no rodapé da sidebar.
+- **Topbar**: breadcrumb + busca global (⌘K placeholder) + avatar + notificações.
+- **Dashboard `/app`**: hero card com saldo projetado grande em Lora, delta em mint/rosa. Grid bento: Pilares (E-S-D-E-C) como cards individuais com anel de progresso, Reserva de emergência com barra, Fluxo dos próximos 7 dias mini-gráfico, Próximas parcelas, Tarefas do dia.
+- **Fluxo diário `/fluxo`**: mantém a tabela planilha (essência do produto) mas com cabeçalho novo, linha "hoje" com fundo `--sidebar-accent` + borda mint espessa à esquerda, números em IBM Plex Mono, chips E/S/D com cores da nova paleta. Navegação de meses vira segmented control no topo.
+- **Gastos / Parcelas / Investimentos / Desejos / Tarefas**: mesma estrutura visual — header padrão com título Lora + CTA mint, DataView (cards/tabela) com novos estilos, dialogs de criação refinados.
+- **Produtividade `/produtividade`**: timer Pomodoro com círculo mint, hábitos em grid semanal com preenchimento suave.
+- **Auth `/auth`**: split 50/50, esquerda formulário limpo, direita ilustração/quote editorial em fundo mint claro.
+- **Onboarding / Docs**: harmonizados ao novo visual.
 
-Motion budget: `fade-up` no scroll, `tilt` no mockup, `marquee` nos logos, `stagger` em listas, `blur-in` nos títulos. Sem parallax pesado. Respeita `prefers-reduced-motion`.
+## 5. Motion & microinterações
 
-## 5. Polimento do app (áreas logadas)
+- Fade-up padrão em seções (motion/react com viewport once).
+- Hover em cards: leve `translate-y-[-2px]` + sombra intensifica.
+- Botão mint com press state (scale 0.98).
+- Números do dashboard animam de 0 até o valor (count-up) na primeira renderização.
 
-Passa em cada tela e aplica o novo DS + arruma pontas soltas:
-- **Dashboard**: mantém estrutura atual (você aprovou o formato do Breno), só re-tipografa e reduz densidade.
-- **Fluxo diário**: revalida sticky header e destaque do dia (já funciona, só troca cores).
-- **Gastos**: já refeito recentemente, só ajusta paleta.
-- **Parcelas / Desejos / Investimentos / Tarefas**: aplica DataView + tipografia nova, revisa empty states.
-- **Config**: agrupa em seções com dividers hair.
-- **Onboarding**: reescreve com o novo tom editorial.
-- **Auth**: hero à esquerda + form à direita, split premium.
+## 6. Entregáveis técnicos
 
-## 6. Backend / infra
+- `src/styles.css` reescrito.
+- `src/routes/__root.tsx` — links das fontes + classe dark.
+- Novo `src/components/ThemeToggle.tsx`.
+- Refactor de `AppShell.tsx`, todos os arquivos em `src/routes/` (LP + app).
+- Ajustes pontuais em `Money.tsx`, `SheetCell.tsx`, `DataView.tsx` para novos tokens.
+- Sem mudança de lógica de negócio, sem mudança de schema, sem mudança em `src/lib/finance.ts` ou nas queries.
 
-- Nova tabela `waitlist(email, created_at)` com RLS `INSERT anon`, `SELECT service_role`. Migration + grants.
-- Nada além disso (sem mexer em lógica financeira).
+## Ordem de execução
 
-## 7. QA ponta-a-ponta (Playwright, headless, 1280×1800)
+1. Tema + fontes + dark toggle
+2. Componentes base shadcn ajustados
+3. AppShell + Dashboard + Fluxo (o coração do produto)
+4. Demais rotas do app
+5. Landing `/` V2
+6. `/pv2` V2
+7. Auth / Onboarding / Docs
+8. Passada de QA responsivo (mobile-first, 375/768/1280)
 
-Script único em `/tmp/browser/qa/run.py` que:
-1. Loga com a conta `ericktorresadm@hotmail.com`.
-2. Visita cada rota: `/`, `/auth`, `/onboarding`, `/app`, `/app/fluxo`, `/app/gastos`, `/app/parcelas`, `/app/desejos`, `/app/investimentos`, `/app/tarefas`, `/app/config`.
-3. Em cada uma: screenshot + verifica ausência de erros no console + testa 1 interação real (ex.: preencher célula no fluxo, adicionar gasto, alternar view Card/Tabela).
-4. Salva screenshots em `/tmp/browser/qa/shots/` e printa relatório.
-
-Só declaro "pronto pra vender" após todos os passos passarem visualmente.
-
----
-
-## Detalhes técnicos
-
-- Instalo: `motion` (motion/react v11) e `@number-flow/react` (animação de números na LP).
-- Fontes via `<link>` no `__root.tsx` (Fraunces + Geist).
-- LP usa `og:image` absoluto com screenshot do hero (gerado via product-shot skill).
-- SEO: `head()` único em `/` com title "meudindin — planejamento financeiro simples", description, og completo.
-- Rota `/app` protegida (reativo `_authenticated` layout já existente).
-- Sem mudança em `finance.ts`, `db.ts`, RLS existente, tipos gerados.
-
-## Arquivos
-
-**Criar**: `src/routes/index.tsx` (LP), `src/components/landing/*` (Nav, Hero, Compare, Features, Steps, Screens, Pricing, Faq, Cta, Footer), `src/components/Logo.tsx`, `src/assets/logo.svg`, `public/favicon.png`, migration `waitlist`, `/tmp/browser/qa/run.py`.
-
-**Editar**: `src/styles.css`, `src/routes/__root.tsx`, todos `src/routes/_authenticated/*`, `src/routes/auth.tsx`, `src/routes/onboarding.tsx`, `src/components/AppShell.tsx`.
-
-**Mover**: rotas atuais de `_authenticated/` para `_app/_authenticated/` (ou renomeio para liberar `/`).
-
-Quando aprovar, começo pela pesquisa + verificação do domínio, aí sigo em ordem.
+Depois de aprovado eu executo tudo em sequência — nada de lógica de negócio muda, só apresentação.
