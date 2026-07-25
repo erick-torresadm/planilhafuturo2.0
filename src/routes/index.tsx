@@ -238,7 +238,7 @@ function Compare() {
 /* ============ FEATURES (bento) ============ */
 function Features() {
   const items = [
-    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 6 meses, com saldo calculado.", accent: "col-span-2 row-span-2" },
+    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 6 meses, com saldo calculado.", accent: "md:col-span-2 md:row-span-2" },
     { icon: Receipt, title: "Gastos fixos", desc: "Contas mensais e anuais, cada uma no seu dia." },
     { icon: CreditCard, title: "Parcelas", desc: "Divide sozinho pelos meses. Sabe quando termina." },
     { icon: Sparkles, title: "Desejos & caixinhas", desc: "Metas com data. Ele diz se dá pra comprar." },
