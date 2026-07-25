@@ -315,7 +315,7 @@ function Pricing() {
         "Investimentos e patrimônio",
         "Lembretes por e-mail",
         "Exportar CSV",
-        "Suporte por e-mail",
+        "Suporte exclusivo em call comigo",
       ],
     },
     {
@@ -329,6 +329,7 @@ function Pricing() {
         "Tudo do plano Anual",
         "Acesso vitalício, sem renovar",
         "Todas as atualizações futuras",
+        "Suporte exclusivo em call comigo",
         "Suporte prioritário",
         "Selo de membro fundador",
       ],

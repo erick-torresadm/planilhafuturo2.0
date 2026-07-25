@@ -818,7 +818,7 @@ function PriceStack() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 justify-between">
           <div>
             <div className="font-display text-2xl font-black">Vitalício</div>
-            <div className="text-sm opacity-70 mt-1">Compre uma vez. Não pague nunca mais.</div>
+            <div className="text-sm opacity-70 mt-1">Compre uma vez. Não pague nunca mais. Inclui suporte em call comigo.</div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-display text-4xl font-black num-lg">R$ 800</span>
@@ -826,7 +826,7 @@ function PriceStack() {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-          {["Todas as atualizações", "Suporte prioritário", "Selo de fundador"].map((t) => (
+          {["Todas as atualizações", "Suporte em call comigo", "Suporte prioritário", "Selo de fundador"].map((t) => (
             <div key={t} className="flex items-center gap-2 opacity-90"><Check className="h-3.5 w-3.5" /> {t}</div>
           ))}
         </div>
