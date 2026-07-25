@@ -20,7 +20,7 @@ export const Route = createFileRoute("/pv2")({
   head: () => ({
     meta: [
       { title: "planilhafuturo — Pare de rezar pra planilha não quebrar" },
-      { name: "description", content: "O método simples pra enxergar seus próximos 6 meses de dinheiro em um olhar. App + suporte em call toda semana." },
+      { name: "description", content: "O método simples pra enxergar seus próximos 6 meses de dinheiro em um olhar. App + suporte em call com erick." },
       { property: "og:title", content: "planilhafuturo — Método completo pra organizar sua vida financeira" },
       { property: "og:description", content: "App + call de suporte semanal + método. Enxergue seus próximos 6 meses em um olhar." },
       { property: "og:type", content: "website" },
@@ -818,7 +818,7 @@ function PriceStack() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 justify-between">
           <div>
             <div className="font-display text-2xl font-black">Vitalício</div>
-            <div className="text-sm opacity-70 mt-1">Compre uma vez. Não pague nunca mais. Inclui suporte em call comigo.</div>
+            <div className="text-sm opacity-70 mt-1">Compre uma vez. Não pague nunca mais. Inclui suporte em call com erick.</div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-display text-4xl font-black num-lg">R$ 800</span>
@@ -826,7 +826,7 @@ function PriceStack() {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-          {["Todas as atualizações", "Suporte em call comigo", "Suporte prioritário", "Selo de fundador"].map((t) => {
+          {["Todas as atualizações", "Suporte em call com erick", "Suporte prioritário", "Selo de fundador"].map((t) => {
             const isCall = t.includes("Suporte em call");
             return (
               <div key={t} className={`flex items-center gap-2 ${isCall ? "text-primary font-bold" : "opacity-90"}`}>
