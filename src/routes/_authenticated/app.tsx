@@ -113,23 +113,25 @@ function HojePage() {
       {/* Saudação */}
       <div className="flex items-baseline justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[13px] text-muted-foreground">Olá, {nome}</p>
-          <h1 className="font-display text-xl font-bold tracking-tight truncate">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Olá, {nome}</p>
+          <h1 className="font-display text-3xl lg:text-4xl leading-[1.05] tracking-tight truncate">
+            <span className="italic text-muted-foreground">hoje é</span>{" "}
             {today.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
           </h1>
         </div>
       </div>
 
       {/* HERO — saldo atual */}
-      <section className="hope-card p-5 lg:p-6 relative overflow-hidden">
-        <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+      <section className="hope-card p-6 lg:p-8 relative overflow-hidden">
+        <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-foreground/[0.04] blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
         <div className="relative">
           <div className="eyebrow">Saldo hoje</div>
-          <div className={`font-display text-[40px] lg:text-5xl font-bold tracking-tight leading-none mt-2 tabular-nums ${saldoHoje < 0 ? "text-negative" : "text-foreground"}`}>
+          <div className={`font-mono text-[42px] lg:text-6xl font-semibold tracking-tight leading-none mt-2 tabular-nums ${saldoHoje < 0 ? "text-negative" : "text-foreground"}`}>
             <Money value={saldoHoje} />
           </div>
-          <div className="mt-3 flex items-center gap-2 text-[12px]">
-            <span className={`inline-flex items-center gap-1 font-semibold ${saldoFimMes < 0 ? "text-negative" : "text-positive"}`}>
+          <div className="mt-4 flex items-center gap-2 text-[12px]">
+            <span className={`inline-flex items-center gap-1 font-mono font-semibold ${saldoFimMes < 0 ? "text-negative" : "text-positive"}`}>
               {saldoFimMes < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
               <Money value={saldoFimMes} />
             </span>
@@ -138,16 +140,16 @@ function HojePage() {
         </div>
 
         {/* Quick actions */}
-        <div className="mt-5 grid grid-cols-2 gap-2">
+        <div className="mt-6 grid grid-cols-2 gap-2 relative">
           <button
             onClick={() => setQaOpen("in")}
-            className="h-12 rounded-xl bg-positive-soft text-positive font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            className="h-12 rounded-xl bg-foreground text-background font-semibold text-[13px] tracking-tight flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           >
             <Plus className="h-4 w-4" /> Entrada
           </button>
           <button
             onClick={() => setQaOpen("out")}
-            className="h-12 rounded-xl bg-negative-soft text-negative font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            className="h-12 rounded-xl border border-border bg-card text-foreground font-semibold text-[13px] tracking-tight flex items-center justify-center gap-2 hover:bg-muted active:scale-[0.98] transition-all"
           >
             <Plus className="h-4 w-4" /> Saída
           </button>
