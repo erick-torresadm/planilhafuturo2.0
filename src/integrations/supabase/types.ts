@@ -119,6 +119,39 @@ export type Database = {
         }
         Relationships: []
       }
+      focos_diarios: {
+        Row: {
+          created_at: string | null
+          data: string
+          feito: boolean
+          id: string
+          ordem: number
+          texto: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          feito?: boolean
+          id?: string
+          ordem?: number
+          texto: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          feito?: boolean
+          id?: string
+          ordem?: number
+          texto?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       gastos_fixos: {
         Row: {
           ativo: boolean | null
@@ -175,6 +208,80 @@ export type Database = {
           valor?: number
         }
         Relationships: []
+      }
+      habitos: {
+        Row: {
+          ativo: boolean | null
+          cor: string | null
+          created_at: string | null
+          dias_semana: number[] | null
+          icone: string | null
+          id: string
+          meta_semanal: number | null
+          nome: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          dias_semana?: number[] | null
+          icone?: string | null
+          id?: string
+          meta_semanal?: number | null
+          nome: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          dias_semana?: number[] | null
+          icone?: string | null
+          id?: string
+          meta_semanal?: number | null
+          nome?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      habitos_registros: {
+        Row: {
+          created_at: string | null
+          data: string
+          feito: boolean
+          habito_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          feito?: boolean
+          habito_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          feito?: boolean
+          habito_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habitos_registros_habito_id_fkey"
+            columns: ["habito_id"]
+            isOneToOne: false
+            referencedRelation: "habitos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investimentos: {
         Row: {
@@ -293,6 +400,33 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           valor_total?: number
+        }
+        Relationships: []
+      }
+      pomodoros: {
+        Row: {
+          created_at: string | null
+          data: string
+          duracao_min: number
+          id: string
+          tarefa: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string
+          duracao_min?: number
+          id?: string
+          tarefa?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          duracao_min?: number
+          id?: string
+          tarefa?: string | null
+          user_id?: string
         }
         Relationships: []
       }
