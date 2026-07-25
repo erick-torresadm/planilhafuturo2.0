@@ -14,6 +14,8 @@ import { TiltCard } from "@/components/lp/TiltCard";
 import { CookieBanner } from "@/components/CookieBanner";
 import { ChatWidget } from "@/components/ChatWidget";
 import { joinWaitlist } from "@/lib/waitlist.functions";
+import planilhaReal from "@/assets/planilha-real.png.asset.json";
+
 
 
 export const Route = createFileRoute("/")({
@@ -651,44 +653,23 @@ function PlanilhaOffer() {
         <div className="relative">
           <div className="absolute -inset-6 bg-primary/20 rounded-3xl blur-2xl" aria-hidden />
           <TiltCard className="relative rounded-2xl">
-            <div className="relative rounded-2xl border border-primary/20 bg-background overflow-hidden shadow-[0_30px_80px_-20px_rgba(45,212,168,0.4)]">
+            <div className="relative rounded-2xl border border-primary/20 bg-background overflow-hidden shadow-[0_30px_80px_-20px_rgba(16,185,129,0.35)]">
               <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border bg-surface-2/40">
                 <span className="h-2.5 w-2.5 rounded-full bg-negative/60" />
                 <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
                 <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
                 <span className="ml-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Planilha_do_Futuro.xlsx</span>
               </div>
-              <div className="p-4 sm:p-5 font-mono text-[10px] sm:text-[11px]">
-                <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-x-3 gap-y-1.5">
-                  <div className="text-muted-foreground uppercase tracking-widest">DIA</div>
-                  <div className="text-muted-foreground uppercase tracking-widest">ENTRADA</div>
-                  <div className="text-muted-foreground uppercase tracking-widest">SAÍDA</div>
-                  <div className="text-muted-foreground uppercase tracking-widest">SALDO</div>
-                  {[
-                    ["01", "R$ 7.000", "—", "R$ 7.000"],
-                    ["05", "—", "R$ 1.200", "R$ 5.800"],
-                    ["10", "—", "R$ 480", "R$ 5.320"],
-                    ["15", "R$ 1.500", "—", "R$ 6.820"],
-                    ["20", "—", "R$ 890", "R$ 5.930"],
-                    ["25", "—", "R$ 1.740", "R$ 4.190"],
-                    ["30", "—", "R$ 420", "R$ 3.770"],
-                  ].map((row, i) => (
-                    <div key={i} className="contents">
-                      <div className="text-foreground/80">{row[0]}</div>
-                      <div className="text-primary">{row[1]}</div>
-                      <div className="text-negative">{row[2]}</div>
-                      <div className="font-semibold">{row[3]}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">Sobra do mês</span>
-                  <span className="font-semibold text-primary">+ R$ 3.770</span>
-                </div>
-              </div>
+              <img
+                src={planilhaReal.url}
+                alt="Prévia da planilha real com fluxo diário de julho, agosto e setembro"
+                className="w-full h-auto block"
+                loading="lazy"
+              />
             </div>
           </TiltCard>
         </div>
+
       </motion.div>
     </Section>
   );
