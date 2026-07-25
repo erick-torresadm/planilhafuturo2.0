@@ -496,7 +496,7 @@ function Faq() {
     { q: "É igual à planilha que eu uso hoje?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
     { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. 80% dos nossos usuários usam no ônibus." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
-    { q: "Tem versão grátis?", a: "Tem. O plano Grátis mostra o mês atual com fluxo diário e gastos fixos — perfeito pra testar. Pro libera 6 meses de projeção, parcelas, desejos, investimentos e lembretes." },
+    { q: "Tem plano de entrada?", a: "Tem. O Starter (R$ 69,90/ano) mostra 1 mês de fluxo, gastos e parcelas. O Anual libera os 6 meses, produtividade e suporte em call comigo." },
     { q: "Por que só cobrança anual no Pro?", a: "Planejamento financeiro só faz sentido no longo prazo. Preço anual sai mais barato pra você e nos ajuda a construir uma ferramenta séria, sem depender de investidor." },
     { q: "Suporte se eu travar?", a: "Sim, humano de verdade. Responde em até 24h por e-mail." },
     { q: "Vocês vão sumir daqui a 6 meses?", a: "Não. É um SaaS pago com receita — a gente sobrevive dos assinantes, não de investidor." },
