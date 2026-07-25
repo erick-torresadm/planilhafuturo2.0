@@ -57,17 +57,22 @@ function Landing() {
       <SocialProof />
       <Features />
       <Showcase />
+      <ForWho />
       <Compare />
       <Steps />
       <Testimonials />
       <Pricing />
       <PlanilhaOffer />
+      <Guarantee />
       <Faq />
       <Cta />
       <Footer />
+      <CookieBanner />
+      <ChatWidget />
     </div>
   );
 }
+
 
 /* ============ NAV ============ */
 function Nav() {
