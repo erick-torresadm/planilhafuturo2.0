@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
   Sparkles, Wallet, ListChecks, Zap,
-  Settings, LogOut, Menu, X, MoreHorizontal,
+  Settings, LogOut, X, MoreHorizontal,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
