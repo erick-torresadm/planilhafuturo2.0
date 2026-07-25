@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, CalendarDays, Receipt, CreditCard,
-  Sparkles, Wallet, ListChecks, Settings, LogOut, Menu, X, Bell,
+  Sparkles, Wallet, ListChecks, Settings, LogOut, Menu, X, Bell, Zap,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
   { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, short: "Fluxo" },
+  { to: "/produtividade", label: "Produtividade", icon: Zap, short: "Foco" },
   { to: "/gastos", label: "Gastos Fixos", icon: Receipt, short: "Gastos" },
   { to: "/parcelas", label: "Parcelas", icon: CreditCard, short: "Parc" },
   { to: "/desejos", label: "Desejos", icon: Sparkles, short: "Desejos" },
@@ -20,7 +21,7 @@ const NAV = [
 ];
 
 // Bottom nav shows only the 5 most-used
-const BOTTOM = [NAV[0], NAV[1], NAV[2], NAV[3], NAV[5]];
+const BOTTOM = [NAV[0], NAV[1], NAV[2], NAV[3], NAV[7]];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
