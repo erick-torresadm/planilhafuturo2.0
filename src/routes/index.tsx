@@ -7,6 +7,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { Testimonials } from "@/components/Testimonials";
 import { joinWaitlist } from "@/lib/waitlist.functions";
 
 export const Route = createFileRoute("/")({
@@ -45,6 +46,7 @@ function Landing() {
       <Compare />
       <Features />
       <Steps />
+      <Testimonials />
       <Pricing />
       <PlanilhaOffer />
       <Faq />
