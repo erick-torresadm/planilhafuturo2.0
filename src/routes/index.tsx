@@ -302,10 +302,26 @@ function Steps() {
 function Pricing() {
   const plans = [
     {
-      name: "Anual",
-      price: 300,
+      name: "Starter",
+      price: "69,90",
       period: "/ano",
-      priceNote: "R$ 25/mês equivalente",
+      priceNote: "Menos de R$ 6/mês. Comece hoje.",
+      cta: "Começar por R$ 69,90",
+      features: [
+        "1 mês de projeção do fluxo diário",
+        "Gastos fixos ilimitados",
+        "Parcelas e cartões",
+        "Dashboard com pilares E-S-D-E-C",
+        "App no celular e desktop",
+      ],
+      muted: ["Sem produtividade (pomodoro / hábitos)", "Sem desejos & investimentos", "Sem suporte em call"],
+    },
+    {
+      name: "Anual",
+      price: "300",
+      period: "/ano",
+      priceNote: "R$ 25/mês equivalente · mais escolhido",
+      badge: "Mais escolhido",
       cta: "Assinar Anual",
       features: [
         "6 meses de projeção completa",
@@ -313,17 +329,17 @@ function Pricing() {
         "Parcelas e cartões ilimitados",
         "Desejos, caixinhas e metas",
         "Investimentos e patrimônio",
-        "Lembretes por e-mail",
-        "Exportar CSV",
+        "Produtividade (pomodoro + hábitos)",
+        "Lembretes por e-mail e exportar CSV",
         "Suporte exclusivo em call com erick",
       ],
     },
     {
       name: "Vitalício",
-      price: 800,
-      period: "pagamento único",
+      price: "800",
+      period: "único",
       priceNote: "Sem mensalidade. Para sempre.",
-      badge: "Melhor valor",
+      badge: "Fundador",
       cta: "Comprar Vitalício",
       features: [
         "Tudo do plano Anual",
@@ -334,20 +350,20 @@ function Pricing() {
         "Selo de membro fundador",
       ],
     },
-  ];
+  ] as const;
   return (
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">Preços</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Dois planos. Zero mensalidade escondida.</h2>
-        <p className="mt-4 text-muted-foreground">Escolha pagar por ano ou uma vez só e nunca mais.</p>
+        <h2 className="font-display text-4xl sm:text-5xl">Escolha por onde começar.</h2>
+        <p className="mt-4 text-muted-foreground">Barreira baixa pra experimentar. Upgrade quando quiser destravar tudo.</p>
       </div>
-      <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
         {plans.map((p) => {
-          const isFeatured = p.name === "Vitalício";
+          const isFeatured = p.name === "Anual";
           return (
-            <div key={p.name} className={`rounded-2xl border p-8 relative ${isFeatured ? "border-primary/40 bg-primary/[0.03]" : "border-border bg-card"}`} style={isFeatured ? { boxShadow: "var(--shadow-card)" } : {}}>
-              {p.badge && <div className="absolute -top-3 left-8 chip bg-primary text-primary-foreground">{p.badge}</div>}
+            <div key={p.name} className={`rounded-2xl border p-6 sm:p-7 relative flex flex-col ${isFeatured ? "border-primary/60 bg-primary/[0.04] md:scale-[1.03]" : "border-border bg-card"}`} style={isFeatured ? { boxShadow: "var(--shadow-hero)" } : {}}>
+              {p.badge && <div className={`absolute -top-3 left-6 chip ${isFeatured ? "bg-primary text-primary-foreground" : "bg-foreground text-background"}`}>{p.badge}</div>}
               <div className="font-display text-2xl">{p.name}</div>
               <div className="mt-4 flex items-baseline gap-1">
                 <span className="font-display text-5xl num-lg">R${p.price}</span>
@@ -367,12 +383,104 @@ function Pricing() {
                     </li>
                   );
                 })}
+                {"muted" in p && p.muted?.map((f) => (
+                  <li key={f} className="flex gap-2 items-start text-muted-foreground/70 line-through">
+                    <Check className="h-4 w-4 shrink-0 mt-0.5 opacity-40" />{f}
+                  </li>
+                ))}
               </ul>
             </div>
           );
         })}
       </div>
       <p className="text-center text-xs text-muted-foreground mt-8">Garantia de 7 dias em qualquer plano. Reembolso sem burocracia.</p>
+      <p className="text-center text-sm mt-3">
+        Prefere só a planilha original? <a href="#planilha" className="text-primary font-semibold underline underline-offset-4">Compre por R$ 129,90 →</a>
+      </p>
+    </Section>
+  );
+}
+
+/* ============ SPREADSHEET OFFER ============ */
+function PlanilhaOffer() {
+  return (
+    <Section id="planilha" className="py-24">
+      <div className="rounded-3xl border border-border bg-card p-6 sm:p-10 grid md:grid-cols-2 gap-8 md:gap-12 items-center" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div>
+          <div className="eyebrow mb-4">Alternativa · Excel + Google Sheets</div>
+          <h2 className="font-display text-3xl sm:text-4xl leading-tight">
+            Prefere planilha?<br /><span className="italic text-muted-foreground">A original que deu origem ao app.</span>
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            A mesma metodologia E-S-D-E-C, funcionando offline no seu Excel ou Google Sheets. Personalize como quiser. Perfeito pra quem já domina fórmula e não quer trocar de ferramenta.
+          </p>
+          <ul className="mt-6 space-y-2.5 text-sm">
+            {[
+              "Mesma metodologia dos 6 meses de projeção",
+              "Funciona offline · Excel + Google Sheets",
+              "Você personaliza fórmulas e abas",
+              "Pagamento único · acesso vitalício ao arquivo",
+              "Suporte por e-mail",
+            ].map((f) => (
+              <li key={f} className="flex gap-2 items-start">
+                <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />{f}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 flex items-baseline gap-2">
+            <span className="font-display text-5xl num-lg">R$ 129,90</span>
+            <span className="text-sm text-muted-foreground">pagamento único</span>
+          </div>
+          <a
+            href="https://wa.me/5599999999999?text=Ol%C3%A1%21%20Quero%20comprar%20a%20planilha%20por%20R%24%20129%2C90"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full border border-foreground bg-foreground text-background px-6 py-3 text-sm font-semibold hover:brightness-110 transition"
+          >
+            Quero a planilha <ArrowRight className="h-4 w-4" />
+          </a>
+          <p className="mt-3 text-xs text-muted-foreground">Entrega manual por enquanto — respondo em até 24h.</p>
+        </div>
+        <div className="relative">
+          <div className="absolute -inset-6 bg-primary/10 rounded-3xl blur-2xl" aria-hidden />
+          <div className="relative rounded-2xl border border-border bg-background overflow-hidden" style={{ boxShadow: "var(--shadow-hero)" }}>
+            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border bg-surface-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-negative/60" />
+              <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
+              <span className="ml-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Planilha_do_Futuro.xlsx</span>
+            </div>
+            <div className="p-4 sm:p-5 font-mono text-[10px] sm:text-[11px]">
+              <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-x-3 gap-y-1.5">
+                <div className="text-muted-foreground">DIA</div>
+                <div className="text-muted-foreground">ENTRADA</div>
+                <div className="text-muted-foreground">SAÍDA</div>
+                <div className="text-muted-foreground">SALDO</div>
+                {[
+                  ["01", "R$ 7.000", "—", "R$ 7.000"],
+                  ["05", "—", "R$ 1.200", "R$ 5.800"],
+                  ["10", "—", "R$ 480", "R$ 5.320"],
+                  ["15", "R$ 1.500", "—", "R$ 6.820"],
+                  ["20", "—", "R$ 890", "R$ 5.930"],
+                  ["25", "—", "R$ 1.740", "R$ 4.190"],
+                  ["30", "—", "R$ 420", "R$ 3.770"],
+                ].map((row, i) => (
+                  <div key={i} className="contents">
+                    <div className="text-foreground/80">{row[0]}</div>
+                    <div className="text-positive">{row[1]}</div>
+                    <div className="text-negative">{row[2]}</div>
+                    <div className="font-semibold">{row[3]}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                <span className="text-[9px] uppercase tracking-widest text-muted-foreground">Sobra do mês</span>
+                <span className="font-semibold text-positive">+ R$ 3.770</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Section>
   );
 }
