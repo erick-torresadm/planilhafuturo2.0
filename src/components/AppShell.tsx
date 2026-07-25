@@ -3,39 +3,37 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard, CalendarDays, Receipt, CreditCard,
-  Sparkles, Wallet, ListChecks, Settings, LogOut, Menu, X, Bell, Zap, Search,
-  ChevronsLeft, ChevronsRight,
+  Home, CalendarDays, Receipt, CreditCard,
+  Sparkles, Wallet, ListChecks, Zap,
+  Settings, LogOut, X, MoreHorizontal,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-const NAV = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, group: "Principal" },
-  { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, group: "Principal" },
-  { to: "/gastos", label: "Gastos Fixos", icon: Receipt, group: "Principal" },
-  { to: "/parcelas", label: "Parcelas", icon: CreditCard, group: "Principal" },
-  { to: "/investimentos", label: "Investimentos", icon: Wallet, group: "Patrimônio" },
-  { to: "/desejos", label: "Desejos & Metas", icon: Sparkles, group: "Patrimônio" },
-  { to: "/tarefas", label: "Tarefas", icon: ListChecks, group: "Rotina" },
-  { to: "/produtividade", label: "Produtividade", icon: Zap, group: "Rotina" },
+const PRIMARY = [
+  { to: "/app",     label: "Hoje",    icon: Home },
+  { to: "/fluxo",   label: "Fluxo",   icon: CalendarDays },
+  { to: "/gastos",  label: "Gastos",  icon: Receipt },
 ] as const;
 
-const GROUPS = ["Principal", "Patrimônio", "Rotina"] as const;
+const SECONDARY = [
+  { to: "/parcelas",      label: "Parcelas",      icon: CreditCard,  hint: "Compras no cartão" },
+  { to: "/investimentos", label: "Investimentos", icon: Wallet,      hint: "Sua reserva" },
+  { to: "/desejos",       label: "Desejos & Metas", icon: Sparkles,  hint: "O que quer comprar" },
+  { to: "/tarefas",       label: "Tarefas",       icon: ListChecks,  hint: "Lembretes financeiros" },
+  { to: "/produtividade", label: "Produtividade", icon: Zap,         hint: "Foco e hábitos" },
+  { to: "/config",        label: "Configurações", icon: Settings,    hint: "Perfil e preferências" },
+] as const;
+
+const ALL = [...PRIMARY, ...SECONDARY];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const nav = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("shell-collapsed") === "1";
-  });
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => setOpen(false), [loc.pathname]);
-  useEffect(() => {
-    try { localStorage.setItem("shell-collapsed", collapsed ? "1" : "0"); } catch {}
-  }, [collapsed]);
+  useEffect(() => { setMoreOpen(false); setDrawerOpen(false); }, [loc.pathname]);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -43,235 +41,215 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const active = (to: string) =>
-    to === "/" ? loc.pathname === "/" : loc.pathname === to || loc.pathname.startsWith(to + "/");
-  const current = NAV.find((n) => active(n.to)) ?? NAV[0];
+    loc.pathname === to || loc.pathname.startsWith(to + "/");
+  const current = ALL.find((n) => active(n.to)) ?? PRIMARY[0];
 
-  const sidebarWidth = collapsed ? 72 : 248;
+  const inSecondary = SECONDARY.some((n) => active(n.to));
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      {/* ============ Desktop Sidebar (Hope-style) ============ */}
-      <aside
-        className="hidden lg:flex fixed top-0 bottom-0 left-0 z-40 flex-col bg-sidebar border-r border-sidebar-border transition-[width] duration-200"
-        style={{ width: sidebarWidth }}
-      >
-        {/* Logo */}
-        <div className={cn("h-16 flex items-center border-b border-sidebar-border shrink-0", collapsed ? "justify-center px-2" : "px-5 gap-2.5")}>
+    <div className="min-h-[100dvh] w-full bg-background text-foreground">
+      {/* =============== Desktop Sidebar =============== */}
+      <aside className="hidden lg:flex fixed top-0 bottom-0 left-0 z-40 w-[240px] flex-col bg-sidebar border-r border-sidebar-border">
+        <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border shrink-0">
           <div className="h-9 w-9 rounded-lg bg-primary grid place-items-center shrink-0">
             <Logo size={16} withWordmark={false} />
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="font-display text-[15px] font-semibold tracking-tight truncate">planilhafuturo</div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground -mt-0.5">Sistema financeiro</div>
-            </div>
-          )}
+          <div className="min-w-0">
+            <div className="font-display text-[15px] font-semibold tracking-tight truncate">planilhafuturo</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground -mt-0.5">Fluxo financeiro</div>
+          </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 no-scrollbar">
-          {GROUPS.map((g) => {
-            const items = NAV.filter((n) => n.group === g);
-            return (
-              <div key={g} className="mb-5">
-                {!collapsed && (
-                  <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                    {g}
-                  </div>
-                )}
-                <div className="space-y-0.5">
-                  {items.map((n) => {
-                    const a = active(n.to);
-                    const Icon = n.icon;
-                    return (
-                      <Link
-                        key={n.to}
-                        to={n.to}
-                        title={collapsed ? n.label : undefined}
-                        className={cn(
-                          "sidebar-item",
-                          a && "sidebar-item-active",
-                          collapsed && "justify-center px-2",
-                        )}
-                      >
-                        <Icon className="h-[18px] w-[18px] shrink-0" />
-                        {!collapsed && <span className="truncate">{n.label}</span>}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+          <div className="mb-5">
+            <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Essencial</div>
+            <div className="space-y-0.5">
+              {PRIMARY.map((n) => {
+                const Icon = n.icon;
+                return (
+                  <Link key={n.to} to={n.to} className={cn("sidebar-item", active(n.to) && "sidebar-item-active")}>
+                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <span className="truncate">{n.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mb-5">
+            <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Mais</div>
+            <div className="space-y-0.5">
+              {SECONDARY.map((n) => {
+                const Icon = n.icon;
+                return (
+                  <Link key={n.to} to={n.to} className={cn("sidebar-item", active(n.to) && "sidebar-item-active")}>
+                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <span className="truncate">{n.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </nav>
 
-        {/* Footer actions */}
-        <div className="border-t border-sidebar-border p-3 space-y-1">
-          <Link
-            to="/config"
-            title={collapsed ? "Ajustes" : undefined}
-            className={cn("sidebar-item", active("/config") && "sidebar-item-active", collapsed && "justify-center px-2")}
-          >
-            <Settings className="h-[18px] w-[18px] shrink-0" />
-            {!collapsed && <span>Ajustes</span>}
-          </Link>
-          <button
-            onClick={logout}
-            title={collapsed ? "Sair" : undefined}
-            className={cn("sidebar-item w-full text-left", collapsed && "justify-center px-2")}
-          >
+        <div className="border-t border-sidebar-border p-3">
+          <button onClick={logout} className="sidebar-item w-full text-left">
             <LogOut className="h-[18px] w-[18px] shrink-0" />
-            {!collapsed && <span>Sair</span>}
-          </button>
-          <button
-            onClick={() => setCollapsed((c) => !c)}
-            className={cn("sidebar-item w-full text-left text-muted-foreground/70", collapsed && "justify-center px-2")}
-          >
-            {collapsed ? <ChevronsRight className="h-[18px] w-[18px]" /> : <><ChevronsLeft className="h-[18px] w-[18px] shrink-0" /><span>Recolher</span></>}
+            <span>Sair</span>
           </button>
         </div>
       </aside>
 
-      {/* ============ Main column ============ */}
-      <div className="flex flex-col min-h-screen" style={{ paddingLeft: 0, marginLeft: 0 }}>
-        <style>{`@media (min-width: 1024px) { .app-main { padding-left: ${sidebarWidth}px; } }`}</style>
-        <div className="app-main flex flex-col min-h-screen">
-          {/* Topbar */}
-          <header className="sticky top-0 z-30 h-16 bg-card/95 backdrop-blur border-b border-border">
-            <div className="h-full flex items-center gap-2 sm:gap-3 px-3 sm:px-6">
-              {/* Mobile burger */}
-              <button
-                onClick={() => setOpen(true)}
-                className="lg:hidden shrink-0 h-10 w-10 grid place-items-center rounded-md hover:bg-muted text-foreground"
-                aria-label="Abrir menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-
-              {/* Page title (desktop) */}
-              <div className="hidden lg:flex items-baseline gap-2 min-w-0">
-                <h1 className="font-display text-lg font-semibold tracking-tight truncate">{current.label}</h1>
-                <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground truncate">
-                  · {current.group}
-                </span>
+      {/* =============== Main =============== */}
+      <div className="flex flex-col min-h-[100dvh] lg:pl-[240px]">
+        {/* Topbar — minimal on mobile */}
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
+          <div
+            className="h-14 lg:h-16 flex items-center gap-2 px-4 lg:px-6"
+            style={{ paddingTop: "env(safe-area-inset-top)" }}
+          >
+            {/* Mobile brand */}
+            <Link to="/app" className="lg:hidden flex items-center gap-2 min-w-0 flex-1">
+              <div className="h-8 w-8 rounded-lg bg-primary grid place-items-center shrink-0">
+                <Logo size={13} withWordmark={false} />
               </div>
+              <div className="min-w-0">
+                <div className="font-display text-[15px] font-bold leading-none truncate">{current.label}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate">planilhafuturo</div>
+              </div>
+            </Link>
 
-              {/* Mobile brand */}
-              <Link to="/app" className="lg:hidden flex items-center gap-2 min-w-0">
-                <div className="h-8 w-8 rounded-md bg-primary grid place-items-center shrink-0">
-                  <Logo size={14} withWordmark={false} />
-                </div>
-                <span className="font-display text-sm font-semibold truncate">planilhafuturo</span>
-              </Link>
-
-              <div className="flex-1" />
-
-              {/* Search */}
-              <label className="hidden md:flex items-center gap-2 h-9 w-72 px-3 rounded-md bg-muted/60 border border-border text-sm">
-                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                <input
-                  placeholder="Buscar…"
-                  className="flex-1 min-w-0 bg-transparent outline-none placeholder:text-muted-foreground"
-                />
-                <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-background border border-border text-muted-foreground">⌘K</kbd>
-              </label>
-
-              {/* Actions */}
-              <button className="relative h-9 w-9 grid place-items-center rounded-md hover:bg-muted text-foreground/70" aria-label="Notificações">
-                <Bell className="h-[18px] w-[18px]" />
-                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
-              </button>
-              <Link
-                to="/config"
-                className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-xs font-bold"
-                aria-label="Perfil"
-              >
-                E
-              </Link>
+            {/* Desktop title */}
+            <div className="hidden lg:flex items-baseline gap-2 min-w-0 flex-1">
+              <h1 className="font-display text-lg font-semibold tracking-tight truncate">{current.label}</h1>
             </div>
-          </header>
 
-          {/* Content */}
-          <main className="flex-1 min-w-0">
-            {children}
-          </main>
-        </div>
+            {/* Right actions */}
+            <Link
+              to="/config"
+              className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-[13px] font-bold shrink-0"
+              aria-label="Perfil"
+            >
+              E
+            </Link>
+          </div>
+        </header>
+
+        {/* Content — padding-bottom for mobile bottom nav + safe area */}
+        <main className="flex-1 min-w-0 pb-[calc(env(safe-area-inset-bottom)+80px)] lg:pb-0">
+          {children}
+        </main>
       </div>
 
-      {/* ============ Mobile Drawer ============ */}
+      {/* =============== Mobile Bottom Tab Bar =============== */}
+      <nav
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="grid grid-cols-4 h-[64px]">
+          {PRIMARY.map((n) => {
+            const Icon = n.icon;
+            const a = active(n.to);
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 relative transition-colors",
+                  a ? "text-primary" : "text-muted-foreground",
+                )}
+              >
+                {a && <span className="absolute top-0 h-[3px] w-10 rounded-b-full bg-primary" />}
+                <Icon className={cn("h-[22px] w-[22px] transition-transform", a && "scale-110")} strokeWidth={a ? 2.5 : 2} />
+                <span className="text-[10.5px] font-semibold">{n.label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 relative",
+              inSecondary ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            {inSecondary && <span className="absolute top-0 h-[3px] w-10 rounded-b-full bg-primary" />}
+            <MoreHorizontal className={cn("h-[22px] w-[22px]", inSecondary && "scale-110")} strokeWidth={inSecondary ? 2.5 : 2} />
+            <span className="text-[10.5px] font-semibold">Mais</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* =============== Mobile "Mais" bottom sheet =============== */}
       <AnimatePresence>
-        {open && (
+        {moreOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="absolute inset-0 bg-foreground/40"
-              onClick={() => setOpen(false)}
+              onClick={() => setMoreOpen(false)}
             />
-            <motion.aside
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="absolute inset-y-0 left-0 w-[80vw] max-w-xs bg-sidebar border-r border-sidebar-border flex flex-col"
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 34 }}
+              className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl border-t border-border overflow-hidden"
+              style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
             >
-              <div className="h-16 flex items-center justify-between border-b border-sidebar-border px-4 shrink-0">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-9 w-9 rounded-lg bg-primary grid place-items-center shrink-0">
-                    <Logo size={16} withWordmark={false} />
-                  </div>
-                  <div className="font-display text-sm font-semibold truncate">planilhafuturo</div>
-                </div>
+              <div className="pt-2 pb-1 grid place-items-center">
+                <div className="h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+              </div>
+              <div className="px-5 pt-3 pb-1 flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold">Mais</h2>
                 <button
-                  onClick={() => setOpen(false)}
-                  className="h-9 w-9 grid place-items-center rounded-md hover:bg-muted"
+                  onClick={() => setMoreOpen(false)}
+                  className="h-9 w-9 rounded-full bg-muted grid place-items-center"
                   aria-label="Fechar"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-              <nav className="flex-1 overflow-y-auto py-4 px-3">
-                {GROUPS.map((g) => {
-                  const items = NAV.filter((n) => n.group === g);
+
+              <div className="px-3 pt-2 pb-4 grid grid-cols-2 gap-2">
+                {SECONDARY.map((n) => {
+                  const Icon = n.icon;
+                  const a = active(n.to);
                   return (
-                    <div key={g} className="mb-5">
-                      <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                        {g}
+                    <Link
+                      key={n.to}
+                      to={n.to}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-2xl border transition-colors",
+                        a ? "border-primary bg-primary/5" : "border-border bg-background hover:bg-muted",
+                      )}
+                    >
+                      <div className={cn(
+                        "h-10 w-10 rounded-xl grid place-items-center shrink-0",
+                        a ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                      )}>
+                        <Icon className="h-5 w-5" />
                       </div>
-                      <div className="space-y-0.5">
-                        {items.map((n) => {
-                          const a = active(n.to);
-                          const Icon = n.icon;
-                          return (
-                            <Link
-                              key={n.to}
-                              to={n.to}
-                              className={cn("sidebar-item", a && "sidebar-item-active")}
-                            >
-                              <Icon className="h-[18px] w-[18px] shrink-0" />
-                              <span className="truncate">{n.label}</span>
-                            </Link>
-                          );
-                        })}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13px] font-semibold truncate">{n.label}</div>
+                        <div className="text-[11px] text-muted-foreground truncate">{n.hint}</div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
-              </nav>
-              <div className="border-t border-sidebar-border p-3 space-y-1">
-                <Link to="/config" className={cn("sidebar-item", active("/config") && "sidebar-item-active")}>
-                  <Settings className="h-[18px] w-[18px]" /> <span>Ajustes</span>
-                </Link>
-                <button onClick={logout} className="sidebar-item w-full text-left">
-                  <LogOut className="h-[18px] w-[18px]" /> <span>Sair</span>
+              </div>
+
+              <div className="border-t border-border px-3 py-3">
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-border text-sm font-semibold text-negative"
+                >
+                  <LogOut className="h-4 w-4" /> Sair da conta
                 </button>
               </div>
-            </motion.aside>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }
+

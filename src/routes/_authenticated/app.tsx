@@ -1,209 +1,313 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { selectAll } from "@/lib/db";
+import { supabase } from "@/integrations/supabase/client";
+import { computaMes, type GastoFixo, type Parcela, type Lancamento } from "@/lib/finance";
+import { MESES, MESES_ABREV, brl, isoDate } from "@/lib/format";
 import { Money } from "@/components/Money";
-import { KpiCard } from "@/components/KpiCard";
-import { PageHeader, PageBody } from "@/components/PageHeader";
-import { MESES } from "@/lib/format";
+import { useEffect } from "react";
+import { useSounds } from "@/hooks/useSounds";
 import {
-  DEMO_PROFILE, DEMO_GASTOS, DEMO_PARCELAS,
-  totaisPorPilar,
-} from "@/lib/demoData";
-import {
-  ArrowRight, ChevronLeft, ChevronRight,
-  Wallet, TrendingUp, TrendingDown, PiggyBank,
-  Receipt, CreditCard, Sparkles,
+  Plus, ArrowRight, TrendingUp, TrendingDown,
+  AlertTriangle, CheckCircle2, CalendarDays, Receipt,
+  CreditCard, Sparkles, PiggyBank,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard — planilhafuturo" },
-      { name: "description", content: "Seu mês em um olhar: renda, compromissos e sobra." },
-    ],
-  }),
-  component: DashboardPage,
+  head: () => ({ meta: [{ title: "Hoje — planilhafuturo" }] }),
+  component: HojePage,
 });
 
-function parcelasNoMesRef(y: number, m0: number) {
-  let s = 0;
-  for (const p of DEMO_PARCELAS) {
-    const dt = new Date(p.data + "T00:00:00");
-    const monthsAhead = (y - dt.getFullYear()) * 12 + (m0 - dt.getMonth());
-    if (monthsAhead < 0) continue;
-    const restantes = p.qtd_parcelas - (p.parcela_inicial - 1);
-    if (monthsAhead >= restantes) continue;
-    s += p.valor_total / p.qtd_parcelas;
-  }
-  return s;
-}
+const LS_KEY = "fluxo_lancamentos_v1";
 
-function gastosNoMes(_y: number, m0: number) {
-  let mensal = 0, anual = 0;
-  for (const g of DEMO_GASTOS) {
-    if (!g.ativo) continue;
-    if (g.frequencia === "mensal") mensal += g.valor;
-    else if (g.mes_anual && g.mes_anual - 1 === m0) anual += g.valor;
-  }
-  return mensal + anual;
-}
-
-function DashboardPage() {
-  const hoje = new Date();
-  const [offset, setOffset] = useState(0);
-  const mRef = new Date(hoje.getFullYear(), hoje.getMonth() + offset, 1);
-  const y = mRef.getFullYear();
-  const m0 = mRef.getMonth();
-
-  const renda = DEMO_PROFILE.renda_mensal;
-  const pilares = totaisPorPilar(DEMO_GASTOS);
-  const parc = useMemo(() => parcelasNoMesRef(y, m0), [y, m0]);
-  const fixos = gastosNoMes(y, m0);
-
-  const entradas = renda;
-  const saidas = fixos + parc;
-  const economias = Math.max(0, renda * 0.10);
-  const sobra = entradas - saidas - economias;
-  const compromissoPct = renda > 0 ? Math.min(100, (saidas / renda) * 100) : 0;
-
-  const mesLabel = `${MESES[m0]} · ${y}`;
-
-  const proximos6 = useMemo(() => {
-    return Array.from({ length: 6 }).map((_, i) => {
-      const d = new Date(y, m0 + i, 1);
-      const yi = d.getFullYear(); const mi = d.getMonth();
-      const rc = renda;
-      const sd = gastosNoMes(yi, mi) + parcelasNoMesRef(yi, mi);
-      const sob = rc - sd - economias;
-      return { label: MESES[mi].slice(0,3), value: sob };
+function useLancamentosLocal() {
+  const [list, setList] = useState<Lancamento[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch {}
+  }, [list]);
+  function upsert(data: string, tipo: string, valor: number) {
+    setList((prev) => {
+      const idx = prev.findIndex((l) => l.data === data && l.tipo === tipo);
+      if (idx >= 0) {
+        if (valor === 0) return prev.filter((_, i) => i !== idx);
+        const copy = [...prev]; copy[idx] = { ...copy[idx], valor };
+        return copy;
+      }
+      if (valor === 0) return prev;
+      return [...prev, { id: crypto.randomUUID(), data, tipo: tipo as any, valor }];
     });
-  }, [y, m0, renda, economias]);
-
-  const maxAbs = Math.max(1, ...proximos6.map(p => Math.abs(p.value)));
-
-  return (
-    <>
-      <PageBody>
-        <PageHeader
-          eyebrow="Visão geral"
-          title="Dashboard"
-          subtitle={`Resumo financeiro de ${mesLabel}`}
-          actions={
-            <div className="inline-flex items-center gap-1 bg-card border border-border rounded-md p-1 shadow-sm">
-              <button
-                onClick={() => setOffset(offset - 1)}
-                className="h-8 w-8 grid place-items-center rounded hover:bg-muted text-muted-foreground"
-                aria-label="Mês anterior"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <div className="px-3 text-sm font-semibold tabular-nums min-w-[130px] text-center">
-                {mesLabel}
-              </div>
-              <button
-                onClick={() => setOffset(offset + 1)}
-                className="h-8 w-8 grid place-items-center rounded hover:bg-muted text-muted-foreground"
-                aria-label="Próximo mês"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          }
-        />
-
-        {/* KPI grid */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <KpiCard label="Renda mensal" value={entradas} icon={TrendingUp} tone="primary" hint="Entrada prevista" />
-          <KpiCard label="Compromissos" value={saidas} icon={TrendingDown} tone="negative" hint={`${compromissoPct.toFixed(0)}% da renda`} />
-          <KpiCard label="Economias (meta 10%)" value={economias} icon={PiggyBank} tone="positive" hint="Reserva / investimento" />
-          <KpiCard
-            label="Sobra prevista"
-            value={sobra}
-            icon={Wallet}
-            tone={sobra >= 0 ? "positive" : "negative"}
-            hint={sobra >= 0 ? "Fica no verde" : "Reveja gastos"}
-          />
-        </div>
-
-        {/* Distribuição por pilar + Próximos 6 meses */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="hope-card p-5 lg:col-span-2">
-            <div className="flex items-baseline justify-between gap-2 mb-4">
-              <div>
-                <div className="eyebrow">Projeção</div>
-                <h3 className="font-display text-base font-semibold mt-1">Próximos 6 meses</h3>
-              </div>
-              <Link to="/fluxo" className="text-[12px] text-primary font-semibold inline-flex items-center gap-1 hover:underline">
-                Ver fluxo diário <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-6 gap-2 h-40 items-end">
-              {proximos6.map((p, i) => {
-                const h = (Math.abs(p.value) / maxAbs) * 100;
-                const positive = p.value >= 0;
-                return (
-                  <div key={i} className="flex flex-col items-center gap-1.5 h-full justify-end">
-                    <div className={`text-[10px] font-mono tabular-nums ${positive ? "text-positive" : "text-negative"}`}>
-                      <Money value={p.value} compact signed showSign />
-                    </div>
-                    <div className="w-full rounded-t-md relative overflow-hidden bg-muted/60" style={{ height: `${Math.max(6, h)}%` }}>
-                      <div className={`absolute inset-0 ${positive ? "bg-primary/80" : "bg-negative/80"}`} />
-                    </div>
-                    <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{p.label}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="hope-card p-5">
-            <div className="eyebrow">Alocação</div>
-            <h3 className="font-display text-base font-semibold mt-1 mb-4">Pilares do mês</h3>
-            <PilarBar label="Sobrevivência" value={pilares.S} total={renda} tone="primary" />
-            <PilarBar label="Proteção"       value={pilares.P} total={renda} tone="positive" />
-            <PilarBar label="Liberdade"      value={pilares.L} total={renda} tone="warning" />
-          </div>
-        </div>
-
-        {/* Quick nav */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <QuickCard to="/gastos"        icon={Receipt}     label="Gastos fixos" hint="Contas recorrentes" />
-          <QuickCard to="/parcelas"      icon={CreditCard}  label="Parcelas"      hint="Compras no cartão" />
-          <QuickCard to="/desejos"       icon={Sparkles}    label="Desejos"       hint="Metas e caixinhas" />
-        </div>
-      </PageBody>
-    </>
-  );
+  }
+  return { list, upsert };
 }
 
-function PilarBar({ label, value, total, tone }: { label: string; value: number; total: number; tone: "primary" | "positive" | "warning" }) {
-  const pct = total > 0 ? Math.min(100, (value / total) * 100) : 0;
-  const barColor = tone === "primary" ? "bg-primary" : tone === "positive" ? "bg-positive" : "bg-warning";
+function HojePage() {
+  const { playSound } = useSounds();
+  const today = new Date();
+  const y = today.getFullYear();
+  const m0 = today.getMonth();
+  const dToday = today.getDate();
+
+  const profile = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      try {
+        const { data: u } = await supabase.auth.getUser();
+        if (!u.user) return null;
+        const { data } = await supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle();
+        return data;
+      } catch { return null; }
+    },
+  });
+  const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: async () => { try { return await selectAll("gastos_fixos"); } catch { return []; } } });
+  const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: async () => { try { return await selectAll("parcelas"); } catch { return []; } } });
+  const { list: lanc, upsert } = useLancamentosLocal();
+
+  const saldoInicial = Number(profile.data?.saldo_inicial ?? 0);
+  const nome = (profile.data?.nome ?? "").split(" ")[0] || "você";
+
+  // 6 meses de projeção
+  const seis = useMemo(() => {
+    const g = (gastos.data ?? []) as GastoFixo[];
+    const p = (parcelas.data ?? []) as unknown as Parcela[];
+    let carry = saldoInicial;
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(y, m0 + i, 1);
+      const yy = d.getFullYear(); const mm = d.getMonth();
+      const dias = computaMes(yy, mm, carry, g, p, lanc);
+      carry = dias.length ? dias[dias.length - 1].saldo : carry;
+      return { y: yy, m: mm, dias, saldoFim: carry };
+    });
+  }, [gastos.data, parcelas.data, lanc, saldoInicial, y, m0]);
+
+  const mesAtual = seis[0];
+  const diaHoje = mesAtual?.dias.find((d) => d.dia === dToday) ?? mesAtual?.dias[0];
+  const saldoHoje = diaHoje?.saldo ?? saldoInicial;
+  const saldoFimMes = mesAtual?.saldoFim ?? saldoInicial;
+
+  const totalEntradasMes = mesAtual?.dias.reduce((a, d) => a + d.entradaFixa + d.entradaDiaria, 0) ?? 0;
+  const totalSaidasMes = mesAtual?.dias.reduce((a, d) => a + d.saidaFixa + d.saidaDiaria, 0) ?? 0;
+
+  const primeiroNegativo = seis.find((mm) => mm.saldoFim < 0);
+  const ultimoPositivo = [...seis].reverse().find((mm) => mm.saldoFim >= 0);
+
+  // quick add estado
+  const [qaOpen, setQaOpen] = useState<null | "in" | "out">(null);
+  const [qaValor, setQaValor] = useState("");
+
+  function commitQuick() {
+    const n = Number(qaValor.replace(/\./g, "").replace(",", ".")) || 0;
+    if (n <= 0 || !diaHoje) { setQaOpen(null); setQaValor(""); return; }
+    const tipo = qaOpen === "in" ? "entrada_diaria" : "saida_diaria";
+    const atual = qaOpen === "in" ? diaHoje.entradaDiaria : diaHoje.saidaDiaria;
+    upsert(diaHoje.data, tipo, atual + n);
+    playSound(qaOpen === "in" ? "kaching" : "pop");
+    setQaOpen(null); setQaValor("");
+  }
+
   return (
-    <div className="mb-3 last:mb-0">
-      <div className="flex items-baseline justify-between gap-2 mb-1">
-        <span className="text-[13px] font-medium">{label}</span>
-        <span className="text-[12px] tabular-nums text-muted-foreground">
-          <Money value={value} /> <span className="text-[10px]">· {pct.toFixed(0)}%</span>
-        </span>
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 lg:pt-8 lg:px-6 lg:space-y-6">
+      {/* Saudação */}
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[13px] text-muted-foreground">Olá, {nome}</p>
+          <h1 className="font-display text-xl font-bold tracking-tight truncate">
+            {today.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+          </h1>
+        </div>
       </div>
-      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-        <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
-      </div>
+
+      {/* HERO — saldo atual */}
+      <section className="hope-card p-5 lg:p-6 relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+        <div className="relative">
+          <div className="eyebrow">Saldo hoje</div>
+          <div className={`font-display text-[40px] lg:text-5xl font-bold tracking-tight leading-none mt-2 tabular-nums ${saldoHoje < 0 ? "text-negative" : "text-foreground"}`}>
+            <Money value={saldoHoje} />
+          </div>
+          <div className="mt-3 flex items-center gap-2 text-[12px]">
+            <span className={`inline-flex items-center gap-1 font-semibold ${saldoFimMes < 0 ? "text-negative" : "text-positive"}`}>
+              {saldoFimMes < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
+              <Money value={saldoFimMes} />
+            </span>
+            <span className="text-muted-foreground">previsto fim de {MESES[m0].toLowerCase()}</span>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setQaOpen("in")}
+            className="h-12 rounded-xl bg-positive-soft text-positive font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          >
+            <Plus className="h-4 w-4" /> Entrada
+          </button>
+          <button
+            onClick={() => setQaOpen("out")}
+            className="h-12 rounded-xl bg-negative-soft text-negative font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          >
+            <Plus className="h-4 w-4" /> Saída
+          </button>
+        </div>
+      </section>
+
+      {/* Alertas */}
+      {primeiroNegativo && (
+        <Link to="/fluxo" className="hope-card p-4 flex items-center gap-3 border-l-4 !border-l-warning">
+          <div className="h-10 w-10 rounded-xl bg-warning-soft grid place-items-center shrink-0">
+            <AlertTriangle className="h-5 w-5 text-warning" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold truncate">Fica no vermelho em {MESES_ABREV[primeiroNegativo.m]}</div>
+            <div className="text-[11px] text-muted-foreground truncate">
+              Saldo previsto: <Money value={primeiroNegativo.saldoFim} className="text-negative font-semibold" />
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </Link>
+      )}
+      {!primeiroNegativo && ultimoPositivo && (
+        <div className="hope-card p-4 flex items-center gap-3 border-l-4 !border-l-positive">
+          <div className="h-10 w-10 rounded-xl bg-positive-soft grid place-items-center shrink-0">
+            <CheckCircle2 className="h-5 w-5 text-positive" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold">Fluxo saudável nos próximos 6 meses</div>
+            <div className="text-[11px] text-muted-foreground truncate">Continua positivo até {MESES[ultimoPositivo.m]}.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Movimento do mês */}
+      <section className="hope-card p-5">
+        <div className="flex items-baseline justify-between mb-3">
+          <div>
+            <div className="eyebrow">Movimento</div>
+            <h3 className="font-display text-base font-semibold mt-0.5">{MESES[m0]}</h3>
+          </div>
+          <Link to="/fluxo" className="text-[12px] font-semibold text-primary inline-flex items-center gap-1">
+            Ver fluxo <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-positive-soft p-3">
+            <div className="flex items-center gap-1.5 text-positive text-[11px] font-semibold">
+              <TrendingUp className="h-3.5 w-3.5" /> Entradas
+            </div>
+            <div className="mt-1 font-display text-lg font-bold text-positive tabular-nums truncate">
+              <Money value={totalEntradasMes} />
+            </div>
+          </div>
+          <div className="rounded-xl bg-negative-soft p-3">
+            <div className="flex items-center gap-1.5 text-negative text-[11px] font-semibold">
+              <TrendingDown className="h-3.5 w-3.5" /> Saídas
+            </div>
+            <div className="mt-1 font-display text-lg font-bold text-negative tabular-nums truncate">
+              <Money value={totalSaidasMes} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6 meses strip */}
+      <section className="hope-card p-5">
+        <div className="flex items-baseline justify-between mb-3">
+          <div>
+            <div className="eyebrow">Projeção</div>
+            <h3 className="font-display text-base font-semibold mt-0.5">Próximos 6 meses</h3>
+          </div>
+        </div>
+        <div className="grid grid-cols-6 gap-1.5 items-end h-28">
+          {seis.map((mm, i) => {
+            const maxAbs = Math.max(1, ...seis.map((s) => Math.abs(s.saldoFim)));
+            const h = Math.max(6, (Math.abs(mm.saldoFim) / maxAbs) * 100);
+            const pos = mm.saldoFim >= 0;
+            return (
+              <div key={i} className="flex flex-col items-center gap-1 h-full justify-end">
+                <div className={`w-full rounded-t-md ${pos ? "bg-primary" : "bg-negative"} transition-all`} style={{ height: `${h}%` }} />
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {MESES_ABREV[mm.m]}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3 flex justify-between text-[10px] text-muted-foreground">
+          <span>Hoje</span>
+          <span>+6 meses</span>
+        </div>
+      </section>
+
+      {/* Atalhos */}
+      <section className="grid grid-cols-2 gap-2">
+        <ShortLink to="/gastos"        icon={Receipt}    label="Gastos fixos" />
+        <ShortLink to="/parcelas"      icon={CreditCard} label="Parcelas" />
+        <ShortLink to="/desejos"       icon={Sparkles}   label="Desejos" />
+        <ShortLink to="/investimentos" icon={PiggyBank}  label="Investimentos" />
+      </section>
+
+      {/* Quick-add modal */}
+      {qaOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center" onClick={() => { setQaOpen(null); setQaValor(""); }}>
+          <div className="absolute inset-0 bg-foreground/40" />
+          <div
+            className="relative w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl border border-border p-5 space-y-4"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="grid place-items-center">
+              <div className="h-1.5 w-10 rounded-full bg-muted-foreground/30 sm:hidden" />
+            </div>
+            <div>
+              <div className="eyebrow">{qaOpen === "in" ? "Nova entrada" : "Nova saída"}</div>
+              <h3 className="font-display text-lg font-bold mt-0.5">
+                Hoje, {dToday} de {MESES[m0].toLowerCase()}
+              </h3>
+            </div>
+            <div className={`flex items-center gap-2 h-16 px-4 rounded-2xl border-2 ${qaOpen === "in" ? "border-positive bg-positive-soft" : "border-negative bg-negative-soft"}`}>
+              <span className={`text-lg font-mono font-bold ${qaOpen === "in" ? "text-positive" : "text-negative"}`}>R$</span>
+              <input
+                autoFocus
+                inputMode="decimal"
+                value={qaValor}
+                onChange={(e) => setQaValor(e.target.value.replace(/[^\d.,]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && commitQuick()}
+                placeholder="0,00"
+                className={`flex-1 bg-transparent outline-none text-2xl font-mono font-bold tabular-nums ${qaOpen === "in" ? "text-positive" : "text-negative"}`}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { setQaOpen(null); setQaValor(""); }} className="h-12 rounded-xl border border-border text-sm font-semibold">
+                Cancelar
+              </button>
+              <button
+                onClick={commitQuick}
+                className={`h-12 rounded-xl text-white font-bold ${qaOpen === "in" ? "bg-positive" : "bg-negative"}`}
+              >
+                Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function QuickCard({ to, icon: Icon, label, hint }: { to: string; icon: any; label: string; hint: string }) {
+function ShortLink({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
   return (
-    <Link to={to} className="hope-card p-4 flex items-center gap-3 group">
-      <div className="h-10 w-10 rounded-lg bg-primary/10 grid place-items-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-        <Icon className="h-5 w-5 text-primary group-hover:text-primary-foreground" />
+    <Link to={to} className="hope-card p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+      <div className="h-10 w-10 rounded-xl bg-primary/10 grid place-items-center shrink-0">
+        <Icon className="h-5 w-5 text-primary" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold truncate">{label}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{hint}</div>
+        <div className="text-[13px] font-semibold truncate">{label}</div>
       </div>
-      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
     </Link>
   );
 }
