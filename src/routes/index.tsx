@@ -350,7 +350,7 @@ function Pricing() {
         "Selo de membro fundador",
       ],
     },
-  ] as const;
+  ] as Array<{ name: string; price: string; period: string; priceNote: string; cta: string; features: readonly string[]; badge?: string; muted?: readonly string[] }>;
   return (
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
