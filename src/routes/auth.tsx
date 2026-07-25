@@ -32,8 +32,52 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
+  function friendlyError(raw: string, isSignup: boolean): string {
+    const m = raw.toLowerCase();
+    // Rate limit
+    if (m.includes("rate") || m.includes("too many") || m.includes("429"))
+      return "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.";
+    // E-mail
+    if (m.includes("invalid email") || m.includes("email address") && m.includes("invalid"))
+      return "E-mail inválido. Confira se digitou corretamente.";
+    if (m.includes("email not confirmed"))
+      return "Você precisa confirmar seu e-mail antes de entrar. Cheque sua caixa (e o spam).";
+    if (m.includes("user already registered") || m.includes("already registered") || m.includes("already exists"))
+      return "Este e-mail já tem conta. Tente entrar em vez de criar.";
+    // Senha
+    if (m.includes("password should be at least") || m.includes("password_too_short") || m.includes("weak password"))
+      return "Senha muito fraca. Use pelo menos 6 caracteres — misture letras e números.";
+    if (m.includes("password") && m.includes("leaked"))
+      return "Essa senha vazou em algum site conhecido. Escolha outra por segurança.";
+    // Credenciais
+    if (m.includes("invalid login") || m.includes("invalid credentials") || m.includes("invalid_grant"))
+      return "E-mail ou senha incorretos.";
+    if (m.includes("user not found") || m.includes("no user"))
+      return "Não encontramos uma conta com esse e-mail.";
+    // Rede
+    if (m.includes("network") || m.includes("failed to fetch"))
+      return "Sem conexão com o servidor. Verifique sua internet e tente de novo.";
+    // Provider
+    if (m.includes("unsupported provider") || m.includes("provider is not enabled"))
+      return "Este método de login ainda não está disponível.";
+    // Genérico com contexto
+    return isSignup
+      ? "Não foi possível criar sua conta. Revise os dados e tente novamente."
+      : "Não foi possível entrar. Tente novamente em instantes.";
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    // Validação leve client-side com feedback específico
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailOk) {
+      toast.error("Digite um e-mail válido — ex.: você@email.com");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "login") {
@@ -42,7 +86,7 @@ function AuthPage() {
         toast.success("Bem-vindo de volta!");
         nav({ to: "/app" });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -51,19 +95,22 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Se o e-mail for válido, você receberá um link de confirmação.");
-        nav({ to: "/onboarding" });
+        // Supabase retorna user sem identities quando o e-mail já existe
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          toast.error("Este e-mail já tem conta. Tente entrar em vez de criar.");
+          setMode("login");
+          return;
+        }
+        if (data.session) {
+          toast.success("Conta criada! Bem-vindo.");
+          nav({ to: "/onboarding" });
+        } else {
+          toast.success("Enviamos um link de confirmação para o seu e-mail.");
+          nav({ to: "/onboarding" });
+        }
       }
     } catch (err: any) {
-      // Mensagem genérica para evitar enumeração de usuários / vazamento de detalhes
-      const msg = String(err?.message ?? "").toLowerCase();
-      if (msg.includes("rate") || msg.includes("too many")) {
-        toast.error("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
-      } else if (mode === "login") {
-        toast.error("Credenciais inválidas.");
-      } else {
-        toast.error("Não foi possível concluir o cadastro. Verifique os dados e tente novamente.");
-      }
+      toast.error(friendlyError(String(err?.message ?? ""), mode === "signup"));
     } finally {
       setLoading(false);
     }
