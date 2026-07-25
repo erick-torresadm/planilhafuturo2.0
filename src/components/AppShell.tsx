@@ -4,34 +4,38 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, CalendarDays, Receipt, CreditCard,
-  Sparkles, Wallet, ListChecks, Settings, LogOut, Menu, X, Bell, Zap, Search, Plus,
+  Sparkles, Wallet, ListChecks, Settings, LogOut, Menu, X, Bell, Zap, Search,
+  ChevronsLeft, ChevronsRight,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 const NAV = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, short: "Home" },
-  { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, short: "Fluxo" },
-  { to: "/produtividade", label: "Produtividade", icon: Zap, short: "Foco" },
-  { to: "/gastos", label: "Gastos Fixos", icon: Receipt, short: "Gastos" },
-  { to: "/parcelas", label: "Parcelas", icon: CreditCard, short: "Parc." },
-  { to: "/desejos", label: "Desejos", icon: Sparkles, short: "Desejos" },
-  { to: "/investimentos", label: "Investimentos", icon: Wallet, short: "Invest." },
-  { to: "/tarefas", label: "Tarefas", icon: ListChecks, short: "Tarefas" },
-  { to: "/config", label: "Ajustes", icon: Settings, short: "Ajustes" },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, group: "Principal" },
+  { to: "/fluxo", label: "Fluxo Diário", icon: CalendarDays, group: "Principal" },
+  { to: "/gastos", label: "Gastos Fixos", icon: Receipt, group: "Principal" },
+  { to: "/parcelas", label: "Parcelas", icon: CreditCard, group: "Principal" },
+  { to: "/investimentos", label: "Investimentos", icon: Wallet, group: "Patrimônio" },
+  { to: "/desejos", label: "Desejos & Metas", icon: Sparkles, group: "Patrimônio" },
+  { to: "/tarefas", label: "Tarefas", icon: ListChecks, group: "Rotina" },
+  { to: "/produtividade", label: "Produtividade", icon: Zap, group: "Rotina" },
 ] as const;
 
-// Desktop top pill nav — 4 principais
-const TOP_PILLS = [NAV[0], NAV[1], NAV[2], NAV[3]];
-// Bottom nav mobile
-const BOTTOM = [NAV[0], NAV[1], NAV[2], NAV[3], NAV[7]];
+const GROUPS = ["Principal", "Patrimônio", "Rotina"] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("shell-collapsed") === "1";
+  });
 
   useEffect(() => setOpen(false), [loc.pathname]);
+  useEffect(() => {
+    try { localStorage.setItem("shell-collapsed", collapsed ? "1" : "0"); } catch {}
+  }, [collapsed]);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -42,168 +46,159 @@ export function AppShell({ children }: { children: ReactNode }) {
     to === "/" ? loc.pathname === "/" : loc.pathname === to || loc.pathname.startsWith(to + "/");
   const current = NAV.find((n) => active(n.to)) ?? NAV[0];
 
+  const sidebarWidth = collapsed ? 72 : 248;
+
   return (
-    <div className="min-h-screen w-full bg-background">
-      {/* ============ Desktop icon rail ============ */}
-      <aside className="hidden lg:flex fixed top-6 bottom-6 left-6 z-40 w-16 flex-col items-center py-4 rounded-3xl bg-card border border-border shadow-[0_10px_40px_-20px_rgba(0,0,0,0.10)]">
-        <Link to="/app" className="h-10 w-10 rounded-2xl bg-foreground grid place-items-center mb-4" aria-label="Início">
-          <Logo size={18} withWordmark={false} />
-        </Link>
-        <nav className="flex-1 flex flex-col items-center gap-1.5 w-full px-2 overflow-y-auto no-scrollbar">
-          {NAV.map((n) => {
-            const a = active(n.to);
-            const Icon = n.icon;
+    <div className="min-h-screen w-full bg-background text-foreground">
+      {/* ============ Desktop Sidebar (Hope-style) ============ */}
+      <aside
+        className="hidden lg:flex fixed top-0 bottom-0 left-0 z-40 flex-col bg-sidebar border-r border-sidebar-border transition-[width] duration-200"
+        style={{ width: sidebarWidth }}
+      >
+        {/* Logo */}
+        <div className={cn("h-16 flex items-center border-b border-sidebar-border shrink-0", collapsed ? "justify-center px-2" : "px-5 gap-2.5")}>
+          <div className="h-9 w-9 rounded-lg bg-primary grid place-items-center shrink-0">
+            <Logo size={16} withWordmark={false} />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <div className="font-display text-[15px] font-semibold tracking-tight truncate">planilhafuturo</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground -mt-0.5">Sistema financeiro</div>
+            </div>
+          )}
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 no-scrollbar">
+          {GROUPS.map((g) => {
+            const items = NAV.filter((n) => n.group === g);
             return (
-              <Link
-                key={n.to}
-                to={n.to}
-                title={n.label}
-                className={cn(
-                  "relative h-11 w-11 grid place-items-center rounded-2xl transition-all",
-                  a
-                    ? "bg-primary text-primary-foreground shadow-[0_6px_18px_-6px] shadow-primary/60"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              <div key={g} className="mb-5">
+                {!collapsed && (
+                  <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+                    {g}
+                  </div>
                 )}
-              >
-                <Icon className="h-[18px] w-[18px]" />
-              </Link>
+                <div className="space-y-0.5">
+                  {items.map((n) => {
+                    const a = active(n.to);
+                    const Icon = n.icon;
+                    return (
+                      <Link
+                        key={n.to}
+                        to={n.to}
+                        title={collapsed ? n.label : undefined}
+                        className={cn(
+                          "sidebar-item",
+                          a && "sidebar-item-active",
+                          collapsed && "justify-center px-2",
+                        )}
+                      >
+                        <Icon className="h-[18px] w-[18px] shrink-0" />
+                        {!collapsed && <span className="truncate">{n.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </nav>
-        <button
-          onClick={logout}
-          title="Sair"
-          className="h-11 w-11 grid place-items-center rounded-2xl text-muted-foreground hover:bg-muted hover:text-foreground transition"
-        >
-          <LogOut className="h-[18px] w-[18px]" />
-        </button>
+
+        {/* Footer actions */}
+        <div className="border-t border-sidebar-border p-3 space-y-1">
+          <Link
+            to="/config"
+            title={collapsed ? "Ajustes" : undefined}
+            className={cn("sidebar-item", active("/config") && "sidebar-item-active", collapsed && "justify-center px-2")}
+          >
+            <Settings className="h-[18px] w-[18px] shrink-0" />
+            {!collapsed && <span>Ajustes</span>}
+          </Link>
+          <button
+            onClick={logout}
+            title={collapsed ? "Sair" : undefined}
+            className={cn("sidebar-item w-full text-left", collapsed && "justify-center px-2")}
+          >
+            <LogOut className="h-[18px] w-[18px] shrink-0" />
+            {!collapsed && <span>Sair</span>}
+          </button>
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            className={cn("sidebar-item w-full text-left text-muted-foreground/70", collapsed && "justify-center px-2")}
+          >
+            {collapsed ? <ChevronsRight className="h-[18px] w-[18px]" /> : <><ChevronsLeft className="h-[18px] w-[18px] shrink-0" /><span>Recolher</span></>}
+          </button>
+        </div>
       </aside>
 
       {/* ============ Main column ============ */}
-      <div className="lg:pl-28 lg:pr-6 min-h-screen flex flex-col">
-        {/* Topbar — search + pills + actions */}
-        <header className="sticky top-0 z-30 pt-4 pb-2 bg-background/85 backdrop-blur-lg">
-          <div className="flex items-center gap-2 lg:gap-3">
-            {/* Mobile: burger + brand */}
-            <button
-              onClick={() => setOpen(true)}
-              className="lg:hidden shrink-0 grid place-items-center h-10 w-10 rounded-2xl bg-card border border-border"
-              aria-label="Abrir menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+      <div className="flex flex-col min-h-screen" style={{ paddingLeft: 0, marginLeft: 0 }}>
+        <style>{`@media (min-width: 1024px) { .app-main { padding-left: ${sidebarWidth}px; } }`}</style>
+        <div className="app-main flex flex-col min-h-screen">
+          {/* Topbar */}
+          <header className="sticky top-0 z-30 h-16 bg-card/95 backdrop-blur border-b border-border">
+            <div className="h-full flex items-center gap-2 sm:gap-3 px-3 sm:px-6">
+              {/* Mobile burger */}
+              <button
+                onClick={() => setOpen(true)}
+                className="lg:hidden shrink-0 h-10 w-10 grid place-items-center rounded-md hover:bg-muted text-foreground"
+                aria-label="Abrir menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
-            {/* Search — grande e branco arredondado tipo Monetra */}
-            <label className="flex-1 min-w-0 flex items-center gap-2 h-11 lg:h-12 px-4 rounded-2xl bg-card border border-border">
-              <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-              <input
-                placeholder="Buscar ou digitar um comando"
-                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-              />
-              <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">⌘K</kbd>
-            </label>
+              {/* Page title (desktop) */}
+              <div className="hidden lg:flex items-baseline gap-2 min-w-0">
+                <h1 className="font-display text-lg font-semibold tracking-tight truncate">{current.label}</h1>
+                <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground truncate">
+                  · {current.group}
+                </span>
+              </div>
 
-            {/* Desktop pills */}
-            <nav className="hidden xl:flex items-center gap-1 h-12 px-1.5 rounded-2xl bg-card border border-border">
-              {TOP_PILLS.map((n) => {
-                const a = active(n.to);
-                return (
-                  <Link
-                    key={n.to}
-                    to={n.to}
-                    className={cn(
-                      "relative h-9 px-3.5 grid place-items-center rounded-xl text-xs font-semibold transition-colors",
-                      a ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {a && (
-                      <motion.span
-                        layoutId="top-pill"
-                        className="absolute inset-0 rounded-xl bg-foreground/[0.06]"
-                        transition={{ type: "spring", stiffness: 320, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative">{n.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+              {/* Mobile brand */}
+              <Link to="/app" className="lg:hidden flex items-center gap-2 min-w-0">
+                <div className="h-8 w-8 rounded-md bg-primary grid place-items-center shrink-0">
+                  <Logo size={14} withWordmark={false} />
+                </div>
+                <span className="font-display text-sm font-semibold truncate">planilhafuturo</span>
+              </Link>
 
-            {/* Create button — pill lime-mint */}
-            <button
-              className="hidden sm:inline-flex h-11 lg:h-12 items-center gap-1.5 px-4 rounded-2xl bg-primary text-primary-foreground text-sm font-bold hover:brightness-95 transition shadow-[0_8px_22px_-10px] shadow-primary/70"
-              onClick={() => nav({ to: "/gastos" })}
-            >
-              <Plus className="h-4 w-4" /> Novo
-            </button>
+              <div className="flex-1" />
 
-            {/* Actions cluster */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button className="grid place-items-center h-11 w-11 rounded-2xl bg-card border border-border hover:bg-muted transition" aria-label="Notificações">
-                <Bell className="h-4 w-4" />
-                <span className="absolute mt-[-14px] ml-[14px] h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
+              {/* Search */}
+              <label className="hidden md:flex items-center gap-2 h-9 w-72 px-3 rounded-md bg-muted/60 border border-border text-sm">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  placeholder="Buscar…"
+                  className="flex-1 min-w-0 bg-transparent outline-none placeholder:text-muted-foreground"
+                />
+                <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-background border border-border text-muted-foreground">⌘K</kbd>
+              </label>
+
+              {/* Actions */}
+              <button className="relative h-9 w-9 grid place-items-center rounded-md hover:bg-muted text-foreground/70" aria-label="Notificações">
+                <Bell className="h-[18px] w-[18px]" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
               </button>
               <Link
                 to="/config"
-                className="h-11 w-11 rounded-2xl bg-foreground text-primary grid place-items-center text-sm font-bold hover:opacity-90 transition"
+                className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-xs font-bold"
                 aria-label="Perfil"
               >
                 E
               </Link>
             </div>
-          </div>
+          </header>
 
-          {/* Section title breadcrumb (desktop) */}
-          <div className="hidden lg:flex items-baseline gap-3 mt-4 px-1">
-            <h1 className="font-display text-2xl font-semibold tracking-tight">{current.label}</h1>
-            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-              · planilhafuturo
-            </span>
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 min-w-0 pt-2 pb-32 lg:pb-8">
-          {children}
-        </main>
+          {/* Content */}
+          <main className="flex-1 min-w-0">
+            {children}
+          </main>
+        </div>
       </div>
 
-      {/* ============ Floating Bottom Nav (mobile/tablet) ============ */}
-      <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-3 pt-2 pointer-events-none"
-        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-      >
-        <div className="pointer-events-auto mx-auto max-w-md rounded-[28px] bg-card border border-border shadow-[0_20px_50px_-15px_rgba(0,0,0,0.18)]">
-          <div className="grid grid-cols-5">
-            {BOTTOM.map((n) => {
-              const a = active(n.to);
-              const Icon = n.icon;
-              return (
-                <Link
-                  key={n.to}
-                  to={n.to}
-                  className={cn(
-                    "relative flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-semibold",
-                    a ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "relative grid place-items-center h-9 w-11 rounded-2xl transition-all",
-                      a ? "bg-primary text-primary-foreground" : "",
-                    )}
-                  >
-                    <Icon className="h-[18px] w-[18px]" />
-                  </div>
-                  <span className="truncate max-w-[60px]">{n.short}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </nav>
-
-      {/* ============ Mobile off-canvas ============ */}
+      {/* ============ Mobile Drawer ============ */}
       <AnimatePresence>
         {open && (
           <div className="lg:hidden fixed inset-0 z-50">
@@ -211,8 +206,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              transition={{ duration: 0.18 }}
+              className="absolute inset-0 bg-foreground/40"
               onClick={() => setOpen(false)}
             />
             <motion.aside
@@ -220,53 +215,59 @@ export function AppShell({ children }: { children: ReactNode }) {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="absolute inset-y-3 left-3 w-[85vw] max-w-xs rounded-3xl bg-card border border-border shadow-2xl p-4 flex flex-col"
+              className="absolute inset-y-0 left-0 w-[80vw] max-w-xs bg-sidebar border-r border-sidebar-border flex flex-col"
             >
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="h-10 w-10 rounded-2xl bg-foreground grid place-items-center shrink-0">
-                    <Logo size={18} withWordmark={false} />
+              <div className="h-16 flex items-center justify-between border-b border-sidebar-border px-4 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-9 w-9 rounded-lg bg-primary grid place-items-center shrink-0">
+                    <Logo size={16} withWordmark={false} />
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-display text-base truncate">planilhafuturo</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Finanças</div>
-                  </div>
+                  <div className="font-display text-sm font-semibold truncate">planilhafuturo</div>
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="shrink-0 grid place-items-center h-9 w-9 rounded-xl hover:bg-muted transition"
+                  className="h-9 w-9 grid place-items-center rounded-md hover:bg-muted"
                   aria-label="Fechar"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <nav className="flex-1 space-y-1 overflow-y-auto -mx-1 px-1">
-                {NAV.map((n) => {
-                  const a = active(n.to);
-                  const Icon = n.icon;
+              <nav className="flex-1 overflow-y-auto py-4 px-3">
+                {GROUPS.map((g) => {
+                  const items = NAV.filter((n) => n.group === g);
                   return (
-                    <Link
-                      key={n.to}
-                      to={n.to}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-2xl text-sm transition",
-                        a
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "hover:bg-muted text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{n.label}</span>
-                    </Link>
+                    <div key={g} className="mb-5">
+                      <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+                        {g}
+                      </div>
+                      <div className="space-y-0.5">
+                        {items.map((n) => {
+                          const a = active(n.to);
+                          const Icon = n.icon;
+                          return (
+                            <Link
+                              key={n.to}
+                              to={n.to}
+                              className={cn("sidebar-item", a && "sidebar-item-active")}
+                            >
+                              <Icon className="h-[18px] w-[18px] shrink-0" />
+                              <span className="truncate">{n.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </nav>
-              <button
-                onClick={logout}
-                className="mt-4 flex items-center gap-2 px-3 py-3 rounded-2xl text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition"
-              >
-                <LogOut className="h-4 w-4" /> Sair
-              </button>
+              <div className="border-t border-sidebar-border p-3 space-y-1">
+                <Link to="/config" className={cn("sidebar-item", active("/config") && "sidebar-item-active")}>
+                  <Settings className="h-[18px] w-[18px]" /> <span>Ajustes</span>
+                </Link>
+                <button onClick={logout} className="sidebar-item w-full text-left">
+                  <LogOut className="h-[18px] w-[18px]" /> <span>Sair</span>
+                </button>
+              </div>
             </motion.aside>
           </div>
         )}

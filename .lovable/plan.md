@@ -1,106 +1,132 @@
-## Redesign da Landing Page — Fintech Dark / Motion-heavy
+# Redesign do app — Hope UI + Planilha
 
-Vou reconstruir a `/` (e as seções compartilhadas) com a cara de uma fintech moderna tipo Stripe/Ramp/Mercury/Linear, mantendo escopo restrito à landing page (produto interno em `/app` fica intacto).
+## Escopo
+- **Manter**: Landing (`/`, `/pv2`, `/docs`, `/termos`, `/privacidade`, `/cookies`), banco Supabase, `src/lib/finance.ts`, `src/lib/demoData.ts`, `src/lib/db.ts`, `src/lib/format.ts`, auth (`/auth`, `_authenticated/route.tsx`), hooks (`useSounds`, `useAuth`), chatbot.
+- **Refazer do zero**: `AppShell`, todas as rotas em `src/routes/_authenticated/*`, componentes de UI internos (`MoneyInput`, `SheetCell`, `Money`, `DataView`), tokens de design em `src/styles.css`.
 
-### 1. Design tokens (src/styles.css)
+## Direção visual (Hope UI clássico)
 
-Paleta **Neon Mint Dark** aplicada só à LP via classe `.lp-dark` no wrapper (não muda o produto):
-- `--lp-bg: #05100a` (quase preto, tinta verde)
-- `--lp-surface: #0d1b2a`
-- `--lp-surface-2: #1b4332`
-- `--lp-border: rgba(115,255,184,0.12)`
-- `--lp-primary: #2dd4a8`
-- `--lp-primary-glow: #73ffb8`
-- `--lp-text: #e6faf1`
-- `--lp-muted: #7a9088`
-- Gradientes: `--lp-gradient-mint`, `--lp-gradient-glow`, `--lp-noise` (grão sutil).
+Referência: iqonicdesignofficial/hope-ui-design-system — sidebar branca, topbar limpo, cards com sombra suave, azul primário + verde sucesso.
 
-### 2. Tipografia (fintech tech moderna)
+### Tokens (`src/styles.css`)
+- Fundo app: `#f5f7fb` (cinza-azulado bem claro)
+- Sidebar/cards: `#ffffff` com `shadow: 0 4px 24px rgba(15,23,42,0.06)`
+- Bordas: `#e6eaf2`
+- Primário: `#3a57e8` (azul Hope) + hover `#2f47c4`
+- Sucesso/positivo: `#1aa053`
+- Aviso: `#f16a1b`
+- Negativo: `#c03221`
+- Texto: `#232d42` / muted `#8a92a6`
+- Radius padrão: `10px` (cards `16px`)
+- Sombra hover suave, transições 150ms
 
-Pesquisei o padrão que Vercel/Linear/Ramp/Stripe usam. Vou combinar:
-- **Headings:** `Space Grotesk` (geométrica, tech, muito usada em fintech 2024–2026)
-- **Body:** `Inter` (já carregado, neutro)
-- **Números/dados:** `JetBrains Mono` para preços, KPIs, contadores animados — reforça o ar terminal/dados.
+### Tipografia
+- Headings: **JetBrains Mono** (peso 600/700) — cara de planilha/terminal
+- Body/UI: **Work Sans** (400/500/600)
+- Números financeiros: `font-variant-numeric: tabular-nums` sempre
+- Carregadas via `<link>` em `__root.tsx`
 
-Fontes carregadas via `<link>` em `__root.tsx` (regra Tailwind v4).
+### Densidade
+- App shell e dashboard: **espaçada moderna** (padding 24-32px, cards altos)
+- Planilha (`/fluxo`, `/gastos`, `/parcelas`): mantém `sheet-grid` denso para caber o mês inteiro
 
-### 3. Estrutura Full-width Sections
+## AppShell novo
 
-Todas as seções ocupam a largura toda, empilhadas em bandas cinematográficas com transições suaves entre elas:
-
-```text
-┌──────────────────────────────────────────┐
-│ NAV translúcida (blur + border mint)     │
-├──────────────────────────────────────────┤
-│ HERO: eyebrow pill + headline gigante    │
-│  gradient mint, sub, dois CTAs, mockup   │
-│  da planilha flutuando com parallax      │
-├──────────────────────────────────────────┤
-│ LOGO CLOUD / social proof scrolling      │
-├──────────────────────────────────────────┤
-│ FEATURES: 3 bandas horizontais alternadas│
-│  com números grandes 01/02/03 mono       │
-├──────────────────────────────────────────┤
-│ PRODUCT SHOWCASE: mockup animado grande  │
-│  com highlights que aparecem ao scroll   │
-├──────────────────────────────────────────┤
-│ COMPARE (planilha caseira vs futuro)     │
-├──────────────────────────────────────────┤
-│ STEPS (E-S-D-E-C badges animados)        │
-├──────────────────────────────────────────┤
-│ DEPOIMENTOS (colunas em loop — mantém)   │
-├──────────────────────────────────────────┤
-│ PRICING (3 tiers, Vitalício em destaque) │
-├──────────────────────────────────────────┤
-│ PLANILHA OFFER + FAQ + CTA final         │
-├──────────────────────────────────────────┤
-│ FOOTER dark                              │
-└──────────────────────────────────────────┘
+```
+┌─────────────────────────────────────────────────┐
+│ [sidebar 240px]  [topbar h-64px                ]│
+│  Logo             busca · notif · avatar        │
+│  ─────────       ───────────────────────────────│
+│  Dashboard      │                               │
+│  Fluxo          │      <Outlet /> em            │
+│  Gastos         │      container max-w-7xl      │
+│  Parcelas       │      com padding 32px         │
+│  Investimentos  │                               │
+│  Tarefas        │                               │
+│  Foco           │                               │
+│  Desejos        │                               │
+│  ─────────      │                               │
+│  Config         │                               │
+└─────────────────────────────────────────────────┘
 ```
 
-### 4. Motion design (motion/react já instalado)
+- **Desktop (≥1024px)**: sidebar fixa branca 240px com ícone + label, item ativo com fundo `primary/10` e barra lateral azul de 3px. Topbar com busca global (placeholder), sino, avatar dropdown.
+- **Tablet (768-1023px)**: sidebar colapsa para 72px (só ícones), tooltip no hover.
+- **Mobile (<768px)**: sidebar vira drawer (Sheet do shadcn), topbar mostra hambúrguer + logo + avatar. Bottom nav removido — mais cara de sistema, menos de app. 5 links principais no drawer.
 
-Camadas de animação — respeitando `useReducedMotion`:
-- **Grid animado** de fundo no hero (linhas mint pulsando lentamente, CSS puro).
-- **Gradient orbs** flutuando com blur atrás do headline (2 blobs, animação infinita 20s).
-- **Headline com stagger** — palavra por palavra fade + slide-up.
-- **Ticker numérico** no hero mostrando "R$ +3.240" contando (usa `useMotionValue` + `animate`).
-- **Scroll-triggered reveals** em cada seção (`whileInView`, `once: true`, spring soft).
-- **Parallax leve** no mockup da planilha (rotate 3D no `mouseMove`, ~5°).
-- **Marquee** infinito na logo cloud e nos depoimentos.
-- **Cards com hover glow** — border mint acende + leve translate-y.
-- **Section dividers** com linha mint que desenha ao entrar na viewport (`pathLength`).
-- **Pricing card destacado** com aura pulsante (box-shadow animado).
-- **CTA final** com botão magnético (segue o cursor levemente).
+## Telas
 
-### 5. Componentes novos
+### `/app` (Dashboard)
+Grid 12 colunas, estilo Hope:
+- **KPIs (4 cards)**: Renda, Fixos, Sobra, Reserva. Cada card: label pequeno em cima, número grande mono, delta % em relação ao mês anterior.
+- **Gráfico principal (col-span-8)**: Projeção de saldo 6 meses (linha, Recharts) com área preenchida em azul translúcido.
+- **Pilares (col-span-4)**: barras stacked Sobrevivência/Proteção/Liberdade com % da renda.
+- **Cálculos do mês (col-span-6)**: fórmula E-S-D-E-C atual em linha, com badges coloridos redondos.
+- **Próximas parcelas (col-span-6)**: lista das 5 próximas com valor e mês final.
 
-- `src/components/lp/HeroGrid.tsx` — grid SVG animado de fundo.
-- `src/components/lp/GradientOrbs.tsx` — blobs de gradient.
-- `src/components/lp/AnimatedNumber.tsx` — contador com JetBrains Mono.
-- `src/components/lp/MagneticButton.tsx` — CTA que segue cursor.
-- `src/components/lp/MarqueeRow.tsx` — logo/tag cloud infinito.
-- `src/components/lp/SheetMockup.tsx` — mockup 3D da planilha com parallax e highlights animados.
-- `src/components/lp/SectionReveal.tsx` — wrapper de reveal padrão.
+### `/fluxo` (Fluxo Diário)
+- Header sticky: seletor de mês (setas ← →), toggle 6 meses, botão "hoje".
+- Tabela real com bordas de grade sutis (`#e6eaf2`), cabeçalho sticky com fundo `#f5f7fb`.
+- Colunas: Dia | Entrada | Saída | Saldo | Nota
+- Linha do dia atual: fundo `primary/5`, borda esquerda azul 3px, altura 56px (resto 40px).
+- Cell editing: click abre input com anel azul, Enter commita, Tab avança.
+- Rodapé sticky: total do mês, saldo final projetado.
+- Mobile: mesma tabela, colunas Entrada/Saída/Saldo com fonte 12px mono; dia atual expande para 72px.
 
-### 6. Arquivos alterados
+### `/gastos` (Gastos Fixos)
+- Toolbar: busca, filtro por categoria, botão "+ Novo gasto" (abre `NewGastoDialog`).
+- Tabela com colunas: Categoria (badge colorido) | Descrição | Valor (mono, right) | Dia venc. | Ações.
+- Linhas hover destacam, editáveis inline em Descrição/Valor.
+- Rodapé: Total fixos + % da renda.
 
-- `src/styles.css` — tokens `.lp-dark`, keyframes (grid-pulse, orb-float, marquee, glow-pulse), utility `@utility lp-glow`.
-- `src/routes/__root.tsx` — `<link>` Space Grotesk + JetBrains Mono.
-- `src/routes/index.tsx` — reescrita completa das seções Nav/Hero/SocialProof/Features/Compare/Steps/Pricing/PlanilhaOffer/Faq/Cta/Footer usando os novos componentes e tokens `lp-*`.
-- `src/routes/pv2.tsx` — aplica a mesma paleta e motion design (mantém copy VSL).
-- `src/components/Testimonials.tsx` — ajusta cores para o dark mint.
+### `/parcelas`
+- Timeline horizontal + tabela abaixo.
+- Colunas: Item | Total | Parcelas | Início | Fim | Valor/mês | Ações.
+- Import CSV mantém funcionalidade atual.
 
-### 7. Fora de escopo
+### `/investimentos`
+- Cards por tipo (Renda Fixa / Ações / FIIs / Cripto) com totais.
+- Tabela abaixo com aportes.
 
-- Rotas do produto (`/app`, `/fluxo`, `/produtividade`, `/auth`, `/docs`) permanecem no tema atual claro. O `.lp-dark` isola a paleta na LP.
-- Sem mudança de copy, preços ou lógica — só visual + motion.
-- Sem novas dependências (usa `motion/react` que já existe).
+### `/tarefas`
+- Kanban 3 colunas (A fazer / Fazendo / Feito) com cards brancos + drag.
+- Ou lista simples com checkbox se preferir — vou pela lista pra ficar consistente.
 
-### 8. Detalhes técnicos importantes
+### `/produtividade` (Foco)
+- Pomodoro central grande + hábitos do dia em grid.
+- Bloqueado para plano free (badge "Pro").
 
-- Fontes via `<link>` no `__root.tsx` — nunca `@import` URL no styles.css (regra Tailwind v4).
-- Tokens novos vão em `:root .lp-dark { ... }` + registrados em `@theme inline` como `--color-lp-*` pra habilitar `bg-lp-primary`, `text-lp-text`, etc.
-- Todas as animações checam `useReducedMotion()` antes de rodar loops infinitos.
-- Nenhuma cor hex hardcoded nos componentes — só classes semânticas `lp-*`.
-- Responsivo: mobile pega grid simplificado, orbs menores, parallax desligado no touch.
+### `/desejos`
+- Grid de cards (wishlist) + Caixinhas com barras de progresso azuis.
+
+### `/config`
+- Formulário limpo em seções: Perfil / Financeiro / Sons / Conta.
+
+## Componentes internos refeitos
+
+- `AppShell.tsx` — sidebar + topbar novos.
+- `MoneyInput.tsx` — prefixo `R$` cinza, borda `#e6eaf2`, focus ring azul 2px.
+- `SheetCell.tsx` — sem `bg-cell-edit` verde, usar `bg-primary/5` no hover e `ring-primary` no edit.
+- `Money.tsx` — mantém API, cores: positivo `#1aa053`, negativo `#c03221`.
+- `KpiCard.tsx` (novo) — card branco, label mono minúsculo, número grande, delta.
+- `PageHeader.tsx` (novo) — título + subtítulo + ações à direita, padrão em todas as páginas.
+- `DataTable.tsx` (novo) — wrapper de tabela com estilos Hope (header cinza claro, borda sutil, hover).
+
+## Etapas de execução
+
+1. **Tokens + fontes**: reescrever `src/styles.css` (Hope palette + JetBrains/Work Sans), atualizar `<link>` em `__root.tsx`.
+2. **AppShell + PageHeader + DataTable**: rebuild `AppShell.tsx`, criar helpers.
+3. **Componentes de célula**: `MoneyInput`, `SheetCell`, `Money`, `KpiCard`.
+4. **Dashboard `/app`**: novo layout 12-col com Recharts.
+5. **`/fluxo`**: tabela sticky com dia atual destacado.
+6. **`/gastos`, `/parcelas`, `/investimentos`**: tabelas padrão.
+7. **`/tarefas`, `/produtividade`, `/desejos`**: layouts próprios seguindo padrão.
+8. **`/config`**: formulário limpo.
+9. **QA responsivo**: testar 393px, 768px, 1280px com Playwright.
+
+## Fora do escopo (não muda)
+- Landing, LP v2, docs, termos, cookies, chatbot.
+- Schema do banco, RLS, migrations.
+- `finance.ts`, `demoData.ts`, `db.ts`.
+- Fluxo de auth e OAuth.
+- `useSounds`.
