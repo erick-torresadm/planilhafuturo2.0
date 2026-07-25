@@ -11,7 +11,10 @@ import { GradientOrbs } from "@/components/lp/GradientOrbs";
 import { AnimatedNumber } from "@/components/lp/AnimatedNumber";
 import { MagneticButton } from "@/components/lp/MagneticButton";
 import { TiltCard } from "@/components/lp/TiltCard";
+import { CookieBanner } from "@/components/CookieBanner";
+import { ChatWidget } from "@/components/ChatWidget";
 import { joinWaitlist } from "@/lib/waitlist.functions";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,17 +57,22 @@ function Landing() {
       <SocialProof />
       <Features />
       <Showcase />
+      <ForWho />
       <Compare />
       <Steps />
       <Testimonials />
       <Pricing />
       <PlanilhaOffer />
+      <Guarantee />
       <Faq />
       <Cta />
       <Footer />
+      <CookieBanner />
+      <ChatWidget />
     </div>
   );
 }
+
 
 /* ============ NAV ============ */
 function Nav() {
@@ -786,11 +794,15 @@ function Footer() {
             <a href="#features" className="hover:text-primary transition">Produto</a>
             <a href="#pricing" className="hover:text-primary transition">Preços</a>
             <a href="#faq" className="hover:text-primary transition">Perguntas</a>
+            <Link to="/docs" className="hover:text-primary transition">Docs</Link>
+            <Link to="/termos" className="hover:text-primary transition">Termos</Link>
+            <Link to="/privacidade" className="hover:text-primary transition">Privacidade</Link>
+            <Link to="/cookies" className="hover:text-primary transition">Cookies</Link>
             <Link to="/auth" className="hover:text-primary transition">Entrar</Link>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground font-mono">
-          <div>© {new Date().getFullYear()} planilhafuturo · feito no Brasil</div>
+          <div>© {new Date().getFullYear()} planilhafuturo · feito no Brasil · contato@planilhafuturo.com.br</div>
           <div className="inline-flex items-center gap-2">
             <span className="lp-ticker-blink h-1.5 w-1.5 rounded-full bg-primary" />
             v1.0 · beta
@@ -800,3 +812,67 @@ function Footer() {
     </footer>
   );
 }
+
+/* ============ FOR WHO ============ */
+function ForWho() {
+  const yes = [
+    "está em qualquer fase: CLT, autônomo ou estudante",
+    "tem dívidas, empréstimos ou contas atrasadas pra organizar",
+    "quer entender pra onde vai a renda — fixa ou variável",
+    "sonha em fazer sobrar dinheiro sem se sentir mão-de-vaca",
+  ];
+  const no = [
+    "procura milagre ou enriquecimento rápido",
+    "quer só dica de investimento e trade",
+    "não quer olhar pros próprios números",
+    "espera resultado sem preencher nada",
+  ];
+  return (
+    <Section className="py-24">
+      <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-2xl mx-auto mb-14">
+        <div className="eyebrow text-primary mb-3">// pra quem</div>
+        <h2 className="font-display text-4xl sm:text-5xl">É pra você se…</h2>
+      </motion.div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="lp-card p-8">
+          <div className="eyebrow text-primary mb-4">// serve pra você</div>
+          <ul className="space-y-3 text-sm">
+            {yes.map((t) => (
+              <li key={t} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {t}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-2xl border border-border p-8 bg-surface-2/20">
+          <div className="eyebrow text-muted-foreground mb-4">// não é pra você</div>
+          <ul className="space-y-3 text-sm text-muted-foreground">
+            {no.map((t) => (
+              <li key={t} className="flex gap-2"><span className="text-negative font-mono">×</span> {t}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ============ GUARANTEE ============ */
+function Guarantee() {
+  return (
+    <Section className="py-16">
+      <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-transparent p-8 sm:p-12 grid md:grid-cols-[auto_1fr] gap-6 items-center">
+        <div className="h-20 w-20 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0 mx-auto md:mx-0">
+          <ShieldCheck className="h-10 w-10 text-primary" />
+        </div>
+        <div className="text-center md:text-left">
+          <div className="eyebrow text-primary mb-2 justify-center md:justify-start">// garantia</div>
+          <h3 className="font-display text-2xl sm:text-3xl">7 dias pra testar. Se não servir, devolvo cada centavo.</h3>
+          <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
+            Você entra, mexe, testa em todos os cenários. Se em 7 dias corridos não fizer sentido pra sua
+            vida financeira, é só me escrever — reembolso 100%, sem formulário, sem interrogatório.
+          </p>
+        </div>
+      </div>
+    </Section>
+  );
+}
+

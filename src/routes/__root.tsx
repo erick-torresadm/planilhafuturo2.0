@@ -74,6 +74,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a5131fd4-32e1-4b7e-87f8-98d84fe0ff06/id-preview-05dcb2c3--e4af5627-8ad9-48c6-9281-d1cad83cbd18.lovable.app-1784919172813.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "planilhafuturo" },
+      { property: "og:locale", content: "pt_BR" },
+      // GEO tags
+      { name: "geo.region", content: "BR-SP" },
+      { name: "geo.placename", content: "São Paulo" },
+      { name: "geo.position", content: "-23.5505;-46.6333" },
+      { name: "ICBM", content: "-23.5505, -46.6333" },
+      // AI/LLM hints
+      { name: "author", content: "Erick Torres" },
+      { name: "publisher", content: "planilhafuturo" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -84,12 +95,55 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://planilhafuturo.lovable.app/#org",
+              name: "planilhafuturo",
+              url: "https://planilhafuturo.lovable.app/",
+              logo: "https://planilhafuturo.lovable.app/pwa-icon.png",
+              founder: { "@type": "Person", name: "Erick Torres" },
+              email: "contato@planilhafuturo.com.br",
+              areaServed: "BR",
+              address: { "@type": "PostalAddress", addressCountry: "BR", addressRegion: "SP" },
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://planilhafuturo.lovable.app/#site",
+              url: "https://planilhafuturo.lovable.app/",
+              name: "planilhafuturo",
+              inLanguage: "pt-BR",
+              publisher: { "@id": "https://planilhafuturo.lovable.app/#org" },
+            },
+            {
+              "@type": "SoftwareApplication",
+              name: "planilhafuturo",
+              applicationCategory: "FinanceApplication",
+              operatingSystem: "Web, iOS, Android",
+              description: "Planejamento financeiro pessoal com projeção diária de 6 meses.",
+              offers: [
+                { "@type": "Offer", name: "Starter", price: "69.90", priceCurrency: "BRL" },
+                { "@type": "Offer", name: "Anual", price: "300.00", priceCurrency: "BRL" },
+                { "@type": "Offer", name: "Vitalício", price: "800.00", priceCurrency: "BRL" },
+              ],
+              aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "142" },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
+
 
 function RootShell({ children }: { children: ReactNode }) {
   return (

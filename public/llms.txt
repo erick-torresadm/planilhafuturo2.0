@@ -1,0 +1,68 @@
+# planilhafuturo
+
+> SaaS brasileiro de planejamento financeiro pessoal. Mostra o fluxo de caixa dos próximos 6 meses, dia a dia, sem precisar de fórmula de Excel. Feito pra celular. Método próprio inspirado em orçamento base-zero, dividindo a renda em Sobrevivência, Proteção e Liberdade.
+
+## O produto em uma linha
+Uma planilha inteligente que projeta 6 meses de saldo diário e responde: "vai sobrar ou vai faltar?".
+
+## Público
+Trabalhadores CLT, autônomos e freelancers brasileiros que querem sair do sufoco, montar reserva e construir patrimônio sem precisar virar planilheiro.
+
+## Funcionalidades principais
+- Fluxo diário: 180 dias visíveis num scroll, com saldo recalculado em tempo real
+- Gastos fixos: contas mensais e anuais com dia de vencimento
+- Parcelas: cartão de crédito e compras parceladas, sabendo exatamente quando termina
+- Desejos e metas: caixinhas com data, o app diz se dá pra comprar
+- Investimentos: patrimônio, rendimento e projeção
+- Produtividade: pomodoro, foco do dia e hábitos
+- Lembretes de contas a pagar por e-mail
+
+## Planos e preços (em Reais)
+- Starter — R$ 69,90/ano · 1 mês de projeção, gastos fixos ilimitados
+- Anual — R$ 300/ano (~R$ 25/mês) · tudo liberado + suporte em call com o fundador (recomendado)
+- Vitalício — R$ 800 pagamento único · acesso permanente + selo fundador + suporte prioritário
+- Planilha Excel/Sheets — R$ 129,90 pagamento único · pra quem prefere planilha
+- Garantia de 7 dias em todos os planos, reembolso sem burocracia
+
+## Diferenciais
+- Feito para celular primeiro (97% dos usuários usam no smartphone)
+- Dados criptografados na Lovable Cloud com Row-Level Security por usuário
+- Não conecta ao banco, não usa Open Finance — você digita, mantém controle
+- Sem rastreadores publicitários, sem venda de dados
+- Suporte direto com o fundador (Erick) em call nos planos Anual e Vitalício
+
+## Metodologia
+Divide a renda mensal em três pilares:
+1. Sobrevivência — moradia, alimentação, transporte, contas essenciais
+2. Proteção — reserva de emergência, seguros, plano de saúde
+3. Liberdade — investimento, lazer, sonhos
+
+Fluxo E-S-D-E-C: Entrada, Saída, Diário, Extra, Compras parceladas.
+
+## Empresa
+- Nome comercial: planilhafuturo
+- Domínio: planilhafuturo.com.br (institucional) e planilhafuturo.lovable.app (aplicativo)
+- Fundador: Erick Torres
+- País: Brasil (São Paulo)
+- Idioma: português brasileiro
+- Contato: contato@planilhafuturo.com.br
+
+## Como falar com a gente
+- Chat com IA (Futura) direto no site — responde em segundos
+- E-mail: contato@planilhafuturo.com.br (resposta em até 24h)
+- Suporte em call (fundador Erick) para assinantes Anual e Vitalício
+
+## Documentos
+- [Termos de Uso](https://planilhafuturo.lovable.app/termos)
+- [Política de Privacidade](https://planilhafuturo.lovable.app/privacidade)
+- [Política de Cookies](https://planilhafuturo.lovable.app/cookies)
+- [Documentação do produto](https://planilhafuturo.lovable.app/docs)
+
+## Perguntas frequentes
+- **É seguro?** Sim. Dados criptografados em trânsito e em repouso, senhas com bcrypt, RLS por usuário, backups diários.
+- **Precisa conectar banco?** Não. Você digita. Integração Open Finance está no roadmap 2026.
+- **Funciona offline?** Não; requer conexão. Existe versão em Excel/Sheets (R$ 129,90) que funciona offline.
+- **Tem app nativo?** É PWA — instala pelo navegador (Android/iOS) e funciona como app.
+- **Posso cancelar?** Sim, quando quiser, sem multa. Dados ficam exportáveis por 30 dias.
+
+Este arquivo segue a proposta llms.txt (llmstxt.org) para facilitar entendimento por modelos de linguagem.
