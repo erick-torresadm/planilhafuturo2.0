@@ -81,29 +81,35 @@ function Nav() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="sticky top-0 z-40 backdrop-blur-xl bg-background/70 border-b border-border"
+      className="fixed top-3 sm:top-5 inset-x-0 z-40 px-3 sm:px-5"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between">
-        <Logo size={28} />
-        <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#features" className="hover:text-primary transition">Produto</a>
-          <a href="#showcase" className="hover:text-primary transition">Como funciona</a>
-          <a href="#pricing" className="hover:text-primary transition">Preços</a>
-          <Link to="/docs" className="hover:text-primary transition">Docs</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-primary px-3 py-2">
-            Entrar
-          </Link>
-          <Link to="/auth" className="group inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold hover:brightness-110 transition shadow-[0_0_0_1px_rgba(115,255,184,0.5),0_10px_30px_-10px_rgba(45,212,168,0.6)]">
-            Começar
-            <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
-          </Link>
+      <div className="mx-auto max-w-5xl rounded-full bg-white/85 backdrop-blur-xl border border-border shadow-[0_10px_40px_-15px_rgba(0,0,0,0.12)]">
+        <div className="h-14 pl-4 pr-2 sm:pl-5 sm:pr-2.5 flex items-center gap-3">
+          <Link to="/" className="shrink-0"><Logo size={26} /></Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground mx-auto">
+            <a href="#features" className="hover:text-foreground transition">Produto</a>
+            <a href="#showcase" className="hover:text-foreground transition">Como funciona</a>
+            <a href="#pricing" className="hover:text-foreground transition">Preços</a>
+            <Link to="/docs" className="hover:text-foreground transition">Docs</Link>
+          </nav>
+          <div className="ml-auto md:ml-0 flex items-center gap-1.5 shrink-0">
+            <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-2 rounded-full">
+              Entrar
+            </Link>
+            <Link
+              to="/auth"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold hover:brightness-105 transition shadow-[0_8px_24px_-8px_rgba(16,185,129,0.55)]"
+            >
+              Começar
+              <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </motion.header>
   );
 }
+
 
 /* ============ HERO ============ */
 function Hero() {
