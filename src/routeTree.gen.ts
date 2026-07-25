@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as Pv2RouteImport } from './routes/pv2'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -23,6 +24,11 @@ import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
+const Pv2Route = Pv2RouteImport.update({
+  id: '/pv2',
+  path: '/pv2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
+  '/pv2': typeof Pv2Route
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
+  '/pv2': typeof Pv2Route
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
+  '/pv2': typeof Pv2Route
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/desejos': typeof AuthenticatedDesejosRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/onboarding'
+    | '/pv2'
     | '/app'
     | '/config'
     | '/desejos'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/onboarding'
+    | '/pv2'
     | '/app'
     | '/config'
     | '/desejos'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/onboarding'
+    | '/pv2'
     | '/_authenticated/app'
     | '/_authenticated/config'
     | '/_authenticated/desejos'
@@ -185,10 +197,18 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DocsRoute: typeof DocsRoute
   OnboardingRoute: typeof OnboardingRoute
+  Pv2Route: typeof Pv2Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pv2': {
+      id: '/pv2'
+      path: '/pv2'
+      fullPath: '/pv2'
+      preLoaderRoute: typeof Pv2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DocsRoute: DocsRoute,
   OnboardingRoute: OnboardingRoute,
+  Pv2Route: Pv2Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
