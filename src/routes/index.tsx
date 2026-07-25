@@ -251,7 +251,7 @@ function Features() {
         <div className="text-xs uppercase tracking-widest text-primary mb-3">O que tem dentro</div>
         <h2 className="font-display text-4xl sm:text-5xl">Tudo que sua planilha financeira fazia.<br /><span className="italic text-muted-foreground">Só que sem quebrar.</span></h2>
       </motion.div>
-      <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:auto-rows-[180px] gap-3">
         {items.map((f, i) => {
           const Icon = f.icon;
           return (
