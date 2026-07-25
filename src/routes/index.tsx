@@ -11,7 +11,10 @@ import { GradientOrbs } from "@/components/lp/GradientOrbs";
 import { AnimatedNumber } from "@/components/lp/AnimatedNumber";
 import { MagneticButton } from "@/components/lp/MagneticButton";
 import { TiltCard } from "@/components/lp/TiltCard";
+import { CookieBanner } from "@/components/CookieBanner";
+import { ChatWidget } from "@/components/ChatWidget";
 import { joinWaitlist } from "@/lib/waitlist.functions";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
