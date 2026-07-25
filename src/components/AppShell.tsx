@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ============ Desktop icon rail ============ */}
       <aside className="hidden lg:flex fixed top-6 bottom-6 left-6 z-40 w-16 flex-col items-center py-4 rounded-3xl bg-card border border-border shadow-[0_10px_40px_-20px_rgba(0,0,0,0.10)]">
         <Link to="/app" className="h-10 w-10 rounded-2xl bg-foreground grid place-items-center mb-4" aria-label="Início">
-          <Logo size={18} withWordmark={false} monoColor="#a7f3d0" />
+          <Logo size={18} withWordmark={false} />
         </Link>
         <nav className="flex-1 flex flex-col items-center gap-1.5 w-full px-2 overflow-y-auto no-scrollbar">
           {NAV.map((n) => {
@@ -225,7 +225,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <div className="h-10 w-10 rounded-2xl bg-foreground grid place-items-center shrink-0">
-                    <Logo size={18} withWordmark={false} monoColor="#a7f3d0" />
+                    <Logo size={18} withWordmark={false} />
                   </div>
                   <div className="min-w-0">
                     <div className="font-display text-base truncate">planilhafuturo</div>
