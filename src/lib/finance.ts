@@ -5,8 +5,8 @@ export type GastoFixo = {
   categoria: string;
   descricao: string;
   valor: number;
-  tipo: string; // P|A|C
-  frequencia: string; // mensal|anual
+  tipo: "P" | "A" | "C";
+  frequencia: "mensal" | "anual";
   parcela_atual: number | null;
   parcela_total: number | null;
   dia: number;
@@ -33,6 +33,16 @@ export type Lancamento = {
   valor: number;
 };
 
+/** Shared helper: valor de uma parcela em um mês específico */
+export function valorParcelaNoMes(p: Parcela, y: number, m0: number): number {
+  const dt = new Date(p.data + "T00:00:00");
+  const monthsAhead = (y - dt.getFullYear()) * 12 + (m0 - dt.getMonth());
+  if (monthsAhead < 0) return 0;
+  const restantes = p.qtd_parcelas - (p.parcela_inicial - 1);
+  if (monthsAhead >= restantes) return 0;
+  return Math.round(((Number(p.valor_total) || 0) / (Number(p.qtd_parcelas) || 1)) * 100) / 100;
+}
+
 /** Saídas fixas do dia D em mês M (0-11) ano Y */
 export function saidaFixaDia(
   y: number,
@@ -45,19 +55,14 @@ export function saidaFixaDia(
   for (const g of gastos) {
     if (!g.ativo) continue;
     if (g.dia !== d) continue;
-    if (g.frequencia === "anual" && g.mes_anual && g.mes_anual - 1 !== m0) continue;
+    if (g.frequencia === "anual") {
+      if (g.mes_anual == null) continue;
+      if (g.mes_anual - 1 !== m0) continue;
+    }
     s += Number(g.valor) || 0;
   }
   for (const p of parcelas) {
-    const dt = new Date(p.data + "T00:00:00");
-    if (dt.getDate() !== d) continue;
-    const startY = dt.getFullYear();
-    const startM = dt.getMonth();
-    const monthsAhead = (y - startY) * 12 + (m0 - startM);
-    if (monthsAhead < 0) continue;
-    const restantes = p.qtd_parcelas - (p.parcela_inicial - 1);
-    if (monthsAhead >= restantes) continue;
-    s += (Number(p.valor_total) || 0) / (Number(p.qtd_parcelas) || 1);
+    s += valorParcelaNoMes(p, y, m0);
   }
   return s;
 }
@@ -82,13 +87,28 @@ export function computaMes(
 ): DiaFluxo[] {
   const dias = daysInMonth(y, m0);
   const out: DiaFluxo[] = [];
-  let saldo = saldoInicial;
+  let saldo = Number(saldoInicial) || 0;
+
+  // Index lancamentos by date for O(1) lookup
+  const lancByDate = new Map<string, Lancamento[]>();
+  for (const l of lanc) {
+    const arr = lancByDate.get(l.data);
+    if (arr) arr.push(l);
+    else lancByDate.set(l.data, [l]);
+  }
+
   for (let d = 1; d <= dias; d++) {
     const data = isoDate(y, m0, d);
-    const ls = lanc.filter((l) => l.data === data);
-    const entradaFixa = ls.filter((l) => l.tipo === "entrada_fixa").reduce((a, b) => a + Number(b.valor), 0);
-    const entradaDiaria = ls.filter((l) => l.tipo === "entrada_diaria").reduce((a, b) => a + Number(b.valor), 0);
-    const saidaDiaria = ls.filter((l) => l.tipo === "saida_diaria").reduce((a, b) => a + Number(b.valor), 0);
+    const ls = lancByDate.get(data) || [];
+
+    let entradaFixa = 0, entradaDiaria = 0, saidaDiaria = 0;
+    for (const l of ls) {
+      const v = Number(l.valor) || 0;
+      if (l.tipo === "entrada_fixa") entradaFixa += v;
+      else if (l.tipo === "entrada_diaria") entradaDiaria += v;
+      else if (l.tipo === "saida_diaria") saidaDiaria += v;
+    }
+
     const saidaFixa = saidaFixaDia(y, m0, d, gastos, parcelas);
     saldo = saldo + entradaFixa + entradaDiaria - saidaFixa - saidaDiaria;
     out.push({ data, dia: d, entradaFixa, entradaDiaria, saidaFixa, saidaDiaria, saldo });
@@ -105,12 +125,7 @@ export function totalGastoFixoMensal(gastos: GastoFixo[]): number {
 export function parcelasNoMes(parcelas: Parcela[], y: number, m0: number): number {
   let s = 0;
   for (const p of parcelas) {
-    const dt = new Date(p.data + "T00:00:00");
-    const monthsAhead = (y - dt.getFullYear()) * 12 + (m0 - dt.getMonth());
-    if (monthsAhead < 0) continue;
-    const restantes = p.qtd_parcelas - (p.parcela_inicial - 1);
-    if (monthsAhead >= restantes) continue;
-    s += (Number(p.valor_total) || 0) / (Number(p.qtd_parcelas) || 1);
+    s += valorParcelaNoMes(p, y, m0);
   }
   return s;
 }

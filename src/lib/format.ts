@@ -1,5 +1,5 @@
 export function brl(v: number | string | null | undefined): string {
-  const n = typeof v === "string" ? Number(v) : (v ?? 0);
+  const n = typeof v === "string" ? num(v) : (v ?? 0);
   if (!isFinite(n)) return "R$ 0,00";
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -19,7 +19,7 @@ export const MESES = [
 export const MESES_ABREV = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
 export function daysInMonth(year: number, month0: number): number {
-  return new Date(year, month0 + 1, 0).getDate();
+  return new Date(year, Math.max(0, Math.min(11, month0)) + 1, 0).getDate();
 }
 
 export function monthKey(y: number, m0: number) {

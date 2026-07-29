@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSounds } from "@/hooks/useSounds";
 import { cn } from "@/lib/utils";
-import { Plus, Trash2, Target, Flame, Play, Pause, RotateCcw, Check, TrendingUp } from "lucide-react";
+import { Plus, Trash2, Target, Flame, Play, Pause, RotateCcw, Check } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/produtividade")({
-  head: () => ({ meta: [{ title: "Produtividade — Planilha Futuro" }] }),
+  head: () => ({ meta: [{ title: "Produtividade — Planilha" }] }),
   component: ProdutividadePage,
 });
 
@@ -24,11 +25,12 @@ const weekDates = () => Array.from({ length: 7 }, (_, i) => dayShift(i - 3));
 
 function ProdutividadePage() {
   return (
-    <div className="p-4 lg:p-6 space-y-6 max-w-5xl mx-auto">
-      <div>
-        <h1 className="font-display text-2xl lg:text-3xl font-bold">Produtividade</h1>
-        <p className="text-sm text-muted-foreground">Foco do dia, hábitos e sessões de trabalho profundo.</p>
-      </div>
+    <div className="page-container space-y-5 animate-in">
+      <PageHeader
+        eyebrow="Foco"
+        title="Produtividade"
+        subtitle="Foco do dia, hábitos e sessões de trabalho profundo."
+      />
       <FocosDoDia />
       <PomodoroCard />
       <Habitos />
@@ -36,16 +38,18 @@ function ProdutividadePage() {
   );
 }
 
-/* -------------------- FOCOS DO DIA -------------------- */
+/* Focos do Dia */
 function FocosDoDia() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
   const d = today();
+  const [delId, setDelId] = useState<string | null>(null);
+
   const q = useQuery({
     queryKey: ["focos", d],
     queryFn: async () => {
       const rows = await selectAll("focos_diarios");
-      return rows.filter((r) => r.data === d).sort((a, b) => a.ordem - b.ordem);
+      return (rows as any[]).filter((r: any) => r.data === d).sort((a: any, b: any) => a.ordem - b.ordem);
     },
   });
   const add = useMutation({
@@ -55,7 +59,7 @@ function FocosDoDia() {
   });
   const upd = useMutation({
     mutationFn: ({ id, patch }: any) => updateRow("focos_diarios", id, patch),
-    onSuccess: (_d, v: any) => {
+    onSuccess: (_d: any, v: any) => {
       qc.invalidateQueries({ queryKey: ["focos"] });
       if (v.patch.feito) playSound("celebration");
     },
@@ -66,18 +70,18 @@ function FocosDoDia() {
   });
 
   const [novo, setNovo] = useState("");
-  const rows = q.data ?? [];
+  const rows = (q.data ?? []) as any[];
   const feitos = rows.filter((r) => r.feito).length;
   const canAdd = rows.length < 3;
 
   return (
-    <section className="glass p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
           <h2 className="font-display text-lg font-semibold">Foco do dia</h2>
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground tabular-nums">
           {feitos}/{rows.length || 3} concluídos
         </div>
       </div>
@@ -88,7 +92,7 @@ function FocosDoDia() {
           <div key={r.id} className={cn("flex items-center gap-3 p-3 rounded-lg border", r.feito ? "bg-primary/5 border-primary/30" : "border-border bg-background")}>
             <button
               onClick={() => upd.mutate({ id: r.id, patch: { feito: !r.feito } })}
-              className={cn("h-8 w-8 shrink-0 rounded-lg grid place-items-center", r.feito ? "mint-gradient" : "bg-black/5 text-muted-foreground")}
+              className={cn("h-8 w-8 shrink-0 rounded-lg grid place-items-center", r.feito ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}
             >
               {r.feito ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
             </button>
@@ -97,7 +101,7 @@ function FocosDoDia() {
               onBlur={(e) => e.target.value !== r.texto && upd.mutate({ id: r.id, patch: { texto: e.target.value } })}
               className={cn("h-8 border-0 bg-transparent shadow-none focus-visible:ring-1 font-medium", r.feito && "line-through opacity-60")}
             />
-            <button onClick={() => del.mutate(r.id)} className="text-negative/60 hover:text-negative">
+            <button onClick={() => setDelId(r.id)} className="text-negative/60 hover:text-negative">
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
@@ -115,17 +119,27 @@ function FocosDoDia() {
             className="flex gap-2"
           >
             <Input value={novo} onChange={(e) => setNovo(e.target.value)} placeholder={`Foco #${rows.length + 1}...`} className="h-10" />
-            <Button type="submit" className="mint-gradient font-semibold">
+            <Button type="submit">
               <Plus className="h-4 w-4" />
             </Button>
           </form>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!delId}
+        onOpenChange={(o) => { if (!o) setDelId(null); }}
+        onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }}
+        title="Excluir foco?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
+      />
     </section>
   );
 }
 
-/* -------------------- POMODORO -------------------- */
+/* Pomodoro */
 function PomodoroCard() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
@@ -171,17 +185,17 @@ function PomodoroCard() {
   const ss = String(segundos % 60).padStart(2, "0");
   const progresso = 1 - segundos / (duracao * 60);
 
-  const hoje = (logged.data ?? []).filter((r) => r.data === today());
+  const hoje = ((logged.data ?? []) as any[]).filter((r) => r.data === today());
   const minutosHoje = hoje.reduce((a, r) => a + (r.duracao_min ?? 0), 0);
 
   return (
-    <section className="glass p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
+          <Check className="h-5 w-5 text-primary" />
           <h2 className="font-display text-lg font-semibold">Sessão de foco</h2>
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground tabular-nums">
           Hoje: <span className="font-bold text-foreground">{hoje.length}</span> sessões · {minutosHoje} min
         </div>
       </div>
@@ -189,13 +203,13 @@ function PomodoroCard() {
       <div className="flex flex-col items-center gap-4">
         <div className="relative h-40 w-40">
           <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" className="text-muted" />
             <circle
               cx="50" cy="50" r="45" fill="none"
-              stroke="oklch(0.82 0.19 165)" strokeWidth="6" strokeLinecap="round"
+              stroke="currentColor" strokeWidth="6" strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 45}
               strokeDashoffset={2 * Math.PI * 45 * (1 - progresso)}
-              className="transition-all"
+              className="text-primary transition-all duration-500"
             />
           </svg>
           <div className="absolute inset-0 grid place-items-center font-mono text-3xl font-bold tabular-nums">
@@ -217,7 +231,7 @@ function PomodoroCard() {
               onClick={() => setDuracao(m)}
               className={cn(
                 "px-3 py-1.5 rounded-lg text-xs font-semibold",
-                duracao === m ? "mint-gradient" : "glass text-muted-foreground",
+                duracao === m ? "bg-primary text-primary-foreground" : "rounded-xl bg-card border border-border text-muted-foreground",
               )}
             >
               {m}min
@@ -226,7 +240,7 @@ function PomodoroCard() {
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={() => setRodando((r) => !r)} className="mint-gradient font-semibold min-w-32">
+          <Button onClick={() => setRodando((r) => !r)} className="min-w-32">
             {rodando ? <><Pause className="h-4 w-4 mr-1" /> Pausar</> : <><Play className="h-4 w-4 mr-1" /> Iniciar</>}
           </Button>
           <Button variant="outline" onClick={() => { setRodando(false); setSegundos(duracao * 60); }}>
@@ -238,15 +252,21 @@ function PomodoroCard() {
   );
 }
 
-/* -------------------- HÁBITOS -------------------- */
+/* Hábitos */
 function Habitos() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
+  const [delId, setDelId] = useState<string | null>(null);
+  const [novo, setNovo] = useState("");
+  const semana = weekDates();
+  const hj = today();
+
   const habitos = useQuery({ queryKey: ["habitos"], queryFn: () => selectAll("habitos") });
   const regs = useQuery({ queryKey: ["habitos_registros"], queryFn: () => selectAll("habitos_registros") });
+  const rs = (regs.data ?? []) as any[];
 
   const addH = useMutation({
-    mutationFn: (nome: string) => insertRow("habitos", { nome, icone: "🎯", cor: "mint", ativo: true }),
+    mutationFn: (nome: string) => insertRow("habitos", { nome, icone: "", ativo: true }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["habitos"] }),
   });
   const delH = useMutation({
@@ -258,44 +278,32 @@ function Habitos() {
   });
   const toggle = useMutation({
     mutationFn: async ({ habito_id, data, existing }: any) => {
-      if (existing) return deleteRow("habitos_registros", existing.id);
-      const { data: u } = await supabase.auth.getUser();
-      const { error } = await supabase.from("habitos_registros" as any).insert({ habito_id, data, feito: true, user_id: u.user?.id });
-      if (error) throw error;
+      if (existing) {
+        deleteRow("habitos_registros", existing.id);
+        return;
+      }
+      insertRow("habitos_registros", { habito_id, data, feito: true });
     },
-    onSuccess: (_d, v: any) => {
+    onSuccess: (_d: any, v: any) => {
       qc.invalidateQueries({ queryKey: ["habitos_registros"] });
       if (!v.existing) playSound("celebration");
     },
   });
 
-  const [novo, setNovo] = useState("");
-  const semana = weekDates();
-  const hoje = today();
-  const rs = regs.data ?? [];
-
   function streak(hid: string): number {
     let s = 0;
-    for (let i = 0; i < 90; i++) {
-      const d = dayShift(-i);
-      if (rs.some((r) => r.habito_id === hid && r.data === d && r.feito)) s++;
-      else if (i > 0) break;
-      else break;
-    }
-    // recalc properly
-    s = 0;
     for (let i = 0; i < 365; i++) {
       const d = dayShift(-i);
       const has = rs.some((r) => r.habito_id === hid && r.data === d && r.feito);
       if (has) s++;
-      else if (i === 0) continue; // today not done yet doesn't break streak
+      else if (i === 0) continue;
       else break;
     }
     return s;
   }
 
   return (
-    <section className="glass p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="h-5 w-5 text-primary" />
@@ -308,7 +316,7 @@ function Habitos() {
         className="flex gap-2"
       >
         <Input value={novo} onChange={(e) => setNovo(e.target.value)} placeholder="Ex.: Ler 20 minutos, Exercício, Meditar..." className="h-10" />
-        <Button type="submit" className="mint-gradient font-semibold"><Plus className="h-4 w-4" /></Button>
+        <Button type="submit"><Plus className="h-4 w-4" /></Button>
       </form>
 
       <div className="overflow-x-auto">
@@ -318,10 +326,10 @@ function Habitos() {
               <th className="text-left font-medium pb-2">Hábito</th>
               {semana.map((d) => {
                 const day = new Date(d + "T00:00:00");
-                const isToday = d === hoje;
+                const isToday = d === hj;
                 return (
                   <th key={d} className={cn("text-center font-medium pb-2 px-1", isToday && "text-primary")}>
-                    <div className="text-[10px] uppercase">{["D","S","T","Q","Q","S","S"][day.getDay()]}</div>
+                    <div className="text-xs uppercase">{"D S T Q Q S S".split(" ")[day.getDay()]}</div>
                     <div className={cn("text-xs", isToday && "font-bold")}>{day.getDate()}</div>
                   </th>
                 );
@@ -331,12 +339,16 @@ function Habitos() {
             </tr>
           </thead>
           <tbody>
-            {(habitos.data ?? []).map((h) => (
+            {(habitos.data ?? []).map((h: any) => (
               <tr key={h.id} className="border-t border-border">
-                <td className="py-2 pr-2 font-medium">{h.icone} {h.nome}</td>
+                <td className="py-2 pr-2">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Flame className="h-4 w-4 text-primary shrink-0" /> {h.nome}
+                  </div>
+                </td>
                 {semana.map((d) => {
                   const existing = rs.find((r) => r.habito_id === h.id && r.data === d);
-                  const isFuture = d > hoje;
+                  const isFuture = d > hj;
                   return (
                     <td key={d} className="text-center px-1 py-2">
                       <button
@@ -344,7 +356,7 @@ function Habitos() {
                         onClick={() => toggle.mutate({ habito_id: h.id, data: d, existing })}
                         className={cn(
                           "h-8 w-8 rounded-lg mx-auto grid place-items-center transition-all",
-                          existing ? "mint-gradient" : "bg-black/5 hover:bg-black/10",
+                          existing ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80",
                           isFuture && "opacity-30 cursor-not-allowed",
                         )}
                       >
@@ -359,7 +371,7 @@ function Habitos() {
                   </div>
                 </td>
                 <td>
-                  <button onClick={() => confirm("Excluir?") && delH.mutate(h.id)} className="text-negative/60 hover:text-negative">
+                  <button onClick={() => setDelId(h.id)} className="text-negative/60 hover:text-negative">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </td>
@@ -371,6 +383,16 @@ function Habitos() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!delId}
+        onOpenChange={(o) => { if (!o) setDelId(null); }}
+        onConfirm={() => { if (delId) { delH.mutate(delId); setDelId(null); } }}
+        title="Excluir hábito?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
+      />
     </section>
   );
 }

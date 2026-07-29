@@ -1,13 +1,14 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { supabase } from "@/integrations/supabase/client";
+import { getProfile } from "@/lib/db";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
+    // Local dev: auto-auth with mock user
+    const profile = getProfile();
+    if (!profile) throw redirect({ to: "/auth" });
+    return { user: { id: profile.id, email: profile.email, name: profile.nome } };
   },
   component: () => (
     <AppShell>

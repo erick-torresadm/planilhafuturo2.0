@@ -4,21 +4,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, TrendingUp, Sparkles } from "lucide-react";
+import { Plus, Trash2, TrendingUp, Wallet, PiggyBank, CircleDollarSign } from "lucide-react";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
+import { PageHeader } from "@/components/PageHeader";
+import { KpiCard } from "@/components/KpiCard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EmptyState } from "@/components/EmptyState";
 import { DataView } from "@/components/DataView";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/investimentos")({
   head: () => ({ meta: [{ title: "Investimentos — Planilha" }] }),
   component: InvestPage,
 });
 
-const TIPOS = ["Fundo","CDB","Tesouro","Acao","Cripto","Outro"];
+const TIPOS = ["Fundo", "CDB", "Tesouro", "Acao", "Cripto", "Outro"];
 
 function InvestPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
+  const [delId, setDelId] = useState<string | null>(null);
+
   const q = useQuery({ queryKey: ["investimentos"], queryFn: () => selectAll("investimentos") });
   const rows: any[] = (q.data ?? []) as any[];
 
@@ -38,123 +46,150 @@ function InvestPage() {
   const totalAplicado = rows.reduce((a, r) => a + Number(r.valor_aplicado), 0);
   const totalAtual = rows.reduce((a, r) => a + Number(r.posicao_atual), 0);
   const rendTotal = totalAtual - totalAplicado;
-  const rendDia = totalAplicado * (0.1375 / 365);
   const pctRend = totalAplicado > 0 ? (rendTotal / totalAplicado) * 100 : 0;
+  const loading = q.isPending;
 
   return (
-    <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl font-bold">Investimentos</h1>
-          <p className="text-sm text-muted-foreground">Sua carteira em tempo real</p>
-        </div>
-        <Button onClick={() => add.mutate()} className="mint-gradient font-semibold">
-          <Plus className="h-4 w-4 mr-1" />Novo
-        </Button>
+    <div className="page-container space-y-4 animate-in">
+      <PageHeader
+        eyebrow="Carteira"
+        title="Investimentos"
+        subtitle="Sua carteira em tempo real"
+        actions={
+          <Button onClick={() => add.mutate()}>
+            <Plus className="h-4 w-4" /><span className="hidden sm:inline ml-1">Novo</span>
+          </Button>
+        }
+      />
+
+      <div className="grid grid-cols-3 gap-3">
+        <KpiCard label="Total aplicado" value={totalAplicado} icon={Wallet} tone="primary" />
+        <KpiCard label="Posição atual" value={totalAtual} icon={PiggyBank} tone="default" />
+        <KpiCard
+          label="Rendimento"
+          value={rendTotal}
+          icon={CircleDollarSign}
+          tone={rendTotal >= 0 ? "positive" : "negative"}
+          delta={{ pct: pctRend }}
+        />
       </div>
 
-      {/* Hero */}
-      <div className="glass-strong p-5 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
-        <div className="relative">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Posição atual</div>
-          <div className="font-display text-4xl lg:text-5xl font-bold text-primary mt-1"><Money value={totalAtual} /></div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <div className="chip bg-black/5">Aplicado <Money value={totalAplicado} /></div>
-            <div className={`chip ${rendTotal >= 0 ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"}`}>
-              <TrendingUp className="h-3 w-3" /> <Money value={rendTotal} signed showSign /> ({pctRend.toFixed(2)}%)
-            </div>
-          </div>
+      {/* Posição hero */}
+      <div className="metric-card p-5">
+        <span className="eyebrow">Patrimônio</span>
+        <div className="font-display text-3xl lg:text-4xl font-bold text-foreground mt-1 tabular-nums">
+          <Money value={totalAtual} />
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="chip chip-ghost">Aplicado <Money value={totalAplicado} /></span>
+          <span className={cn("chip", rendTotal >= 0 ? "chip-positive" : "chip-negative")}>
+            <TrendingUp className="h-3 w-3" /> <Money value={rendTotal} signed showSign /> ({pctRend.toFixed(2)}%)
+          </span>
         </div>
       </div>
 
-      {rendDia > 0 && (
-        <div className="glass p-4 flex items-center gap-3 mint-glow">
-          <div className="h-10 w-10 rounded-lg mint-gradient grid place-items-center shrink-0">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <div className="font-semibold text-sm">Hoje rendeu ~<Money value={rendDia} className="text-primary" /></div>
-            <div className="text-[11px] text-muted-foreground">Estimativa 100% CDI (13,75% a.a.)</div>
-          </div>
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <div key={i} className="skeleton h-28 w-full rounded-xl" />)}
         </div>
-      )}
-
-      <DataView
-        storageKey="invest-view"
-        cards={
-          <div className="grid gap-2 sm:grid-cols-2">
-            {rows.map((r) => {
-              const rend = Number(r.posicao_atual) - Number(r.valor_aplicado);
-              const pct = Number(r.valor_aplicado) > 0 ? (rend / Number(r.valor_aplicado)) * 100 : 0;
-              return (
-                <div key={r.id} className="glass p-4">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <Input defaultValue={r.nome} onBlur={(e) => e.target.value !== r.nome && upd.mutate({ id: r.id, patch: { nome: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
-                      <div className="flex gap-2 text-[11px] text-muted-foreground mt-0.5">
-                        <span>{r.tipo}</span><span>·</span><span>{r.renda}</span>
+      ) : (
+        <DataView
+          storageKey="invest-view"
+          cards={
+            rows.length === 0 ? (
+              <EmptyState icon={Wallet} title="Nenhum investimento" description="Adicione seus investimentos para acompanhar o rendimento da carteira." />
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {rows.map((r) => {
+                  const rend = Number(r.posicao_atual) - Number(r.valor_aplicado);
+                  const pct = Number(r.valor_aplicado) > 0 ? (rend / Number(r.valor_aplicado)) * 100 : 0;
+                  return (
+                    <div key={r.id} className="rounded-xl bg-card border border-border p-4 transition-all hover:shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 grid place-items-center shrink-0">
+                          <TrendingUp className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Input defaultValue={r.nome} onBlur={(e) => e.target.value !== r.nome && upd.mutate({ id: r.id, patch: { nome: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
+                          <div className="flex gap-2 mt-0.5 text-xs text-muted-foreground">
+                            <span>{r.tipo}</span><span>·</span><span>{r.renda}</span>
+                          </div>
+                        </div>
+                        <button onClick={() => setDelId(r.id)} className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div>
+                          <span className="eyebrow">Aplicado</span>
+                          <MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} size="sm" className="w-full mt-0.5" />
+                        </div>
+                        <div>
+                          <span className="eyebrow">Posição</span>
+                          <MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} size="sm" className="w-full mt-0.5" inputClassName="text-primary font-bold" />
+                        </div>
+                      </div>
+                      <div className={cn("mt-2 chip w-fit", rend >= 0 ? "chip-positive" : "chip-negative")}>
+                        <TrendingUp className="h-3 w-3" /> <Money value={rend} signed showSign /> ({pct.toFixed(2)}%)
                       </div>
                     </div>
-                    <button onClick={() => confirm("Deletar?") && del.mutate(r.id)} className="text-negative/70"><Trash2 className="h-4 w-4" /></button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Aplicado</div>
-                      <MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} align="left" size="sm" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Posição</div>
-                      <MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} align="left" size="sm" inputClassName="text-primary font-bold" />
-                    </div>
-                  </div>
-                  <div className={`mt-2 chip ${rend >= 0 ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"} w-fit`}>
-                    <TrendingUp className="h-3 w-3" /> <Money value={rend} signed showSign /> ({pct.toFixed(2)}%)
-                  </div>
-                </div>
-              );
-            })}
-            {rows.length === 0 && <div className="glass p-8 text-center text-sm text-muted-foreground sm:col-span-2">Nenhum investimento.</div>}
-          </div>
-        }
-        table={
-          <div className="glass overflow-x-auto">
-            <table className="sheet-grid">
-              <thead>
-                <tr>
-                  <th className="sheet-th">Data</th>
-                  <th className="sheet-th">Nome</th>
-                  <th className="sheet-th">Tipo</th>
-                  <th className="sheet-th">Renda</th>
-                  <th className="sheet-th text-right">Aplicado</th>
-                  <th className="sheet-th text-right">Posição</th>
-                  <th className="sheet-th text-right">Rend.</th>
-                  <th className="sheet-th">Venc.</th>
-                  <th className="sheet-th"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => {
-                  const rend = Number(r.posicao_atual) - Number(r.valor_aplicado);
-                  return (
-                    <tr key={r.id} className={i % 2 ? "sheet-row-alt" : ""}>
-                      <td className="sheet-td"><Input type="date" defaultValue={r.data ?? ""} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                      <td className="sheet-td"><Input defaultValue={r.nome} onBlur={(e) => e.target.value !== r.nome && upd.mutate({ id: r.id, patch: { nome: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                      <td className="sheet-td"><select value={r.tipo ?? "CDB"} onChange={(e) => upd.mutate({ id: r.id, patch: { tipo: e.target.value } })} className="bg-transparent w-full outline-none">{TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}</select></td>
-                      <td className="sheet-td"><Input defaultValue={r.renda ?? ""} onBlur={(e) => e.target.value !== r.renda && upd.mutate({ id: r.id, patch: { renda: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                      <td className="sheet-td text-right"><MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} size="sm" align="right" className="w-full" /></td>
-                      <td className="sheet-td text-right"><MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} size="sm" align="right" className="w-full" inputClassName="font-semibold" /></td>
-                      <td className={`sheet-td text-right font-bold ${rend >= 0 ? "text-positive" : "text-negative"}`}><Money value={rend} signed showSign /></td>
-                      <td className="sheet-td"><Input type="date" defaultValue={r.vencimento ?? ""} onBlur={(e) => e.target.value !== r.vencimento && upd.mutate({ id: r.id, patch: { vencimento: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1" /></td>
-                      <td className="sheet-td text-center"><button onClick={() => confirm("Deletar?") && del.mutate(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
-                    </tr>
                   );
                 })}
-                {rows.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Nenhum investimento.</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        }
+              </div>
+            )
+          }
+          table={
+            rows.length === 0 ? (
+              <div className="rounded-xl bg-card border border-border p-8 text-center text-sm text-muted-foreground">Nenhum investimento.</div>
+            ) : (
+              <div className="rounded-xl bg-card border border-border overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted">
+                      <th className="eyebrow text-left px-4 py-3">Data</th>
+                      <th className="eyebrow text-left px-4 py-3">Nome</th>
+                      <th className="eyebrow text-left px-4 py-3">Tipo</th>
+                      <th className="eyebrow text-left px-4 py-3">Renda</th>
+                      <th className="eyebrow text-right px-4 py-3">Aplicado</th>
+                      <th className="eyebrow text-right px-4 py-3">Posição</th>
+                      <th className="eyebrow text-right px-4 py-3">Rend.</th>
+                      <th className="eyebrow text-left px-4 py-3">Venc.</th>
+                      <th className="w-10 px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => {
+                      const rend = Number(r.posicao_atual) - Number(r.valor_aplicado);
+                      return (
+                        <tr key={r.id} className="border-t border-border/60 hover:bg-primary/[0.02]">
+                          <td className="px-4 py-2.5"><Input type="date" defaultValue={r.data ?? ""} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
+                          <td className="px-4 py-2.5"><Input defaultValue={r.nome} onBlur={(e) => e.target.value !== r.nome && upd.mutate({ id: r.id, patch: { nome: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
+                          <td className="px-4 py-2.5"><select value={r.tipo ?? "CDB"} onChange={(e) => upd.mutate({ id: r.id, patch: { tipo: e.target.value } })} className="bg-transparent outline-none text-sm">{TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}</select></td>
+                          <td className="px-4 py-2.5"><Input defaultValue={r.renda ?? ""} onBlur={(e) => e.target.value !== r.renda && upd.mutate({ id: r.id, patch: { renda: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
+                          <td className="px-4 py-2.5 text-right"><MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} size="sm" align="right" className="w-full" /></td>
+                          <td className="px-4 py-2.5 text-right"><MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} size="sm" align="right" className="w-full" inputClassName="font-semibold" /></td>
+                          <td className={cn("px-4 py-2.5 text-right font-bold", rend >= 0 ? "text-positive" : "text-negative")}><Money value={rend} signed showSign /></td>
+                          <td className="px-4 py-2.5"><Input type="date" defaultValue={r.vencimento ?? ""} onBlur={(e) => e.target.value !== r.vencimento && upd.mutate({ id: r.id, patch: { vencimento: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
+                          <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )
+          }
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!delId}
+        onOpenChange={(o) => { if (!o) setDelId(null); }}
+        onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }}
+        title="Excluir investimento?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
       />
     </div>
   );

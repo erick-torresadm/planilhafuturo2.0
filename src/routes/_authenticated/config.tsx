@@ -1,9 +1,8 @@
 import { MoneyInput } from "@/components/MoneyInput";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { getProfile, updateProfile } from "@/lib/db";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -11,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { toast } from "sonner";
 import { User, Volume2, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/config")({
   head: () => ({ meta: [{ title: "Configurações — Planilha" }] }),
@@ -20,33 +20,28 @@ export const Route = createFileRoute("/_authenticated/config")({
 function ConfigPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
-  const profile = useQuery({ queryKey: ["profile"], queryFn: async () => {
-    const { data: u } = await supabase.auth.getUser();
-    const { data } = await supabase.from("profiles").select("*").eq("id", u.user!.id).maybeSingle();
-    return data;
-  }});
+  const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const save = useMutation({
     mutationFn: async (patch: any) => {
-      const { data: u } = await supabase.auth.getUser();
-      const { error } = await supabase.from("profiles").update(patch).eq("id", u.user!.id);
-      if (error) throw error;
+      updateProfile(patch);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Salvo"); },
   });
 
   const [sound, setSound] = useState(getSoundSettings());
-  useEffect(() => saveSoundSettings(sound), [sound]);
+  useEffect(() => { saveSoundSettings(sound); }, [sound]);
 
   const p = profile.data ?? ({} as any);
 
   return (
-    <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="font-display text-2xl lg:text-3xl font-bold">Configurações</h1>
-        <p className="text-sm text-muted-foreground">Ajuste seu perfil e preferências</p>
-      </div>
+    <div className="page-container-sm space-y-5 animate-in">
+      <PageHeader
+        eyebrow="Ajustes"
+        title="Configurações"
+        subtitle="Ajuste seu perfil e preferências"
+      />
 
-      <section className="glass-strong p-5 space-y-4">
+      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <User className="h-4 w-4 text-primary" />
           <h2 className="font-display font-semibold">Perfil</h2>
@@ -58,7 +53,7 @@ function ConfigPage() {
         <Field label="Meses de reserva de emergência"><Input type="number" defaultValue={p.meses_reserva_emergencia ?? 6} onBlur={(e) => save.mutate({ meses_reserva_emergencia: Number(e.target.value) })} /></Field>
       </section>
 
-      <section className="glass-strong p-5 space-y-4">
+      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Volume2 className="h-4 w-4 text-primary" />
           <h2 className="font-display font-semibold">Sons</h2>
@@ -78,9 +73,9 @@ function ConfigPage() {
         <div>
           <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Testar sons</div>
           <div className="flex flex-wrap gap-2">
-            {(["moeda","pop","kaching","alerta","celebration","fanfarra","star","ding","bell"] as const).map((s) => (
+            {(["moeda", "pop", "kaching", "alerta", "celebration", "fanfarra", "star", "ding", "bell"] as const).map((s) => (
               <button key={s} onClick={() => playSound(s)}
-                className="chip glass hover:mint-glow transition-all capitalize">{s}</button>
+                className="chip rounded-xl bg-card border border-border hover:bg-muted transition-all capitalize">{s}</button>
             ))}
           </div>
         </div>

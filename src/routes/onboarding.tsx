@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { updateProfile, insertRow } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,100 +42,80 @@ function Onboarding() {
     if (step === 3) {
       setLoading(true);
       try {
-        const { data: u } = await supabase.auth.getUser();
-        const uid = u.user!.id;
-        await supabase.from("profiles").update({
-          nome, renda_mensal: renda, saldo_inicial: saldo, onboarding_completed: true,
-        }).eq("id", uid);
-        const rows = SEED_GASTOS.map((g) => ({ ...g, user_id: uid, tipo: "A", frequencia: "mensal", ativo: true }));
-        await supabase.from("gastos_fixos").insert(rows);
+        updateProfile({ nome, renda_mensal: renda, saldo_inicial: saldo, onboarding_completed: true });
+        for (const g of SEED_GASTOS) {
+          insertRow("gastos_fixos", { ...g, tipo: "A" as const, frequencia: "mensal" as const, ativo: true });
+        }
         playSound("celebration");
       } catch (e: any) { toast.error(e?.message ?? "Erro"); }
       finally { setLoading(false); }
     }
-    if (step === total) { nav({ to: "/" }); return; }
+    if (step === total) { nav({ to: "/app" }); return; }
     setStep(step + 1);
     playSound("pop");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
-      <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-accent/30 blur-3xl" />
-
-      <div className="w-full max-w-md glass-strong p-6 relative fade-up">
-        {/* Progress */}
-        <div className="flex gap-1.5 mb-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-sm text-center space-y-6">
+        {/* Steps indicator */}
+        <div className="flex justify-center gap-1.5">
           {Array.from({ length: total }, (_, i) => (
-            <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i < step ? "mint-gradient" : "bg-black/10"}`} />
+            <div key={i} className={`h-1.5 rounded-full transition-all ${i < step ? "w-8 bg-primary" : "w-1.5 bg-muted-foreground/20"}`} />
           ))}
         </div>
 
+        {/* Step content */}
         {step === 1 && (
-          <StepFrame icon={Sparkles} title="Oi! Como te chamamos?" sub="Vamos personalizar sua planilha.">
-            <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" className="h-12 text-lg" autoFocus />
-          </StepFrame>
+          <div className="space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 grid place-items-center mx-auto">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="font-display text-2xl font-bold">Como quer ser chamado?</h1>
+            <Input autoFocus value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" className="text-center h-12 text-lg" />
+          </div>
         )}
         {step === 2 && (
-          <StepFrame icon={Wallet} title={`Prazer, ${nome}!`} sub="Quanto entra e quanto você tem hoje?">
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Renda mensal (R$)</Label>
-                <Input type="number" value={renda} onChange={(e) => setRenda(Number(e.target.value))} className="h-12 text-lg" />
-              </div>
-              <div>
-                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Saldo inicial (R$)</Label>
-                <Input type="number" value={saldo} onChange={(e) => setSaldo(Number(e.target.value))} className="h-12 text-lg" />
-              </div>
+          <div className="space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 grid place-items-center mx-auto">
+              <Wallet className="h-6 w-6 text-primary" />
             </div>
-          </StepFrame>
+            <h1 className="font-display text-2xl font-bold">Qual sua renda mensal?</h1>
+            <Input autoFocus type="number" value={renda} onChange={(e) => setRenda(Number(e.target.value))} className="text-center h-12 text-lg" />
+          </div>
         )}
         {step === 3 && (
-          <StepFrame icon={CreditCard} title="Gastos fixos comuns" sub="Cadastramos 10 exemplos. Você edita depois.">
-            <div className="max-h-64 overflow-y-auto glass rounded-lg divide-y divide-border">
-              {SEED_GASTOS.map((g, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                  <div>
-                    <div className="font-semibold">{g.descricao}</div>
-                    <div className="text-[11px] text-muted-foreground">{g.categoria} · dia {g.dia}</div>
-                  </div>
-                  <div className="text-primary font-bold tabular-nums">R$ {g.valor.toFixed(2)}</div>
-                </div>
-              ))}
+          <div className="space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 grid place-items-center mx-auto">
+              <CreditCard className="h-6 w-6 text-primary" />
             </div>
-          </StepFrame>
+            <h1 className="font-display text-2xl font-bold">Saldo atual na conta?</h1>
+            <Input autoFocus type="number" value={saldo} onChange={(e) => setSaldo(Number(e.target.value))} className="text-center h-12 text-lg" />
+          </div>
         )}
         {step === 4 && (
-          <StepFrame icon={CreditCard} title="Parcelas do cartão" sub="Você pode cadastrar depois na aba Parcelas. Importar CSV vem em breve.">
-            <div className="glass p-4 text-sm text-muted-foreground">💡 Dica: adicione suas parcelas para ver o impacto real nos próximos meses.</div>
-          </StepFrame>
+          <div className="space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 grid place-items-center mx-auto">
+              <PartyPopper className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="font-display text-2xl font-bold">Pronto!</h1>
+            <p className="text-sm text-muted-foreground">Vamos configurar seus gastos fixos.</p>
+          </div>
         )}
         {step === 5 && (
-          <StepFrame icon={PartyPopper} title={`Tudo pronto, ${nome}!`} sub="Sua planilha está montada. Bora visualizar o futuro.">
-            <div className="text-6xl text-center py-4">🎉</div>
-          </StepFrame>
+          <div className="space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 grid place-items-center mx-auto">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="font-display text-2xl font-bold">Tudo certo!</h1>
+            <p className="text-sm text-muted-foreground">Seu fluxo financeiro está pronto.</p>
+          </div>
         )}
 
-        <div className="mt-6 flex justify-between items-center">
-          <Button variant="ghost" onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1}>Voltar</Button>
-          <Button onClick={next} disabled={loading} className="mint-gradient font-semibold px-6 h-11">
-            {step === total ? "Começar 🚀" : `Próximo (${step}/${total})`}
-          </Button>
-        </div>
+        <Button onClick={next} disabled={loading} className="w-full bg-primary text-primary-foreground font-semibold h-12 text-base">
+          {loading ? "Salvando..." : step === total ? "Ver meu fluxo" : "Continuar"}
+        </Button>
       </div>
-    </div>
-  );
-}
-
-function StepFrame({ icon: Icon, title, sub, children }: { icon: any; title: string; sub: string; children: React.ReactNode }) {
-  return (
-    <div className="fade-up">
-      <div className="h-12 w-12 rounded-xl mint-gradient grid place-items-center mb-3">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h2 className="font-display text-xl font-bold">{title}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{sub}</p>
-      {children}
     </div>
   );
 }

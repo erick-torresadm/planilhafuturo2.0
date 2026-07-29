@@ -23,7 +23,7 @@ const TONE = {
 export function KpiCard({ label, value, icon: Icon, hint, delta, tone = "default", className }: Props) {
   const t = TONE[tone];
   return (
-    <div className={cn("hope-card p-5", className)}>
+    <div className={cn("card-strong p-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="eyebrow">{label}</div>

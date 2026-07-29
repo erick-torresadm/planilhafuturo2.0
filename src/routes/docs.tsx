@@ -45,7 +45,7 @@ function DocsPage() {
             <Link to="/" className="hover:text-foreground transition">Início</Link>
             <span className="text-foreground font-medium">Documentação</span>
           </nav>
-          <Link to="/auth" className="inline-flex items-center gap-1.5 text-sm rounded-full mint-gradient px-4 py-2 font-semibold">
+          <Link to="/auth" className="inline-flex items-center gap-1.5 text-sm rounded-full bg-primary text-primary-foreground px-4 py-2 font-semibold">
             Entrar <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -302,7 +302,7 @@ function DocsPage() {
             <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
               Em 10 minutos você tem tudo configurado e enxerga o que vai sobrar (ou faltar) todo mês.
             </p>
-            <Link to="/auth" className="mt-6 inline-flex items-center gap-2 rounded-full mint-gradient px-6 py-3 font-semibold">
+            <Link to="/auth" className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 font-semibold">
               Começar grátis <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

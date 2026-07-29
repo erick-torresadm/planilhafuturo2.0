@@ -30,5 +30,5 @@ export function Money({ value, className, signed, showSign, muted, compact }: Pr
     else if (abs >= 1000) str = `R$ ${(abs / 1000).toFixed(1).replace(".", ",")}k`;
   }
   const prefix = n < 0 ? "−" : showSign && n > 0 ? "+" : "";
-  return <span className={cn("num tabular-nums", cls, className)}>{prefix}{str.replace("R$", "R$")}</span>;
+  return <span className={cn("num tabular-nums", cls, className)}>{prefix}{str}</span>;
 }
