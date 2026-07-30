@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow, getProfile } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, Shield, Gift, Car, BookOpen, CreditCard, Banknote, ThumbsUp, AlertCircle, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, ShieldCheck, Gift, Car, BookOpen, CreditCard, Banknote, ThumbsUp, AlertCircle, type LucideIcon } from "lucide-react";
 import { totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
@@ -24,7 +24,7 @@ const TIPOS = ["Tecnologia", "Casa", "Lazer", "Educacao", "Vestuario", "Outros"]
 const CAIXA_ICONS: Record<string, LucideIcon> = {
   reserva: PiggyBank,
   viagem: Target,
-  emergencia: Shield,
+  emergencia: ShieldCheck,
   presente: Gift,
   carro: Car,
   educacao: BookOpen,
