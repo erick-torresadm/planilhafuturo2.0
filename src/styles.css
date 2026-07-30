@@ -93,7 +93,7 @@
   --popover: #ffffff;
   --popover-fg: #1a1d23;
 
-  --primary: #2563eb;
+  --primary: #059669;
   --primary-fg: #ffffff;
 
   --secondary: #f1f3f7;
@@ -101,14 +101,14 @@
   --muted: #f1f3f7;
   --muted-fg: #7c818a;
 
-  --accent: #eef2ff;
-  --accent-fg: #1e40af;
+  --accent: #ecfdf5;
+  --accent-fg: #065f46;
 
   --destructive: #dc2626;
 
   --border: #e2e5ea;
   --input: #d5d8de;
-  --ring: #2563eb;
+  --ring: #059669;
 
   --positive: #16a34a;
   --positive-soft: #f0fdf4;
@@ -135,18 +135,18 @@
   --card-fg: #e8eaef;
   --popover: #1c1e28;
   --popover-fg: #e8eaef;
-  --primary: #3b82f6;
-  --primary-fg: #ffffff;
+  --primary: #34d399;
+  --primary-fg: #0f1117;
   --secondary: #23252f;
   --secondary-fg: #e8eaef;
   --muted: #23252f;
   --muted-fg: #8a8f99;
-  --accent: #1e2440;
-  --accent-fg: #93aaff;
+  --accent: #0a2920;
+  --accent-fg: #6ee7b7;
   --destructive: #ef4444;
   --border: #272a35;
   --input: #2e313d;
-  --ring: #3b82f6;
+  --ring: #34d399;
   --positive: #22c55e;
   --positive-soft: #132b1a;
   --negative: #ef4444;
@@ -503,7 +503,7 @@
   min-height: 44px;
 }
 .mint-gradient {
-  background: linear-gradient(135deg, var(--color-primary), #4f9cf7);
+  background: linear-gradient(135deg, var(--color-primary), #34d399);
   color: var(--color-primary-foreground);
 }
 :root {

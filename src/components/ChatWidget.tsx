@@ -103,7 +103,7 @@ export function ChatWidget({ appData }: Props) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-5 lg:bottom-24 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-[#4f9cf7] text-white shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
+          className="fixed bottom-20 right-5 lg:bottom-24 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
           aria-label="Abrir chat IA"
         >
           <MessageCircle className="h-5 w-5" strokeWidth={2} />
