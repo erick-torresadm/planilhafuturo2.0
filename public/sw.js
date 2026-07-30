@@ -5,7 +5,7 @@ const STATIC_ASSETS = [
   "/manifest.webmanifest",
   "/pwa-icon.png",
   "/favicon.png",
-  "/offline",
+  "/offline.html",
 ];
 const ASSETS_PREFIXES = ["/assets/", "/_build/"];
 
@@ -83,7 +83,7 @@ async function navStrategy(req) {
     const cached = await caches.match(req);
     if (cached) return cached;
     // If the offline page isn't cached either, fetch and cache it
-    const offline = await caches.match("/offline");
+    const offline = await caches.match("/offline.html");
     if (offline) return offline;
     return new Response("Você está offline.", {
       status: 200,
