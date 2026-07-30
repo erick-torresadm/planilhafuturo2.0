@@ -27,10 +27,30 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => 
   if (target && typeof (target as Response).headers?.set === "function") {
     const h = (target as Response).headers;
     h.set("X-Frame-Options", "DENY");
-    h.set("Content-Security-Policy", "frame-ancestors 'none'");
     h.set("X-Content-Type-Options", "nosniff");
     h.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    h.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    h.set("Cross-Origin-Opener-Policy", "same-origin");
+    h.set("Cross-Origin-Resource-Policy", "same-origin");
+    h.set(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=(), midi=(), sync-xhr=(), fullscreen=(self)",
+    );
+    h.set(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // framework needs these for hot-reload & client-side rendering
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: https:",
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://efipay.com.br https://sandbox.efipay.com.br https://api.efipay.com.br https://ai.gateway.lovable.dev",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "form-action 'self'",
+        "manifest-src 'self'",
+      ].join("; "),
+    );
   }
   return response;
 });
