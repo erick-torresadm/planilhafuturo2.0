@@ -51,13 +51,18 @@ export async function insertRow<T extends Record<string, any> = any>(
     if (newRow[k] === undefined) delete newRow[k];
   });
 
+  console.log("Tentando salvar no Supabase:", table, newRow);
+
   const { data, error } = await supabase
     .from(table)
     .insert(newRow)
     .select()
     .single();
 
-  if (error) throw new Error(`Erro ao criar em ${table}: ${error.message}`);
+  if (error) {
+    console.error("ERRO SUPABASE DETALHADO:", error);
+    throw new Error(`Erro ao criar em ${table}: ${error.message} (Detalhes: ${JSON.stringify(error)})`);
+  }
   return data as T;
 }
 
