@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState, type FormEvent } from "react";
 import {
   ArrowRight, Check, CalendarDays, Receipt, CreditCard, Sparkles,
-  Wallet, ListChecks, TrendingUp, ChevronDown,
+  Wallet, ListChecks, TrendingUp, ChevronDown, FileSpreadsheet,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { joinWaitlist } from "@/lib/waitlist.functions";
@@ -312,7 +312,6 @@ function Pricing() {
         "Sem cartão de crédito",
       ],
       cta: "Começar grátis",
-      destaque: false,
     },
     {
       name: "PRO Anual",
@@ -327,7 +326,6 @@ function Pricing() {
         "Exportação de dados",
       ],
       cta: "Assinar PRO",
-      destaque: true,
     },
     {
       name: "Vitalício",
@@ -342,7 +340,6 @@ function Pricing() {
         "Sua planilha pra sempre",
       ],
       cta: "Garantir vitalício",
-      destaque: false,
     },
   ];
   return (
@@ -380,6 +377,18 @@ function Pricing() {
             </div>
           );
         })}
+      </div>
+
+      {/* ─── Planilha avulsa ─── */}
+      <div className="mt-8 max-w-lg mx-auto rounded-2xl border border-dashed border-border bg-card/50 p-5 text-center">
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <FileSpreadsheet className="h-4 w-4 text-primary" />
+          <span>Ou leve a <strong className="text-foreground">Planilha do Erick</strong> em Excel — <strong className="text-foreground text-base">R$ 70</strong></span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">Única parcela, sua pra sempre. Mesma planilha que o Erick usa, sem assinatura.</p>
+        <Link to="/auth" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+          Comprar planilha <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </Section>
   );
