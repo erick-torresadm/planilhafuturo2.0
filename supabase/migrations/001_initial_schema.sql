@@ -54,7 +54,7 @@ BEGIN
     0,
     0,
     now(),
-    now() + interval '14 days',
+    now() + interval '7 days',
     false
   );
   RETURN NEW;

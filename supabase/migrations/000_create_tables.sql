@@ -181,7 +181,19 @@ CREATE TABLE IF NOT EXISTS assinaturas (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 14. waitlist
+-- 14. compras_avulsas (planilha, etc)
+CREATE TABLE IF NOT EXISTS compras_avulsas (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  item TEXT NOT NULL,
+  valor NUMERIC NOT NULL,
+  status TEXT DEFAULT 'pendente',
+  txid TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 15. waitlist
 CREATE TABLE IF NOT EXISTS waitlist (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL,

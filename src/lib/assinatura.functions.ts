@@ -7,9 +7,8 @@ import { createPixCharge, checkPixStatus } from "./efi-service";
 import { supabase } from "@/integrations/supabase/client";
 
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
-  mensal: { nome: "Mensal", valor: 69.90, dias: 30 },
-  anual: { nome: "Anual", valor: 300, dias: 365 },
-  vitalicio: { nome: "Vitalício", valor: 800, dias: 365 * 100 },
+  anual: { nome: "PRO Anual", valor: 250, dias: 365 },
+  vitalicio: { nome: "Vitalício", valor: 450, dias: 365 * 100 },
 };
 
 type CheckoutResult =

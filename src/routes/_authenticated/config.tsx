@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { getApiKey, setApiKey, hasApiKey } from "@/lib/ai-service";
 import { toast } from "sonner";
-import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database } from "lucide-react";
+import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { hasLocalData, getLocalStats, migrateLocalDataToSupabase, clearLocalData, getLocalTotalCount } from "@/lib/migrate-local-to-supabase";
 
@@ -86,6 +86,13 @@ function ConfigPage() {
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // ─── Compra Planilha ────────────────────────────
+  const [planilhaPix, setPlanilhaPix] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
+  const [planilhaLoading, setPlanilhaLoading] = useState(false);
+  const [planilhaVerifying, setPlanilhaVerifying] = useState(false);
+  const [planilhaPaga, setPlanilhaPaga] = useState(false);
+  const [planilhaBaixando, setPlanilhaBaixando] = useState(false);
+
   useEffect(() => {
     import("@/lib/assinatura.functions").then((m) => {
       m.getSubscriptionStatus().then(setPlanoStatus);
@@ -115,7 +122,8 @@ function ConfigPage() {
     setVerifying(true);
     try {
       const m = await import("@/lib/assinatura.functions");
-      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: "mensal" } });
+      // Detecta qual plano pelo txid — tenta anual primeiro
+      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: "anual" } });
       if (result.paid) {
         toast.success(`Assinatura ${result.plano} ativada!`);
         setPixData(null);
@@ -301,17 +309,16 @@ function ConfigPage() {
 
         {/* Plan options */}
         {planoStatus?.status !== "ativo" && !pixData && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { id: "mensal", nome: "Mensal", valor: 69.90, destaque: false },
-              { id: "anual", nome: "Anual", valor: 300, destaque: true, tag: "2 meses grátis" },
-              { id: "vitalicio", nome: "Vitalício", valor: 800, destaque: false, tag: "Única parcela" },
+              { id: "anual", nome: "PRO Anual", valor: 250, destaque: true, tag: "Maior custo-benefício", detalhe: "R$ 21/mês" },
+              { id: "vitalicio", nome: "Vitalício", valor: 450, destaque: false, tag: "Única parcela · pra sempre" },
             ].map((plano) => (
               <button
                 key={plano.id}
                 onClick={() => handleAssinar(plano.id)}
                 disabled={pixLoading}
-                className={`rounded-xl border-2 p-4 text-center transition-all hover:shadow-md disabled:opacity-50 ${
+                className={`rounded-xl border-2 p-5 text-center transition-all hover:shadow-md disabled:opacity-50 ${
                   plano.destaque
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
@@ -323,11 +330,10 @@ function ConfigPage() {
                   </span>
                 )}
                 <p className="font-display text-lg font-bold">{plano.nome}</p>
-                <p className="text-2xl font-bold tabular-nums mt-1">
-                  R$ {plano.valor.toFixed(0)}
+                <p className="text-3xl font-bold tabular-nums mt-2">
+                  R$ {plano.valor}
                 </p>
-                {plano.id === "mensal" && <p className="text-[10px] text-muted-foreground mt-1">por mês</p>}
-                {plano.id === "anual" && <p className="text-[10px] text-muted-foreground mt-1">R$ 25/mês</p>}
+                {plano.detalhe && <p className="text-[11px] text-muted-foreground mt-1">{plano.detalhe}</p>}
               </button>
             ))}
           </div>
@@ -338,6 +344,102 @@ function ConfigPage() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
+      </section>
+
+      {/* ─── Planilha do Erick ─────────────────── */}
+      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <FileSpreadsheet className="h-4 w-4 text-primary" />
+          <h2 className="font-display font-semibold">Planilha do Erick</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Versão oficial da planilha em Excel (.xlsx) — R$ 70 <strong>pra sempre</strong> seu.
+          Mesma planilha que o Erick usa, sem marca d'água, sem assinatura.
+        </p>
+
+        {/* Pix para planilha */}
+        {!planilhaPaga && planilhaPix && (
+          <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
+            <p className="text-sm font-semibold">Pague R$ 70 via Pix</p>
+            {planilhaPix.qrcode && (
+              <img src={`data:image/png;base64,${planilhaPix.qrcode}`} alt="QR Code Pix" className="mx-auto w-44 h-44 rounded-xl" />
+            )}
+            <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
+              <span className="flex-1 truncate">{planilhaPix.pixCopiaECola}</span>
+              <button onClick={() => { navigator.clipboard.writeText(planilhaPix.pixCopiaECola); toast.success("Código Pix copiado!"); }} className="shrink-0 text-primary hover:text-primary/80">
+                <Copy className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={() => setPlanilhaPix(null)} variant="outline" size="sm">Cancelar</Button>
+              <Button onClick={async () => {
+                setPlanilhaVerifying(true);
+                try {
+                  const m = await import("@/lib/planilha-compra.functions");
+                  const r = await m.verificarCompraPlanilha({ data: { txid: planilhaPix.txid } });
+                  if (r.ok) {
+                    toast.success("Pagamento confirmado!");
+                    setPlanilhaPaga(true);
+                    setPlanilhaPix(null);
+                  } else {
+                    toast.error(r.error);
+                  }
+                } catch (e: any) {
+                  toast.error(e.message ?? "Erro ao verificar");
+                } finally { setPlanilhaVerifying(false); }
+              }} disabled={planilhaVerifying} size="sm">
+                {planilhaVerifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                Já paguei
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Status / download */}
+        {planilhaPaga ? (
+          <div className="rounded-xl bg-positive-soft border border-positive/20 p-4 text-center space-y-2">
+            <Check className="h-6 w-6 text-positive mx-auto" />
+            <p className="font-semibold text-positive">Planilha liberada!</p>
+            <p className="text-xs text-muted-foreground">Ela é sua pra sempre.</p>
+            <Button onClick={async () => {
+              setPlanilhaBaixando(true);
+              try {
+                const m = await import("@/lib/planilha-compra.functions");
+                const r = await m.baixarPlanilha();
+                if (r.ok) {
+                  const blob = new Blob([Uint8Array.from(atob(r.base64), c => c.charCodeAt(0))], { type: r.tipo });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = r.nome; a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("Download iniciado!");
+                } else {
+                  toast.error(r.error);
+                }
+              } catch (e: any) {
+                toast.error(e.message ?? "Erro ao baixar");
+              } finally { setPlanilhaBaixando(false); }
+            }} disabled={planilhaBaixando} className="w-full">
+              {planilhaBaixando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+              Baixar planilha
+            </Button>
+          </div>
+        ) : !planilhaPix ? (
+          <Button onClick={async () => {
+            setPlanilhaLoading(true);
+            try {
+              const m = await import("@/lib/planilha-compra.functions");
+              const r = await m.criarCompraPlanilha();
+              if (r.ok) setPlanilhaPix(r);
+              else toast.error(r.error);
+            } catch (e: any) {
+              toast.error(e.message ?? "Erro ao gerar Pix");
+            } finally { setPlanilhaLoading(false); }
+          }} disabled={planilhaLoading} className="w-full">
+            {planilhaLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+            Comprar por R$ 70
+          </Button>
+        ) : null}
       </section>
 
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">

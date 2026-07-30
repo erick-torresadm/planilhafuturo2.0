@@ -87,7 +87,7 @@ function Hero() {
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-8">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Beta aberto — grátis pra sempre no plano inicial
+            7 dias grátis · sem cartão
           </div>
           <h1 className="font-display text-[2.5rem] leading-[1.05] sm:text-6xl md:text-7xl tracking-tight">
             Seu dinheiro nos<br />
@@ -298,40 +298,81 @@ function Steps() {
 
 /* ============ PRICING ============ */
 function Pricing() {
-  const [annual, setAnnual] = useState(false);
   const plans = [
-    { name: "Grátis", price: 0, priceYear: 0, features: ["Até 3 meses de projeção", "Fluxo diário completo", "Gastos e parcelas", "1 usuário"] },
-    { name: "Pro", price: 19, priceYear: 15, badge: "Mais usado", features: ["6 meses de projeção", "Desejos e caixinhas", "Investimentos e patrimônio", "Lembretes por e-mail", "Exportar CSV"] },
+    {
+      name: "Trial Grátis",
+      price: 0,
+      periodo: "7 dias",
+      badge: "",
+      features: [
+        "Tudo liberado por 7 dias",
+        "Fluxo diário completo",
+        "Gastos fixos e parcelas",
+        "Desejos, caixinhas, investimentos",
+        "Sem cartão de crédito",
+      ],
+      cta: "Começar grátis",
+      destaque: false,
+    },
+    {
+      name: "PRO Anual",
+      price: 250,
+      periodo: "/ano",
+      badge: "Mais escolhido",
+      features: [
+        "6 meses de projeção diária",
+        "Todas as funcionalidades",
+        "Assistente IA completo",
+        "Suporte prioritário",
+        "Exportação de dados",
+      ],
+      cta: "Assinar PRO",
+      destaque: true,
+    },
+    {
+      name: "Vitalício",
+      price: 450,
+      periodo: "única parcela",
+      badge: "Pra sempre",
+      features: [
+        "Tudo do PRO",
+        "Sem renovação anual",
+        "Acesso vitalício",
+        "Atualizações futuras inclusas",
+        "Sua planilha pra sempre",
+      ],
+      cta: "Garantir vitalício",
+      destaque: false,
+    },
   ];
   return (
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">Preços</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Menos que um café por semana.</h2>
-        <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-border p-1 bg-card text-sm">
-          <button onClick={() => setAnnual(false)} className={`px-4 py-1.5 rounded-full transition ${!annual ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Mensal</button>
-          <button onClick={() => setAnnual(true)} className={`px-4 py-1.5 rounded-full transition inline-flex items-center gap-1.5 ${annual ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-            Anual <span className={`text-[10px] font-mono ${annual ? "opacity-80" : "text-primary"}`}>-20%</span>
-          </button>
-        </div>
+        <h2 className="font-display text-4xl sm:text-5xl">Teste 7 dias grátis.<br /><span className="italic text-primary">Depois escolhe.</span></h2>
+        <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Sem compromisso. Sem frescura. Cancela quando quiser.</p>
       </div>
-      <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
         {plans.map((p) => {
-          const price = annual ? p.priceYear : p.price;
-          const isPro = p.name === "Pro";
+          const isPro = p.name === "PRO Anual";
           return (
-            <div key={p.name} className={`rounded-2xl border p-8 relative ${isPro ? "border-primary/40 bg-primary/[0.03]" : "border-border bg-card"}`} style={isPro ? { boxShadow: "var(--shadow-card)" } : {}}>
-              {p.badge && <div className="absolute -top-3 left-8 chip bg-primary text-primary-foreground">{p.badge}</div>}
-              <div className="font-display text-2xl">{p.name}</div>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="font-display text-5xl num-lg">R${price}</span>
-                <span className="text-sm text-muted-foreground">/mês</span>
+            <div key={p.name} className={`rounded-2xl border p-6 relative flex flex-col ${isPro ? "border-primary/40 bg-primary/[0.03] scale-[1.02]" : "border-border bg-card"}`} style={isPro ? { boxShadow: "var(--shadow-card)" } : {}}>
+              {p.badge && <div className="absolute -top-3 left-6 chip bg-primary text-primary-foreground text-[10px]">{p.badge}</div>}
+              <div className="font-display text-xl">{p.name}</div>
+              <div className="mt-3 flex items-baseline gap-1">
+                {p.price === 0 ? (
+                  <span className="font-display text-4xl num-lg">Grátis</span>
+                ) : (
+                  <>
+                    <span className="font-display text-4xl num-lg">R$ {p.price}</span>
+                    <span className="text-xs text-muted-foreground">{p.periodo}</span>
+                  </>
+                )}
               </div>
-              {annual && p.price > 0 && <div className="text-xs text-muted-foreground mt-1">Cobrado R$ {p.priceYear * 12} por ano</div>}
-              <Link to="/auth" className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
-                {p.price === 0 ? "Começar grátis" : "Assinar Pro"} <ArrowRight className="h-3.5 w-3.5" />
+              <Link to="/auth" className={`mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
+                {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <ul className="mt-6 space-y-2.5 text-sm">
+              <ul className="mt-5 space-y-2 text-sm flex-1">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {f}</li>
                 ))}
@@ -351,8 +392,10 @@ function Faq() {
     { q: "Preciso conectar meu banco?", a: "Não. Você digita — é rápido, e você fica no controle. Integração com Open Finance vem em 2026." },
     { q: "É igual a uma planilha comum?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
     { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. 80% dos nossos usuários usam no ônibus." },
+    { q: "Como funciona o teste grátis?", a: "São 7 dias com tudo liberado. Sem cartão de crédito. Se não assinar, o acesso expira — mas seus dados ficam salvos." },
+    { q: "Quanto custa depois do teste?", a: "PRO Anual é R$ 250/ano (R$ 21/mês). Vitalício é R$ 450 — pagamento único, seu pra sempre. Os dois com todas as funções." },
+    { q: "Posso comprar a planilha original?", a: "Sim. A Planilha do Erick em Excel (.xlsx) custa R$ 70 — única parcela, sua pra sempre. Disponível nas Configurações do app." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
-    { q: "Tem versão grátis pra sempre?", a: "Tem. O plano Grátis atende quem quer só ver os próximos 3 meses. Pro é pra quem quer os 6 meses e caixinhas." },
     { q: "Suporte se eu travar?", a: "Sim, humano de verdade. Responde em até 24h por e-mail." },
     { q: "Vocês vão sumir daqui a 6 meses?", a: "Não. É um SaaS pago com receita — a gente sobrevive dos assinantes, não de investidor." },
   ];
@@ -400,7 +443,7 @@ function Cta() {
         <div aria-hidden className="absolute inset-0 grid-bg opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="relative">
           <h2 className="font-display text-4xl sm:text-5xl max-w-2xl mx-auto">Pare de rezar pra planilha não quebrar.</h2>
-          <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Entre no beta. Grátis, sem cartão, com todas as funções do Pro liberadas por 30 dias.</p>
+          <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Experimente 7 dias grátis com tudo liberado. Sem cartão, sem compromisso.</p>
           <form onSubmit={submit} className="mt-8 max-w-md mx-auto flex flex-col sm:flex-row gap-2">
             <input
               type="email"

@@ -44,3 +44,8 @@ dist-ssr
 
 # Claude Code
 .claude/
+
+# Paid assets (server-only products)
+server-assets/*.xlsx
+server-assets/*.pdf
+!server-assets/.gitkeep

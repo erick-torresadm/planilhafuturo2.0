@@ -80,6 +80,39 @@ export type Database = {
         }
         Relationships: []
       }
+      compras_avulsas: {
+        Row: {
+          created_at: string | null
+          id: string
+          item: string
+          status: string | null
+          txid: string | null
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item: string
+          status?: string | null
+          txid?: string | null
+          updated_at?: string | null
+          user_id: string
+          valor: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item?: string
+          status?: string | null
+          txid?: string | null
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       desejos: {
         Row: {
           created_at: string | null
