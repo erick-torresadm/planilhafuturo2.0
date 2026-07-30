@@ -1,15 +1,60 @@
 /**
  * Server functions for subscription management via Efí Pagamentos.
+ * Includes both authenticated (post-signup) and unauthenticated (pre-signup) flows.
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { createPixCharge, checkPixStatus } from "./efi-service";
+import { createPixCharge, checkPixStatus, createCreditCardCharge, type CreditCardDetails } from "./efi-service";
 import { supabase } from "@/integrations/supabase/client";
 
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
   anual: { nome: "PRO Anual", valor: 250, dias: 365 },
   vitalicio: { nome: "Vitalício", valor: 450, dias: 365 * 100 },
 };
+
+// ─── Helpers ───────────────────────────────────────────────
+
+async function getUserId(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
+async function getAdminDb() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
+async function upsertAssinatura(userId: string, planoNome: string) {
+  const admin = await getAdminDb();
+  const now = new Date().toISOString();
+
+  // Check if an active subscription already exists
+  const { data: existing } = await admin
+    .from("assinaturas")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("status", "ativo")
+    .maybeSingle();
+
+  if (existing) {
+    await admin
+      .from("assinaturas")
+      .update({ plano: planoNome, updated_at: now })
+      .eq("id", existing.id);
+  } else {
+    await admin
+      .from("assinaturas")
+      .insert({ user_id: userId, plano: planoNome, status: "ativo", created_at: now, updated_at: now });
+  }
+
+  // Update profile
+  await admin
+    .from("profiles")
+    .update({ plano: planoNome, trial_ends_at: null })
+    .eq("id", userId);
+}
+
+// ─── Authenticated checkout (post-signup, via Config page) ──
 
 type CheckoutResult =
   | { ok: true; txid: string; pixCopiaECola: string; qrcode: string; valor: number }
@@ -21,8 +66,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const plano = PLANOS[data.plano];
     if (!plano) return { ok: false, error: "Plano inválido" };
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { ok: false, error: "Não autenticado" };
+    const userId = await getUserId();
+    if (!userId) return { ok: false, error: "Não autenticado" };
 
     try {
       const pix = await createPixCharge(
@@ -51,8 +96,8 @@ export const verifyPayment = createServerFn({ method: "POST" })
     const plano = PLANOS[data.plano];
     if (!plano) return { paid: false, error: "Plano inválido" };
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { paid: false, error: "Não autenticado" };
+    const userId = await getUserId();
+    if (!userId) return { paid: false, error: "Não autenticado" };
 
     try {
       const status = await checkPixStatus(data.txid);
@@ -60,25 +105,7 @@ export const verifyPayment = createServerFn({ method: "POST" })
         return { paid: false, error: "Pagamento não confirmado" };
       }
 
-      // Update assinatura and profile
-      const userId = session.user.id;
-      const now = new Date();
-
-      await supabase.from("assinaturas").upsert({
-        user_id: userId,
-        plano: plano.nome,
-        status: "ativo",
-        created_at: now.toISOString(),
-        updated_at: now.toISOString(),
-      });
-
-      await supabase
-        .from("profiles")
-        .update({
-          plano: plano.nome,
-          trial_ends_at: null,
-        })
-        .eq("id", userId);
+      await upsertAssinatura(userId, plano.nome);
 
       return { paid: true, plano: plano.nome, dias: plano.dias };
     } catch (err: any) {
@@ -93,10 +120,8 @@ type SubscriptionStatus =
 
 export const getSubscriptionStatus = createServerFn({ method: "GET" })
   .handler(async (): Promise<SubscriptionStatus> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { status: "inativo" };
-
-    const userId = session.user.id;
+    const userId = await getUserId();
+    if (!userId) return { status: "inativo" };
 
     // Check for active subscription
     const { data: assinatura } = await supabase
@@ -104,7 +129,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
       .select("*")
       .eq("user_id", userId)
       .eq("status", "ativo")
-      .single();
+      .maybeSingle();
 
     if (assinatura) {
       return { status: "ativo", plano: assinatura.plano ?? "Mensal" };
@@ -115,7 +140,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
       .from("profiles")
       .select("trial_ends_at, plano")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     if (profile?.trial_ends_at) {
       const remaining = Math.ceil(
@@ -127,4 +152,142 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
     }
 
     return { status: "inativo" };
+  });
+
+// ─── Pre-signup checkout (pay first, create account later) ──
+
+type PreSignupCheckoutResult =
+  | { ok: true; metodo: "pix"; txid: string; pixCopiaECola: string; qrcode: string; valor: number }
+  | { ok: true; metodo: "cartao"; paid: boolean; charge_id: number; message?: string }
+  | { ok: false; error: string };
+
+export const createPreSignupCheckout = createServerFn({ method: "POST" })
+  .validator((data: { email: string; plano: string; metodo: "pix" | "cartao"; cardDetails?: CreditCardDetails }) => data)
+  .handler(async ({ data }): Promise<PreSignupCheckoutResult> => {
+    const plano = PLANOS[data.plano];
+    if (!plano) return { ok: false, error: "Plano inválido" };
+    if (!data.email) return { ok: false, error: "Email é obrigatório" };
+
+    const admin = await getAdminDb();
+
+    try {
+      if (data.metodo === "pix") {
+        const pix = await createPixCharge(plano.valor, `Planilhafuturo ${plano.nome}`);
+
+        // Store pre-payment
+        await admin.from("pre_pagamentos").insert({
+          email: data.email,
+          plano: plano.nome,
+          txid: pix.txid,
+          status: "pendente",
+          valor: pix.valor,
+          pagamento_metodo: "pix",
+        });
+
+        return {
+          ok: true,
+          metodo: "pix",
+          txid: pix.txid,
+          pixCopiaECola: pix.pixCopiaECola,
+          qrcode: pix.qrcode,
+          valor: pix.valor,
+        };
+      } else {
+        // Credit card
+        if (!data.cardDetails) return { ok: false, error: "Dados do cartão são obrigatórios" };
+
+        const cardResult = await createCreditCardCharge(
+          plano.valor,
+          `Planilhafuturo ${plano.nome}`,
+          data.cardDetails,
+        );
+
+        const paid = cardResult.status === "paid" || cardResult.status === "completed";
+        const status = paid ? "pago" : "pendente";
+
+        await admin.from("pre_pagamentos").insert({
+          email: data.email,
+          plano: plano.nome,
+          status,
+          valor: plano.valor,
+          pagamento_metodo: "cartao",
+          paid_at: paid ? new Date().toISOString() : null,
+        });
+
+        return {
+          ok: true,
+          metodo: "cartao",
+          paid,
+          charge_id: cardResult.charge_id,
+          message: cardResult.message,
+        };
+      }
+    } catch (err: any) {
+      return { ok: false, error: err.message ?? "Erro ao processar pagamento" };
+    }
+  });
+
+type PreSignupVerifyResult =
+  | { paid: true }
+  | { paid: false; error: string };
+
+export const verifyPreSignupPayment = createServerFn({ method: "POST" })
+  .validator((data: { email: string; txid: string }) => data)
+  .handler(async ({ data }): Promise<PreSignupVerifyResult> => {
+    try {
+      const pixStatus = await checkPixStatus(data.txid);
+      if (pixStatus.status !== "CONCLUIDA") {
+        return { paid: false, error: "Pagamento não confirmado" };
+      }
+
+      const admin = await getAdminDb();
+      await admin
+        .from("pre_pagamentos")
+        .update({ status: "pago", paid_at: new Date().toISOString() })
+        .eq("txid", data.txid)
+        .eq("email", data.email);
+
+      return { paid: true };
+    } catch (err: any) {
+      return { paid: false, error: err.message ?? "Erro ao verificar pagamento" };
+    }
+  });
+
+type ActivateResult =
+  | { ok: true; plano: string }
+  | { ok: false; error: string };
+
+/**
+ * Called after user signs up to activate a pre-paid plan.
+ * Matches by email.
+ */
+export const activatePlanPostSignup = createServerFn({ method: "POST" })
+  .validator((data: { email: string }) => data)
+  .handler(async ({ data }): Promise<ActivateResult> => {
+    const userId = await getUserId();
+    if (!userId) return { ok: false, error: "Não autenticado" };
+
+    const admin = await getAdminDb();
+    const userEmail = data.email;
+
+    // Find matching paid pre_pagamento that hasn't been activated
+    const { data: pre } = await admin
+      .from("pre_pagamentos")
+      .select("*")
+      .eq("email", userEmail)
+      .eq("status", "pago")
+      .is("activated_at", null)
+      .maybeSingle();
+
+    if (!pre) return { ok: false, error: "Nenhum pagamento pendente encontrado para este email" };
+
+    await upsertAssinatura(userId, pre.plano);
+
+    // Mark pre_pagamento as activated
+    await admin
+      .from("pre_pagamentos")
+      .update({ activated_at: new Date().toISOString(), status: "ativado", user_id: userId })
+      .eq("id", pre.id);
+
+    return { ok: true, plano: pre.plano };
   });

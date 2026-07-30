@@ -43,7 +43,7 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => 
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://efipay.com.br https://sandbox.efipay.com.br https://api.efipay.com.br https://ai.gateway.lovable.dev",
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://efipay.com.br https://sandbox.efipay.com.br https://api.efipay.com.br https://ai.gateway.lovable.dev https://economia.awesomeapi.com.br https://brasilapi.com.br",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "object-src 'none'",

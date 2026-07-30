@@ -57,9 +57,9 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
       <button
         type="button"
         onClick={open}
-        onFocus={open}
         className={cn(
           "px-2 py-1 h-full w-full text-left flex items-center tabular-nums text-sm hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40",
+          "touch-manipulation",
           align === "right" && "justify-end",
           className,
         )}
@@ -81,8 +81,11 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
       }}
       inputMode="decimal"
       spellCheck={false}
+      autoComplete="off"
       className={cn(
-        "px-2 py-1 h-full w-full bg-primary/5 border-2 border-primary focus:outline-none text-sm tabular-nums font-mono",
+        "px-2 py-1 h-full w-full bg-primary/5 border-2 border-primary focus:outline-none tabular-nums font-mono",
+        "text-sm sm:text-sm text-[16px]", // 16px on mobile prevents iOS zoom on focus
+        "touch-manipulation",
         align === "right" && "text-right",
       )}
     />

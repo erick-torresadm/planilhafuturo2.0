@@ -4,11 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { Mail, Lock, Loader2, Eye, EyeOff, Chrome, MailCheck, User } from "lucide-react";
+import { Crown, Mail, Lock, Loader2, Eye, EyeOff, Chrome, MailCheck, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, string | undefined>) => ({
+    email: search.email as string | undefined,
+    plan: search.plan as string | undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Entrar — planilhafuturo" },
@@ -23,9 +27,11 @@ type Tab = "entrar" | "criar";
 function AuthPage() {
   const nav = useNavigate();
   const { user, loading: authLoading, signIn, signUp, signInWithGoogle } = useAuth();
+  const { email: planEmail, plan: planName } = Route.useSearch();
+  const emailLocked = !!planEmail;
 
-  const [tab, setTab] = useState<Tab>("entrar");
-  const [email, setEmail] = useState("");
+  const [tab, setTab] = useState<Tab>(planEmail ? "criar" : "entrar");
+  const [email, setEmail] = useState(planEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [nome, setNome] = useState("");
@@ -65,6 +71,16 @@ function AuthPage() {
         toast.success("Conta criada!", { description: "Verifique seu email para ativar sua conta." });
         setJustSignedUp(true);
       } else {
+        // Try to activate pre-paid plan
+        if (planEmail) {
+          try {
+            const m = await import("@/lib/assinatura.functions");
+            const result = await m.activatePlanPostSignup({ data: { email: planEmail } });
+            if (result.ok) {
+              toast.success(`Plano ${result.plano} ativado! Bem-vindo!`, { duration: 5000 });
+            }
+          } catch {}
+        }
         toast.success("Conta criada com sucesso!");
         // onAuthStateChange will redirect
       }
@@ -76,6 +92,17 @@ function AuthPage() {
         setError(err);
         toast.error(err);
         return;
+      }
+
+      // Try to activate pre-paid plan
+      if (planEmail) {
+        try {
+          const m = await import("@/lib/assinatura.functions");
+          const result = await m.activatePlanPostSignup({ data: { email: planEmail } });
+          if (result.ok) {
+            toast.success(`Plano ${result.plano} ativado! Bem-vindo!`, { duration: 5000 });
+          }
+        } catch {}
       }
 
       toast.success("Bem-vindo de volta!");
@@ -105,6 +132,20 @@ function AuthPage() {
             {tab === "entrar" ? "Entre na sua conta" : "Crie sua conta"}
           </p>
         </div>
+
+        {/* Plan activation notice */}
+        {planEmail && planName && (
+          <div className="rounded-xl bg-positive-soft border border-positive/20 px-4 py-3 space-y-1">
+            <div className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-positive shrink-0" />
+              <p className="font-semibold text-sm text-positive">Pagamento confirmado!</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Você pagou pelo <strong>PRO {planName === "vitalicio" ? "Vitalício" : "Anual"}</strong>!
+              Crie sua conta com o email <strong>{planEmail}</strong> para ativar seu plano.
+            </p>
+          </div>
+        )}
 
         {/* Tab switcher */}
         <div className="flex bg-muted rounded-xl p-1">
@@ -167,9 +208,10 @@ function AuthPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { if (!emailLocked) setEmail(e.target.value); }}
+                readOnly={emailLocked}
                 placeholder="seu@email.com"
-                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                className={`w-full h-11 pl-10 pr-4 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${emailLocked ? "bg-muted text-muted-foreground cursor-not-allowed border-muted" : "bg-card border-border"}`}
                 autoComplete="email"
               />
             </div>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -24,9 +25,11 @@ import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
 import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
 import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
+import { Route as AuthenticatedMercadoRouteImport } from './routes/_authenticated/mercado'
 import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
 import { Route as AuthenticatedProdutividadeRouteImport } from './routes/_authenticated/produtividade'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +43,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CookiesRoute = CookiesRouteImport.update({
@@ -103,6 +111,11 @@ const AuthenticatedInvestimentosRoute =
     path: '/investimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMercadoRoute = AuthenticatedMercadoRouteImport.update({
+  id: '/mercado',
+  path: '/mercado',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedParcelasRoute = AuthenticatedParcelasRouteImport.update({
   id: '/parcelas',
   path: '/parcelas',
@@ -119,10 +132,16 @@ const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   path: '/tarefas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
@@ -135,13 +154,16 @@ export interface FileRoutesByFullPath {
   '/fluxo': typeof AuthenticatedFluxoRoute
   '/gastos': typeof AuthenticatedGastosRoute
   '/investimentos': typeof AuthenticatedInvestimentosRoute
+  '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
@@ -154,15 +176,18 @@ export interface FileRoutesByTo {
   '/fluxo': typeof AuthenticatedFluxoRoute
   '/gastos': typeof AuthenticatedGastosRoute
   '/investimentos': typeof AuthenticatedInvestimentosRoute
+  '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
@@ -175,15 +200,18 @@ export interface FileRoutesById {
   '/_authenticated/fluxo': typeof AuthenticatedFluxoRoute
   '/_authenticated/gastos': typeof AuthenticatedGastosRoute
   '/_authenticated/investimentos': typeof AuthenticatedInvestimentosRoute
+  '/_authenticated/mercado': typeof AuthenticatedMercadoRoute
   '/_authenticated/parcelas': typeof AuthenticatedParcelasRoute
   '/_authenticated/produtividade': typeof AuthenticatedProdutividadeRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/checkout'
     | '/cookies'
     | '/docs'
     | '/onboarding'
@@ -196,13 +224,16 @@ export interface FileRouteTypes {
     | '/fluxo'
     | '/gastos'
     | '/investimentos'
+    | '/mercado'
     | '/parcelas'
     | '/produtividade'
     | '/tarefas'
+    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/checkout'
     | '/cookies'
     | '/docs'
     | '/onboarding'
@@ -215,14 +246,17 @@ export interface FileRouteTypes {
     | '/fluxo'
     | '/gastos'
     | '/investimentos'
+    | '/mercado'
     | '/parcelas'
     | '/produtividade'
     | '/tarefas'
+    | '/auth/callback'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/checkout'
     | '/cookies'
     | '/docs'
     | '/onboarding'
@@ -235,15 +269,18 @@ export interface FileRouteTypes {
     | '/_authenticated/fluxo'
     | '/_authenticated/gastos'
     | '/_authenticated/investimentos'
+    | '/_authenticated/mercado'
     | '/_authenticated/parcelas'
     | '/_authenticated/produtividade'
     | '/_authenticated/tarefas'
+    | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  CheckoutRoute: typeof CheckoutRoute
   CookiesRoute: typeof CookiesRoute
   DocsRoute: typeof DocsRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -273,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cookies': {
@@ -359,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mercado': {
+      id: '/_authenticated/mercado'
+      path: '/mercado'
+      fullPath: '/mercado'
+      preLoaderRoute: typeof AuthenticatedMercadoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/parcelas': {
       id: '/_authenticated/parcelas'
       path: '/parcelas'
@@ -380,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTarefasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
@@ -390,6 +448,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFluxoRoute: typeof AuthenticatedFluxoRoute
   AuthenticatedGastosRoute: typeof AuthenticatedGastosRoute
   AuthenticatedInvestimentosRoute: typeof AuthenticatedInvestimentosRoute
+  AuthenticatedMercadoRoute: typeof AuthenticatedMercadoRoute
   AuthenticatedParcelasRoute: typeof AuthenticatedParcelasRoute
   AuthenticatedProdutividadeRoute: typeof AuthenticatedProdutividadeRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
@@ -402,6 +461,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFluxoRoute: AuthenticatedFluxoRoute,
   AuthenticatedGastosRoute: AuthenticatedGastosRoute,
   AuthenticatedInvestimentosRoute: AuthenticatedInvestimentosRoute,
+  AuthenticatedMercadoRoute: AuthenticatedMercadoRoute,
   AuthenticatedParcelasRoute: AuthenticatedParcelasRoute,
   AuthenticatedProdutividadeRoute: AuthenticatedProdutividadeRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
@@ -410,10 +470,21 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
+  CheckoutRoute: CheckoutRoute,
   CookiesRoute: CookiesRoute,
   DocsRoute: DocsRoute,
   OnboardingRoute: OnboardingRoute,

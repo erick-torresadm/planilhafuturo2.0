@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
-  Sparkles, Wallet, ListChecks, Zap,
+  Sparkles, Wallet, ListChecks, Zap, TrendingUp,
   Settings, LogOut, Sun, Moon, SunDim,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const NAV = [
   { to: "/app",     label: "Hoje",      icon: Home,         hint: "Resumo do dia" },
@@ -21,11 +22,12 @@ const NAV = [
 ] as const;
 
 const MORE = [
-  { to: "/investimentos", label: "Investimentos", icon: Wallet,     hint: "Sua carteira" },
-  { to: "/desejos",       label: "Desejos",       icon: Sparkles,   hint: "Metas & sonhos" },
-  { to: "/tarefas",       label: "Tarefas",       icon: ListChecks, hint: "Lembretes" },
-  { to: "/produtividade", label: "Foco & Hábitos",icon: Zap,        hint: "Pomodoro & hábitos" },
-  { to: "/config",        label: "Configurações", icon: Settings,   hint: "Perfil e preferências" },
+  { to: "/investimentos", label: "Investimentos", icon: Wallet,      hint: "Sua carteira" },
+  { to: "/mercado",       label: "Mercado",       icon: TrendingUp,  hint: "Indicadores" },
+  { to: "/desejos",       label: "Desejos",       icon: Sparkles,    hint: "Metas & sonhos" },
+  { to: "/tarefas",       label: "Tarefas",       icon: ListChecks,  hint: "Lembretes" },
+  { to: "/produtividade", label: "Foco & Notas",  icon: Zap,         hint: "Pomodoro, notas & hábitos" },
+  { to: "/config",        label: "Configurações", icon: Settings,    hint: "Perfil e preferências" },
 ] as const;
 
 const ALL = [...NAV, ...MORE];
@@ -181,6 +183,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="flex-1 min-w-0 pb-[72px] lg:pb-4">
           {children}
         </main>
+
+        {/* AI Chat - available on all authenticated pages */}
+        <ChatWidget />
       </div>
 
       {/* ─── Mobile Bottom Tab Bar ─── */}

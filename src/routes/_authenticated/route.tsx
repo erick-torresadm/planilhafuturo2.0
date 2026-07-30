@@ -35,6 +35,23 @@ function RouteComponent() {
     if (hasLocalData()) setShowBanner(true);
   }, []);
 
+  // Catch-all: try to activate any pre-paid plans for this user's email
+  useEffect(() => {
+    if (!user.email) return;
+    const tryActivate = async () => {
+      try {
+        const m = await import("@/lib/assinatura.functions");
+        const result = await m.activatePlanPostSignup({ data: { email: user.email } });
+        if (result.ok) {
+          toast.success(`Plano ${result.plano} ativado!`, { duration: 5000 });
+        }
+      } catch {
+        // No pending pre-pagamento — silently ignore
+      }
+    };
+    tryActivate();
+  }, [user.email]);
+
   async function handleMigrate() {
     setMigrating(true);
     try {

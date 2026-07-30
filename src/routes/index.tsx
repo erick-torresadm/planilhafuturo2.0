@@ -304,6 +304,8 @@ function Pricing() {
       price: 0,
       periodo: "7 dias",
       badge: "",
+      linkTo: "/auth",
+      linkSearch: {} as Record<string, string>,
       features: [
         "Tudo liberado por 7 dias",
         "Fluxo diário completo",
@@ -318,6 +320,8 @@ function Pricing() {
       price: 250,
       periodo: "/ano",
       badge: "Mais escolhido",
+      linkTo: "/checkout",
+      linkSearch: { plan: "anual" },
       features: [
         "6 meses de projeção diária",
         "Todas as funcionalidades",
@@ -332,6 +336,8 @@ function Pricing() {
       price: 450,
       periodo: "única parcela",
       badge: "Pra sempre",
+      linkTo: "/checkout",
+      linkSearch: { plan: "vitalicio" },
       features: [
         "Tudo do PRO",
         "Sem renovação anual",
@@ -366,7 +372,7 @@ function Pricing() {
                   </>
                 )}
               </div>
-              <Link to="/auth" className={`mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
+              <Link to={p.linkTo} search={p.linkSearch} className={`mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
                 {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <ul className="mt-5 space-y-2 text-sm flex-1">

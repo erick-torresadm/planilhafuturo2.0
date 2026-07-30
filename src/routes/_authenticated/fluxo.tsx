@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { selectAll, getProfile } from "@/lib/db";
-import { MESES, MESES_ABREV, isoDate, brl } from "@/lib/format";
+import { MESES, MESES_ABREV, isoDate, brl, num } from "@/lib/format";
 import { computaMes, type GastoFixo, type Parcela, type Lancamento } from "@/lib/finance";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
@@ -170,59 +170,44 @@ function MiniChart({ dias }: { dias: any[] }) {
   );
 }
 
-/* Mobile day focus */
+/* Mobile — spreadsheet-like day grid */
 function DayFocus({ mm, today, onCommit, onHoje }: any) {
   if (!mm?.dias) return null;
   const isCurrentMonth = mm.y === today.getFullYear() && mm.m === today.getMonth();
   const [sel, setSel] = useState<number>(isCurrentMonth ? today.getDate() : 1);
-  const chipsRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSel(isCurrentMonth ? today.getDate() : 1);
   }, [mm.y, mm.m]);
 
   useEffect(() => {
-    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-d="${sel}"]`);
-    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-row="${sel}"]`);
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [sel]);
 
-  const day = mm.dias.find((d: any) => d.dia === sel) ?? mm.dias[0];
-  if (!day) return null;
-
-  const dt = new Date(mm.y, mm.m, day.dia);
-  const isTd = isoDate(mm.y, mm.m, day.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
   const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
   const diasNeg = mm.dias.filter((d: any) => d.saldo < 0).length;
 
-  const linhas = [
-    { key: "ef", label: "Entrada fixa",  value: day.entradaFixa,    tipo: "entrada_fixa",    tone: "in" as const, hint: "Salário, renda recorrente" },
-    { key: "ed", label: "Entrada extra", value: day.entradaDiaria,  tipo: "entrada_diaria",  tone: "in" as const, hint: "Freela, presentes, vendas" },
-    { key: "sf", label: "Saída fixa",    value: day.saidaFixa,      tipo: null,              tone: "out" as const, hint: "Contas e parcelas do dia", readOnly: true },
-    { key: "sd", label: "Saída extra",   value: day.saidaDiaria,    tipo: "saida_diaria",    tone: "out" as const, hint: "Gastos avulsos" },
-  ];
-
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Day chip scroller */}
-      <div ref={chipsRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
         {mm.dias.map((d: any) => {
           const active = d.dia === sel;
           const dToday = isoDate(mm.y, mm.m, d.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
-          const dd = new Date(mm.y, mm.m, d.dia);
-          const wk = WD[dd.getDay()][0];
-          const neg = d.saldo < 0;
+          const wk = WD[new Date(mm.y, mm.m, d.dia).getDay()][0];
           return (
             <button
               key={d.dia}
-              data-d={d.dia}
               onClick={() => setSel(d.dia)}
               className={cn(
                 "shrink-0 w-12 h-16 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all",
                 active
-                  ? "bg-primary text-primary-foreground border-primary scale-110 shadow-md"
+                  ? "bg-primary text-primary-foreground border-primary scale-110 shadow-md z-10"
                   : dToday
                     ? "border-primary/60 bg-primary/10 text-primary"
-                    : neg
+                    : d.saldo < 0
                       ? "border-negative/30 bg-negative-soft text-negative"
                       : "border-border bg-card",
               )}
@@ -234,78 +219,131 @@ function DayFocus({ mm, today, onCommit, onHoje }: any) {
         })}
       </div>
 
-      {/* Day card */}
-      <div className={cn("rounded-xl bg-card border border-border overflow-hidden", isTd && "ring-2 ring-primary")}>
-        <div className={cn("px-4 py-3 flex items-center justify-between border-b border-border", isTd && "bg-primary/[0.04]")}>
-          <div className="flex items-baseline gap-2 min-w-0">
-            <span className={cn("text-3xl font-black tabular-nums", isTd && "text-primary")}>{day.dia}</span>
-            <span className="text-sm font-semibold text-muted-foreground truncate">
-              {dt.toLocaleDateString("pt-BR", { weekday: "long" })}
-            </span>
-            {isTd && <span className="chip bg-primary text-primary-foreground">HOJE</span>}
-          </div>
-          <div className="text-right shrink-0">
-            <span className="eyebrow">Saldo</span>
-            <div className={cn("font-mono text-lg font-black tabular-nums", day.saldo < 0 ? "text-negative" : "text-positive")}>
-              {brl(day.saldo)}
-            </div>
-          </div>
+      {/* Spreadsheet-like day grid */}
+      <div ref={listRef} className="rounded-xl bg-card border border-border divide-y divide-border max-h-[520px] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-muted/95 backdrop-blur flex items-center gap-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="w-10 shrink-0">Dia</span>
+          <span className="flex-1 text-center text-positive">Ent. Fixa</span>
+          <span className="flex-1 text-center text-positive">Ent. Extra</span>
+          <span className="flex-1 text-center text-negative">Saí. Extra</span>
+          <span className="w-20 text-right shrink-0">Saldo</span>
         </div>
 
-        <div className="divide-y divide-border">
-          {linhas.map((l) => (
-            <div key={l.key} className="flex items-center gap-3 px-4 py-3.5">
-              <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", l.tone === "in" ? "bg-positive" : "bg-negative")} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold leading-tight">{l.label}</div>
-                <div className="text-xs text-muted-foreground truncate">{l.hint}</div>
+        {mm.dias.map((d: any) => {
+          const isSel = d.dia === sel;
+          const dToday = isoDate(mm.y, mm.m, d.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+          const wd = WD_SHORT[new Date(mm.y, mm.m, d.dia).getDay()];
+          return (
+            <div
+              key={d.dia}
+              data-row={d.dia}
+              onClick={() => setSel(d.dia)}
+              className={cn(
+                "flex items-center gap-1 px-3 py-2.5 transition-colors active:bg-muted/50",
+                isSel && "bg-primary/[0.04] ring-1 ring-primary/20 ring-inset",
+                dToday && !isSel && "bg-primary/[0.02]",
+              )}
+            >
+              {/* Day */}
+              <div className="w-10 shrink-0">
+                <div className={cn("text-sm font-bold leading-tight", isSel ? "text-primary" : "")}>{d.dia}</div>
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{wd}</div>
               </div>
-              <div className={cn(
-                "shrink-0 w-32 h-11 rounded-lg border-2 overflow-hidden",
-                l.tone === "in" ? "border-positive/25 bg-positive-soft/40" : "border-negative/25 bg-negative-soft/40",
-              )}>
-                <SheetCell
-                  value={l.value}
-                  onCommit={(v) => l.tipo && onCommit(day.data, l.tipo, v, l.value)}
-                  readOnly={l.readOnly}
-                  className="h-full font-bold text-sm"
-                />
+
+              {/* Editable cells */}
+              <div className="flex-1 grid grid-cols-3 gap-1">
+                <CellSm value={d.entradaFixa} onCommit={(v: number) => onCommit(d.data, "entrada_fixa", v, d.entradaFixa)} tone="in" />
+                <CellSm value={d.entradaDiaria} onCommit={(v: number) => onCommit(d.data, "entrada_diaria", v, d.entradaDiaria)} tone="in" />
+                <CellSm value={d.saidaDiaria} onCommit={(v: number) => onCommit(d.data, "saida_diaria", v, d.saidaDiaria)} tone="out" />
+              </div>
+
+              {/* Balance */}
+              <div className={cn("w-20 text-right font-bold tabular-nums text-sm shrink-0", d.saldo < 0 ? "text-negative" : "text-positive")}>
+                {brl(d.saldo)}
               </div>
             </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 border-t border-border">
-          <button
-            disabled={sel <= 1}
-            onClick={() => setSel((d) => Math.max(1, d - 1))}
-            className="h-11 flex items-center justify-center gap-1 text-sm font-semibold disabled:opacity-30 active:bg-muted"
-          >
-            <ChevronLeft className="h-4 w-4" /> Anterior
-          </button>
-          <button
-            onClick={() => { if (!isCurrentMonth) onHoje(); setSel(today.getDate()); }}
-            className="h-11 flex items-center justify-center gap-1 text-sm font-bold text-primary border-x border-border active:bg-primary/10"
-          >
-            <Calendar className="h-4 w-4" /> Hoje
-          </button>
-          <button
-            disabled={sel >= mm.dias.length}
-            onClick={() => setSel((d) => Math.min(mm.dias.length, d + 1))}
-            className="h-11 flex items-center justify-center gap-1 text-sm font-semibold disabled:opacity-30 active:bg-muted"
-          >
-            Próximo <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Resumo */}
+      {/* Month summary */}
       <div className="grid grid-cols-3 gap-2">
         <MiniStat icon={TrendingUp} label="Fim do mês" value={brl(saldoFim)} tone={saldoFim < 0 ? "neg" : "pos"} />
         <MiniStat icon={TrendingDown} label="Dias neg." value={String(diasNeg)} tone={diasNeg > 0 ? "neg" : "pos"} />
         <MiniStat icon={DollarSign} label="Pior dia" value={brl(Math.min(...mm.dias.map((d: any) => d.saldo)))} tone="neg" />
       </div>
     </div>
+  );
+}
+
+/* Small inline editable cell for mobile grid */
+function CellSm({ value, onCommit, tone }: { value: number; onCommit: (v: number) => void; tone: "in" | "out" }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const ref = useRef<HTMLInputElement>(null);
+  const committed = useRef(false);
+
+  function open(e: React.MouseEvent) {
+    e.stopPropagation();
+    committed.current = false;
+    setDraft(value ? String(value).replace(".", ",") : "");
+    setEditing(true);
+    requestAnimationFrame(() => {
+      ref.current?.focus();
+      ref.current?.select();
+    });
+  }
+
+  function commit() {
+    if (committed.current) return;
+    committed.current = true;
+    const n = num(draft);
+    setEditing(false);
+    if (n !== value) onCommit(n);
+  }
+
+  function cancel() {
+    committed.current = true;
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={ref}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          if (e.key === "Escape") { cancel(); }
+        }}
+        inputMode="decimal"
+        autoComplete="off"
+        className="w-full h-8 px-1.5 rounded-md bg-primary/10 border-2 border-primary text-right tabular-nums font-mono text-[16px] font-semibold outline-none touch-manipulation"
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={open}
+      className={cn(
+        "w-full h-8 px-1.5 rounded-md text-right tabular-nums text-sm font-semibold",
+        "hover:bg-primary/5 active:bg-primary/10 touch-manipulation",
+        tone === "in" ? "text-positive" : "text-negative",
+        value === 0 ? "opacity-40" : "",
+      )}
+    >
+      {value ? (
+        value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      ) : (
+        <span className="text-muted-foreground/30">—</span>
+      )}
+    </button>
   );
 }
 

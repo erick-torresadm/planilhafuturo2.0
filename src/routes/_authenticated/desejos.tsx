@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow, getProfile } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, Shield, Gift, Car, BookOpen, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, Shield, Gift, Car, BookOpen, CreditCard, Banknote, ThumbsUp, AlertCircle, type LucideIcon } from "lucide-react";
 import { totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
@@ -208,58 +208,139 @@ function DesejosPage() {
                 <Plus className="h-4 w-4 mr-1" />Novo
               </Button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               {((desejos.data ?? []) as any[]).map((d) => {
                 const valor = Number(d.valor);
-                const parcela = d.parcelado && d.qtd_parcelas ? valor / d.qtd_parcelas : 0;
-                let status: { text: string; kind: "go" | "wait" | "no" } = { text: "", kind: "wait" };
-                if (d.parcelado) {
-                  status = sobra - parcela >= 0
-                    ? { text: `Pode comprar · ${parcela.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`, kind: "go" }
-                    : { text: "Parcela alta — rever", kind: "no" };
-                } else if (sobra <= 0) status = { text: "Guardar antes", kind: "no" };
-                else {
-                  const meses = Math.ceil(valor / sobra);
-                  status = meses <= 1 ? { text: "Pode comprar agora", kind: "go" } : { text: `${meses} meses guardando`, kind: "wait" };
+                const parcelado = d.parcelado && d.qtd_parcelas ? d.qtd_parcelas : 0;
+                const parcelaValor = parcelado > 0 ? valor / parcelado : 0;
+
+                // Compute best option
+                const podeAVista = sobra >= valor;
+                const cabeParcelado = parcelaValor > 0 && sobra >= parcelaValor;
+                const mesesAVista = Math.ceil(valor / Math.max(sobra, 1));
+
+                let bestOption: "avista" | "parcelado" | "nenhum" = "nenhum";
+                let bestReason = "";
+
+                if (podeAVista) {
+                  bestOption = "avista";
+                  bestReason = "Você tem saldo disponível agora!";
+                } else if (cabeParcelado) {
+                  bestOption = "parcelado";
+                  bestReason = `Cabe no orçamento: ${parcelaValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`;
+                } else if (parcelado && !cabeParcelado && sobra > 0) {
+                  // Maybe more parcels would help
+                  const neededParc = Math.ceil(valor / sobra);
+                  if (neededParc <= 24) {
+                    bestOption = "nenhum";
+                    bestReason = `Precisa de ${neededParc}x de ${(valor / neededParc).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`;
+                  }
                 }
-                const ChipIcon = status.kind === "go" ? Check : status.kind === "no" ? X : Clock;
+
                 return (
-                  <div key={d.id} className="rounded-xl bg-card border border-border p-4 transition-all hover:shadow-sm">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <Input defaultValue={d.item} onBlur={(e) => e.target.value !== d.item && updDesejo.mutate({ id: d.id, patch: { item: e.target.value } })}
-                          className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
-                        <select value={d.tipo ?? "Outros"} onChange={(e) => updDesejo.mutate({ id: d.id, patch: { tipo: e.target.value } })}
-                          className="bg-transparent text-xs text-muted-foreground outline-none mt-0.5">
-                          {TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}
-                        </select>
+                  <div key={d.id} className="rounded-xl bg-card border border-border overflow-hidden transition-all hover:shadow-sm">
+                    {/* Best option badge */}
+                    {bestOption !== "nenhum" && (
+                      <div className={cn(
+                        "px-3 py-1.5 text-[10px] font-semibold flex items-center gap-1.5",
+                        bestOption === "avista" ? "bg-positive-soft text-positive" : "bg-primary/10 text-primary",
+                      )}>
+                        <ThumbsUp className="h-3 w-3" />
+                        {bestReason}
                       </div>
-                      <button onClick={() => setDelTarget({ id: d.id, type: "desejo" })} className="text-negative/60 hover:text-negative"><Trash2 className="h-4 w-4" /></button>
-                    </div>
-                    <div className="mt-3 flex items-end justify-between gap-2">
-                      <div>
-                        <span className="eyebrow">Valor</span>
-                        <MoneyInput value={valor} onCommit={(v) => v !== valor && updDesejo.mutate({ id: d.id, patch: { valor: v } })} size="md" align="left" inputClassName="text-lg font-bold text-primary" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => updDesejo.mutate({ id: d.id, patch: { parcelado: !d.parcelado } })}
-                          className={cn("chip", d.parcelado ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
-                          {d.parcelado ? "Parcelado" : "À vista"}
+                    )}
+
+                    <div className="p-4">
+                      <div className="flex items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <Input defaultValue={d.item} onBlur={(e) => e.target.value !== d.item && updDesejo.mutate({ id: d.id, patch: { item: e.target.value } })}
+                            className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
+                          <select value={d.tipo ?? "Outros"} onChange={(e) => updDesejo.mutate({ id: d.id, patch: { tipo: e.target.value } })}
+                            className="bg-transparent text-xs text-muted-foreground outline-none mt-0.5">
+                            {TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}
+                          </select>
+                        </div>
+                        <button onClick={() => setDelTarget({ id: d.id, type: "desejo" })} className="text-negative/60 hover:text-negative shrink-0">
+                          <Trash2 className="h-4 w-4" />
                         </button>
-                        {d.parcelado && (
-                          <Input type="number" min={1} defaultValue={d.qtd_parcelas ?? 1}
-                            onBlur={(e) => Number(e.target.value) !== d.qtd_parcelas && updDesejo.mutate({ id: d.id, patch: { qtd_parcelas: Number(e.target.value) } })}
-                            className="h-7 w-14 text-center" />
-                        )}
                       </div>
-                    </div>
-                    <div className={cn(
-                      "mt-3 flex items-center gap-1.5 chip w-fit",
-                      status.kind === "go" ? "chip-positive" :
-                      status.kind === "no" ? "chip-negative" :
-                      "chip-warning",
-                    )}>
-                      <ChipIcon className="h-3 w-3" /> {status.text}
+
+                      <div className="mt-3 flex items-end justify-between gap-2">
+                        <div>
+                          <span className="eyebrow">Valor</span>
+                          <MoneyInput value={valor} onCommit={(v) => v !== valor && updDesejo.mutate({ id: d.id, patch: { valor: v } })} size="md" align="left" inputClassName="text-lg font-bold text-primary" />
+                        </div>
+
+                        {/* Payment type toggle - prominent segmented control */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex rounded-lg border border-border overflow-hidden">
+                            <button
+                              onClick={() => updDesejo.mutate({ id: d.id, patch: { parcelado: false, qtd_parcelas: null } })}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-all",
+                                !d.parcelado
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "bg-card text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              <Banknote className="h-3.5 w-3.5" />
+                              À vista
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (!d.parcelado) {
+                                  updDesejo.mutate({ id: d.id, patch: { parcelado: true, qtd_parcelas: d.qtd_parcelas || 3 } });
+                                }
+                              }}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-all",
+                                d.parcelado
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "bg-card text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              <CreditCard className="h-3.5 w-3.5" />
+                              Parcelado
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Installment details */}
+                      {d.parcelado && (
+                        <div className="mt-3 flex items-center gap-3 rounded-lg bg-muted/50 p-2.5">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">Parcelas</span>
+                            <div className="flex items-center">
+                              <button
+                                onClick={() => updDesejo.mutate({ id: d.id, patch: { qtd_parcelas: Math.max(1, (d.qtd_parcelas || 1) - 1) } })}
+                                className="h-6 w-6 rounded grid place-items-center text-muted-foreground hover:text-foreground hover:bg-card text-xs font-bold"
+                              >−</button>
+                              <span className="w-8 text-center text-sm font-bold tabular-nums">{d.qtd_parcelas || 1}x</span>
+                              <button
+                                onClick={() => updDesejo.mutate({ id: d.id, patch: { qtd_parcelas: Math.min(24, (d.qtd_parcelas || 1) + 1) } })}
+                                className="h-6 w-6 rounded grid place-items-center text-muted-foreground hover:text-foreground hover:bg-card text-xs font-bold"
+                              >+</button>
+                            </div>
+                          </div>
+                          <div className="h-4 w-px bg-border" />
+                          <div className="text-xs">
+                            <span className="text-muted-foreground">{d.qtd_parcelas || 1}x de </span>
+                            <span className="font-bold tabular-nums">
+                              {(valor / (d.qtd_parcelas || 1)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            </span>
+                          </div>
+                          <div className="h-4 w-px bg-border" />
+                          <div className="text-xs">
+                            <span className={cn("font-semibold", cabeParcelado ? "text-positive" : "text-negative")}>
+                              {cabeParcelado ? "✓ Cabe" : "✗ Não cabe"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Status */}
+                      <StatusBadge valor={valor} sobra={sobra} parcelado={d.parcelado} qtdParcelas={d.qtd_parcelas} />
                     </div>
                   </div>
                 );
@@ -283,6 +364,43 @@ function DesejosPage() {
         confirmLabel="Excluir"
         variant="destructive"
       />
+    </div>
+  );
+}
+
+function StatusBadge({ valor, sobra, parcelado, qtdParcelas }: { valor: number; sobra: number; parcelado: boolean; qtdParcelas?: number }) {
+  const parcelaValor = parcelado && qtdParcelas ? valor / qtdParcelas : 0;
+
+  if (parcelado) {
+    if (sobra <= 0) {
+      return <Badge icon={X} text="Sem margem no orçamento" tone="negative" />;
+    }
+    if (sobra >= parcelaValor) {
+      return <Badge icon={Check} text={`Pode comprar · ${parcelaValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`} tone="positive" />;
+    }
+    return <Badge icon={AlertCircle} text="Parcela muito alta" tone="negative" />;
+  }
+
+  // À vista
+  if (sobra <= 0) {
+    return <Badge icon={X} text="Sem margem no orçamento" tone="negative" />;
+  }
+  if (sobra >= valor) {
+    return <Badge icon={Check} text="Pode comprar à vista agora!" tone="positive" />;
+  }
+  const meses = Math.ceil(valor / sobra);
+  return <Badge icon={Clock} text={`${meses} meses guardando`} tone="warning" />;
+}
+
+function Badge({ icon: Icon, text, tone }: { icon: LucideIcon; text: string; tone: "positive" | "negative" | "warning" }) {
+  return (
+    <div className={cn(
+      "mt-3 flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg w-fit",
+      tone === "positive" ? "bg-positive-soft text-positive" :
+      tone === "negative" ? "bg-negative-soft text-negative" :
+      "bg-warning-soft text-warning",
+    )}>
+      <Icon className="h-3.5 w-3.5" /> {text}
     </div>
   );
 }

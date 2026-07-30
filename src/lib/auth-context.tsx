@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 type AuthContextType = {
@@ -74,15 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth`,
-      },
-    });
-    if (error) {
-      console.error("Google OAuth error:", error);
-      throw error;
+    try {
+      // Use Lovable Cloud Auth popup — avoids port redirect issues with Supabase OAuth
+      const result = await lovable.auth.signInWithOAuth("google");
+      if (result.error) {
+        console.error("Google OAuth error:", result.error);
+        toast?.error(result.error.message || "Erro ao fazer login com Google");
+      }
+      // Session is set automatically by lovable → supabase.auth.setSession()
+    } catch (err: any) {
+      console.error("Google OAuth error:", err);
+      toast?.error(err.message || "Erro ao fazer login com Google");
     }
   }
 

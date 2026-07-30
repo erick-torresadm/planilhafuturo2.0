@@ -10,8 +10,6 @@ import { useExternalData } from "@/hooks/useExternalData";
 import { Plus, TrendingUp, DollarSign, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardMercury } from "@/components/dashboards";
-import { ChatWidget } from "@/components/ChatWidget";
-import type { AppDataForAI } from "@/lib/ai-service";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Hoje — planilhafuturo" }] }),
   component: HojePage,
@@ -157,14 +155,13 @@ function HojePage() {
       {/* FABs */}
       <button
         onClick={() => setQaOpen("in")}
-        className="fixed bottom-36 right-5 lg:bottom-8 lg:right-8 z-30 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform"
+        className="fixed bottom-28 right-5 lg:bottom-8 lg:right-8 z-30 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform"
         aria-label="Adicionar lançamento"
       >
         <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
 
       {/* AI Chat */}
-      <ChatWidget appData={appData} />
 
       {/* Quick-add sheet */}
       {qaOpen && (

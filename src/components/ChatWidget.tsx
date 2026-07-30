@@ -12,10 +12,21 @@ type ChatMessage = {
 };
 
 interface Props {
-  appData: AppDataForAI;
+  appData?: AppDataForAI;
 }
 
 export function ChatWidget({ appData }: Props) {
+  const data = appData ?? {
+    saldoHoje: 0,
+    saldoInicial: 0,
+    totalEntradas: 0,
+    totalSaidas: 0,
+    saldoFimMes: 0,
+    totalInvestido: 0,
+    gastosFixos: 0,
+    parcelasMes: 0,
+    rendaMensal: 0,
+  };
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<ChatMessage[]>([
     {
@@ -50,7 +61,7 @@ export function ChatWidget({ appData }: Props) {
 
     setLoading(true);
     try {
-      const system = buildSystemPrompt(appData);
+      const system = buildSystemPrompt(data);
       const history: AIChatMessage[] = [
         { role: "system", content: system },
         ...msgs
@@ -103,7 +114,7 @@ export function ChatWidget({ appData }: Props) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-5 lg:bottom-24 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
+          className="fixed bottom-16 right-5 lg:bottom-20 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
           aria-label="Abrir chat IA"
         >
           <MessageCircle className="h-5 w-5" strokeWidth={2} />

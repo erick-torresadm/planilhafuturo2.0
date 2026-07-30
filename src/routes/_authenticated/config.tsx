@@ -11,8 +11,10 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { getApiKey, setApiKey, hasApiKey } from "@/lib/ai-service";
 import { toast } from "sonner";
-import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet } from "lucide-react";
+import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { Money } from "@/components/Money";
+import { cn } from "@/lib/utils";
 import { hasLocalData, getLocalStats, migrateLocalDataToSupabase, clearLocalData, getLocalTotalCount } from "@/lib/migrate-local-to-supabase";
 
 export const Route = createFileRoute("/_authenticated/config")({
@@ -25,9 +27,7 @@ function ConfigPage() {
   const { playSound } = useSounds();
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const save = useMutation({
-    mutationFn: async (patch: any) => {
-      updateProfile(patch);
-    },
+    mutationFn: async (patch: any) => { updateProfile(patch); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Salvo"); },
   });
 
@@ -62,89 +62,11 @@ function ConfigPage() {
     try {
       const result = await migrateLocalDataToSupabase(profile.data?.id ?? "");
       setMigrationResult(result);
-      if (result.migrated > 0) {
-        clearLocalData();
-        setMigrationDone(true);
-        toast.success(`${result.migrated} registros importados!`);
-      } else if (result.errors.length > 0) {
-        toast.error("Erro ao importar");
-      } else {
-        toast.success("Nenhum dado novo");
-        setMigrationDone(true);
-      }
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao migrar");
-    } finally {
-      setMigrating(false);
-    }
-  }
-
-  // ─── Plano / Assinatura ─────────────────────
-  const [planoStatus, setPlanoStatus] = useState<{ status: string; plano?: string; diasRestantes?: number } | null>(null);
-  const [pixData, setPixData] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
-  const [pixLoading, setPixLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // ─── Compra Planilha ────────────────────────────
-  const [planilhaPix, setPlanilhaPix] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
-  const [planilhaLoading, setPlanilhaLoading] = useState(false);
-  const [planilhaVerifying, setPlanilhaVerifying] = useState(false);
-  const [planilhaPaga, setPlanilhaPaga] = useState(false);
-  const [planilhaBaixando, setPlanilhaBaixando] = useState(false);
-
-  useEffect(() => {
-    import("@/lib/assinatura.functions").then((m) => {
-      m.getSubscriptionStatus().then(setPlanoStatus);
-    });
-  }, []);
-
-  async function handleAssinar(plano: string) {
-    setPixLoading(true);
-    setPixData(null);
-    try {
-      const m = await import("@/lib/assinatura.functions");
-      const result = await m.createCheckoutSession({ data: { plano } });
-      if (result.ok) {
-        setPixData(result);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao gerar Pix");
-    } finally {
-      setPixLoading(false);
-    }
-  }
-
-  async function handleVerificarPagamento() {
-    if (!pixData) return;
-    setVerifying(true);
-    try {
-      const m = await import("@/lib/assinatura.functions");
-      // Detecta qual plano pelo txid — tenta anual primeiro
-      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: "anual" } });
-      if (result.paid) {
-        toast.success(`Assinatura ${result.plano} ativada!`);
-        setPixData(null);
-        setPlanoStatus({ status: "ativo", plano: result.plano });
-      } else {
-        toast.error(result.error);
-      }
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao verificar");
-    } finally {
-      setVerifying(false);
-    }
-  }
-
-  function copyPixCode() {
-    if (pixData) {
-      navigator.clipboard.writeText(pixData.pixCopiaECola);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast.success("Código Pix copiado!");
-    }
+      if (result.migrated > 0) { clearLocalData(); setMigrationDone(true); toast.success(`${result.migrated} registros importados!`); }
+      else if (result.errors.length > 0) { toast.error("Erro ao importar"); }
+      else { toast.success("Nenhum dado novo"); setMigrationDone(true); }
+    } catch (e: any) { toast.error(e.message ?? "Erro ao migrar"); }
+    finally { setMigrating(false); }
   }
 
   return (
@@ -155,6 +77,10 @@ function ConfigPage() {
         subtitle="Ajuste seu perfil e preferências"
       />
 
+      {/* ─── PLANO / ASSINATURA (REDESIGNED) ─── */}
+      <PlanSection />
+
+      {/* ─── PERFIL ─── */}
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <User className="h-4 w-4 text-primary" />
@@ -173,9 +99,7 @@ function ConfigPage() {
             <Database className="h-4 w-4 text-primary" />
             <h2 className="font-display font-semibold">Importar dados locais</h2>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Você tem dados salvos no navegador que podem ser importados para a nuvem.
-          </p>
+          <p className="text-xs text-muted-foreground">Você tem dados salvos no navegador que podem ser importados para a nuvem.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {localStats.slice(0, 6).map((s) => (
               <div key={s.table} className="rounded-lg bg-muted p-3 text-center">
@@ -184,11 +108,7 @@ function ConfigPage() {
               </div>
             ))}
           </div>
-          {localStats.length > 6 && (
-            <p className="text-xs text-muted-foreground text-center">
-              +{localStats.length - 6} outras tabelas
-            </p>
-          )}
+          {localStats.length > 6 && (<p className="text-xs text-muted-foreground text-center">+{localStats.length - 6} outras tabelas</p>)}
           <Button onClick={handleMigrate} disabled={migrating} className="w-full">
             {migrating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
             {migrating ? "Importando..." : `Importar ${getLocalTotalCount()} registros`}
@@ -198,26 +118,18 @@ function ConfigPage() {
 
       {migrationResult && (
         <section className="rounded-xl bg-card border border-border p-5 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Check className="h-4 w-4 text-positive" />
-            <h2 className="font-display font-semibold">Importação concluída</h2>
-          </div>
-          <p className="text-sm">
-            {migrationResult.migrated} registros importados com sucesso.
-          </p>
+          <div className="flex items-center gap-2 mb-1"><Check className="h-4 w-4 text-positive" /><h2 className="font-display font-semibold">Importação concluída</h2></div>
+          <p className="text-sm">{migrationResult.migrated} registros importados com sucesso.</p>
           {migrationResult.errors.length > 0 && (
             <div className="text-xs text-muted-foreground">
               <p className="font-medium text-warning mb-1">{migrationResult.errors.length} erros:</p>
-              <ul className="list-disc list-inside space-y-0.5">
-                {migrationResult.errors.slice(0, 5).map((e, i) => (
-                  <li key={i} className="truncate">{e}</li>
-                ))}
-              </ul>
+              <ul className="list-disc list-inside space-y-0.5">{migrationResult.errors.slice(0, 5).map((e, i) => (<li key={i} className="truncate">{e}</li>))}</ul>
             </div>
           )}
         </section>
       )}
 
+      {/* ─── IA ─── */}
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Bot className="h-4 w-4 text-primary" />
@@ -230,218 +142,19 @@ function ConfigPage() {
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={aiKeyInput}
-              onChange={(e) => setAiKeyInput(e.target.value)}
-              placeholder="Cole sua chave Gemini aqui..."
-              className="pl-9 font-mono text-xs"
-              type="password"
-            />
+            <Input value={aiKeyInput} onChange={(e) => setAiKeyInput(e.target.value)} placeholder="Cole sua chave Gemini aqui..." className="pl-9 font-mono text-xs" type="password" />
           </div>
           <Button onClick={saveAiKey} size="sm" className="shrink-0">
             {aiSaved ? <><Check className="h-3.5 w-3.5 mr-1" />Salva</> : "Salvar"}
           </Button>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          {aiKey ? (
-            <span className="chip chip-positive flex items-center gap-1"><Check className="h-3 w-3" /> Key configurada</span>
-          ) : (
-            <span className="chip chip-warning flex items-center gap-1"><X className="h-3 w-3" /> Sem key</span>
-          )}
+          {aiKey ? (<span className="chip chip-positive flex items-center gap-1"><Check className="h-3 w-3" /> Key configurada</span>) : (<span className="chip chip-warning flex items-center gap-1"><X className="h-3 w-3" /> Sem key</span>)}
           <span className="text-muted-foreground">· 60 requisições/minuto grátis</span>
         </div>
       </section>
 
-      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Crown className="h-4 w-4 text-primary" />
-          <h2 className="font-display font-semibold">Plano</h2>
-        </div>
-
-        {planoStatus?.status === "ativo" && (
-          <div className="rounded-xl bg-positive-soft border border-positive/20 p-4 text-center">
-            <Crown className="h-8 w-8 text-positive mx-auto mb-2" />
-            <p className="font-semibold text-positive">Plano {planoStatus.plano}</p>
-            <p className="text-xs text-muted-foreground mt-1">Assinatura ativa</p>
-          </div>
-        )}
-
-        {planoStatus?.status === "trial" && (
-          <div className="rounded-xl bg-warning-soft border border-warning/20 p-4 text-center">
-            <p className="font-semibold">Teste gratuito</p>
-            <p className="text-xs text-muted-foreground mt-1">{planoStatus.diasRestantes} dias restantes</p>
-          </div>
-        )}
-
-        {planoStatus?.status === "inativo" && (
-          <p className="text-xs text-muted-foreground">Sem plano ativo.</p>
-        )}
-
-        {/* Pix QR Code modal */}
-        {pixData && (
-          <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
-            <p className="text-sm font-semibold">Pague via Pix</p>
-            <p className="text-xs text-muted-foreground">
-              R$ {pixData.valor.toFixed(2)} — escaneie o QR Code ou copie o código
-            </p>
-            {pixData.qrcode && (
-              <img
-                src={`data:image/png;base64,${pixData.qrcode}`}
-                alt="QR Code Pix"
-                className="mx-auto w-48 h-48 rounded-xl"
-              />
-            )}
-            <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
-              <span className="flex-1 truncate">{pixData.pixCopiaECola}</span>
-              <button onClick={copyPixCode} className="shrink-0 text-primary hover:text-primary/80">
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={() => setPixData(null)} variant="outline" size="sm">Cancelar</Button>
-              <Button onClick={handleVerificarPagamento} disabled={verifying} size="sm">
-                {verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-                Já paguei
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Plan options */}
-        {planoStatus?.status !== "ativo" && !pixData && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { id: "anual", nome: "PRO Anual", valor: 250, destaque: true, tag: "Maior custo-benefício", detalhe: "R$ 21/mês" },
-              { id: "vitalicio", nome: "Vitalício", valor: 450, destaque: false, tag: "Única parcela · pra sempre" },
-            ].map((plano) => (
-              <button
-                key={plano.id}
-                onClick={() => handleAssinar(plano.id)}
-                disabled={pixLoading}
-                className={`rounded-xl border-2 p-5 text-center transition-all hover:shadow-md disabled:opacity-50 ${
-                  plano.destaque
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                {plano.tag && (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold mb-2">
-                    {plano.tag}
-                  </span>
-                )}
-                <p className="font-display text-lg font-bold">{plano.nome}</p>
-                <p className="text-3xl font-bold tabular-nums mt-2">
-                  R$ {plano.valor}
-                </p>
-                {plano.detalhe && <p className="text-[11px] text-muted-foreground mt-1">{plano.detalhe}</p>}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {pixLoading && (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
-      </section>
-
-      {/* ─── Planilha do Erick ─────────────────── */}
-      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <FileSpreadsheet className="h-4 w-4 text-primary" />
-          <h2 className="font-display font-semibold">Planilha do Erick</h2>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Versão oficial da planilha em Excel (.xlsx) — R$ 70 <strong>pra sempre</strong> seu.
-          Mesma planilha que o Erick usa, sem marca d'água, sem assinatura.
-        </p>
-
-        {/* Pix para planilha */}
-        {!planilhaPaga && planilhaPix && (
-          <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
-            <p className="text-sm font-semibold">Pague R$ 70 via Pix</p>
-            {planilhaPix.qrcode && (
-              <img src={`data:image/png;base64,${planilhaPix.qrcode}`} alt="QR Code Pix" className="mx-auto w-44 h-44 rounded-xl" />
-            )}
-            <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
-              <span className="flex-1 truncate">{planilhaPix.pixCopiaECola}</span>
-              <button onClick={() => { navigator.clipboard.writeText(planilhaPix.pixCopiaECola); toast.success("Código Pix copiado!"); }} className="shrink-0 text-primary hover:text-primary/80">
-                <Copy className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={() => setPlanilhaPix(null)} variant="outline" size="sm">Cancelar</Button>
-              <Button onClick={async () => {
-                setPlanilhaVerifying(true);
-                try {
-                  const m = await import("@/lib/planilha-compra.functions");
-                  const r = await m.verificarCompraPlanilha({ data: { txid: planilhaPix.txid } });
-                  if (r.ok) {
-                    toast.success("Pagamento confirmado!");
-                    setPlanilhaPaga(true);
-                    setPlanilhaPix(null);
-                  } else {
-                    toast.error(r.error);
-                  }
-                } catch (e: any) {
-                  toast.error(e.message ?? "Erro ao verificar");
-                } finally { setPlanilhaVerifying(false); }
-              }} disabled={planilhaVerifying} size="sm">
-                {planilhaVerifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-                Já paguei
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Status / download */}
-        {planilhaPaga ? (
-          <div className="rounded-xl bg-positive-soft border border-positive/20 p-4 text-center space-y-2">
-            <Check className="h-6 w-6 text-positive mx-auto" />
-            <p className="font-semibold text-positive">Planilha liberada!</p>
-            <p className="text-xs text-muted-foreground">Ela é sua pra sempre.</p>
-            <Button onClick={async () => {
-              setPlanilhaBaixando(true);
-              try {
-                const m = await import("@/lib/planilha-compra.functions");
-                const r = await m.baixarPlanilha();
-                if (r.ok) {
-                  const blob = new Blob([Uint8Array.from(atob(r.base64), c => c.charCodeAt(0))], { type: r.tipo });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url; a.download = r.nome; a.click();
-                  URL.revokeObjectURL(url);
-                  toast.success("Download iniciado!");
-                } else {
-                  toast.error(r.error);
-                }
-              } catch (e: any) {
-                toast.error(e.message ?? "Erro ao baixar");
-              } finally { setPlanilhaBaixando(false); }
-            }} disabled={planilhaBaixando} className="w-full">
-              {planilhaBaixando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-              Baixar planilha
-            </Button>
-          </div>
-        ) : !planilhaPix ? (
-          <Button onClick={async () => {
-            setPlanilhaLoading(true);
-            try {
-              const m = await import("@/lib/planilha-compra.functions");
-              const r = await m.criarCompraPlanilha();
-              if (r.ok) setPlanilhaPix(r);
-              else toast.error(r.error);
-            } catch (e: any) {
-              toast.error(e.message ?? "Erro ao gerar Pix");
-            } finally { setPlanilhaLoading(false); }
-          }} disabled={planilhaLoading} className="w-full">
-            {planilhaLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-            Comprar por R$ 70
-          </Button>
-        ) : null}
-      </section>
-
+      {/* ─── Sons ─── */}
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Volume2 className="h-4 w-4 text-primary" />
@@ -469,6 +182,9 @@ function ConfigPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Planilha do Erick ─── */}
+      <ErickPlanilhaSection />
     </div>
   );
 }
@@ -479,5 +195,309 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</Label>
       {children}
     </div>
+  );
+}
+
+/* ─── PLANO SECTION (REDESIGNED) ─── */
+function PlanSection() {
+  const [planoStatus, setPlanoStatus] = useState<{ status: string; plano?: string; diasRestantes?: number } | null>(null);
+  const [pixData, setPixData] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    import("@/lib/assinatura.functions").then((m) => {
+      m.getSubscriptionStatus().then(setPlanoStatus);
+    });
+  }, []);
+
+  const isActive = planoStatus?.status === "ativo";
+  const isTrial = planoStatus?.status === "trial";
+  const isInactive = planoStatus?.status === "inativo";
+  const planoNome = planoStatus?.plano ?? "";
+
+  async function handleAssinar(plano: string) {
+    setPixLoading(true);
+    setPixData(null);
+    try {
+      const m = await import("@/lib/assinatura.functions");
+      const result = await m.createCheckoutSession({ data: { plano } });
+      if (result.ok) setPixData(result);
+      else toast.error(result.error);
+    } catch (e: any) { toast.error(e.message ?? "Erro ao gerar Pix"); }
+    finally { setPixLoading(false); }
+  }
+
+  async function handleVerificarPagamento() {
+    if (!pixData) return;
+    setVerifying(true);
+    try {
+      const m = await import("@/lib/assinatura.functions");
+      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: "anual" } });
+      if (result.paid) {
+        toast.success(`Assinatura ${result.plano} ativada!`);
+        setPixData(null);
+        setPlanoStatus({ status: "ativo", plano: result.plano });
+      } else { toast.error(result.error); }
+    } catch (e: any) { toast.error(e.message ?? "Erro ao verificar"); }
+    finally { setVerifying(false); }
+  }
+
+  function copyPixCode() {
+    if (pixData) { navigator.clipboard.writeText(pixData.pixCopiaECola); setCopied(true); setTimeout(() => setCopied(false), 2000); toast.success("Código Pix copiado!"); }
+  }
+
+  const PLANOS = [
+    {
+      id: "anual" as const, nome: "PRO Anual", valor: 250, detalhe: "R$ 21/mês",
+      features: ["Todas as funcionalidades", "Suporte prioritário", "Atualizações mensais", "Exportação de dados"],
+      tag: "Mais popular",
+    },
+    {
+      id: "vitalicio" as const, nome: "Vitalício", valor: 450, detalhe: "Única parcela",
+      features: ["Tudo do PRO Anual", "Pagamento único", "Acesso vitalício", "Todas as atualizações futuras"],
+      tag: "Melhor custo-benefício",
+    },
+  ];
+
+  return (
+    <section className="rounded-xl bg-card border border-border overflow-hidden">
+      {/* Header */}
+      <div className="px-5 pt-5 pb-0">
+        <div className="flex items-center gap-2 mb-1">
+          <Crown className="h-4 w-4 text-primary" />
+          <h2 className="font-display font-semibold">Plano</h2>
+        </div>
+      </div>
+
+      {/* ── Current plan hero ── */}
+      <div className="px-5 pt-4">
+        {isActive && (
+          <div className="rounded-xl bg-gradient-to-br from-positive-soft to-positive-soft/50 border border-positive/20 p-5 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-positive/5 blur-3xl pointer-events-none" />
+            <div className="relative flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-positive text-white grid place-items-center shrink-0 shadow-sm">
+                <Crown className="h-7 w-7" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-display text-xl font-bold text-positive">{planoNome}</h3>
+                  <span className="chip bg-positive/15 text-positive text-[10px]">Ativo</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Plano liberado com todos os recursos.
+                </p>
+                <div className="flex items-center gap-3 mt-3 text-xs">
+                  <span className="flex items-center gap-1 text-positive/80"><ShieldCheck className="h-3 w-3" /> Acesso completo</span>
+                  <span className="flex items-center gap-1 text-positive/80"><Zap className="h-3 w-3" /> Sem limites</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isTrial && (
+          <div className="rounded-xl bg-gradient-to-br from-warning-soft to-warning-soft/30 border border-warning/20 p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-warning/15 text-warning grid place-items-center shrink-0">
+                <Crown className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-lg font-bold">Teste gratuito</h3>
+                <p className="text-sm font-bold text-warning tabular-nums mt-0.5">{planoStatus?.diasRestantes} dias restantes</p>
+                <p className="text-xs text-muted-foreground mt-1">Aproveite todos os recursos. Escolha um plano abaixo para continuar usando após o trial.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isInactive && (
+          <div className="rounded-xl bg-gradient-to-br from-muted to-muted/50 border border-border p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-muted-foreground/10 text-muted-foreground grid place-items-center shrink-0">
+                <Crown className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-lg font-bold">Nenhum plano ativo</h3>
+                <p className="text-xs text-muted-foreground mt-1">Escolha um plano abaixo para desbloquear todos os recursos.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Pix QR ── */}
+      {pixData && (
+        <div className="px-5 pt-4">
+          <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
+            <p className="text-sm font-semibold">Pague via Pix</p>
+            <p className="text-xs text-muted-foreground">R$ {pixData.valor.toFixed(2)} — escaneie o QR Code ou copie o código</p>
+            {pixData.qrcode && <img src={`data:image/png;base64,${pixData.qrcode}`} alt="QR Code Pix" className="mx-auto w-48 h-48 rounded-xl" />}
+            <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
+              <span className="flex-1 truncate">{pixData.pixCopiaECola}</span>
+              <button onClick={copyPixCode} className="shrink-0 text-primary hover:text-primary/80">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={() => setPixData(null)} variant="outline" size="sm">Cancelar</Button>
+              <Button onClick={handleVerificarPagamento} disabled={verifying} size="sm">
+                {verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}Já paguei
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Planos disponíveis ── */}
+      <div className="px-5 pt-4 pb-5">
+        <div className="flex items-center gap-2 mb-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {isActive ? "Outros planos" : "Escolha seu plano"}
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {PLANOS.map((plano) => {
+            const isCurrentPlan = isActive && planoNome.toLowerCase().includes(plano.id);
+            return (
+              <div
+                key={plano.id}
+                className={cn(
+                  "rounded-xl border-2 p-5 transition-all hover:shadow-md relative",
+                  isCurrentPlan
+                    ? "border-positive bg-positive-soft/30 ring-1 ring-positive/20"
+                    : "border-border hover:border-primary/40",
+                )}
+              >
+                {plano.tag && !isCurrentPlan && (
+                  <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold shadow-sm">
+                    {plano.tag}
+                  </span>
+                )}
+                {isCurrentPlan && (
+                  <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-positive text-white text-[10px] font-semibold shadow-sm flex items-center gap-1">
+                    <Check className="h-2.5 w-2.5" /> Plano atual
+                  </span>
+                )}
+
+                <div className={cn("flex items-center gap-2", (plano.tag || isCurrentPlan) && "mt-2")}>
+                  <h4 className="font-display text-base font-bold">{plano.nome}</h4>
+                </div>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold tabular-nums">R$ {plano.valor}</span>
+                  <span className="text-xs text-muted-foreground ml-1">{plano.detalhe}</span>
+                </div>
+
+                {/* Features */}
+                <ul className="mt-3 space-y-1.5">
+                  {plano.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Check className="h-3 w-3 text-positive shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {!isCurrentPlan && (
+                  <Button
+                    onClick={() => handleAssinar(plano.id)}
+                    disabled={pixLoading || !!pixData}
+                    className="w-full mt-4 h-10 text-sm font-semibold"
+                    variant={isActive ? "outline" : "default"}
+                  >
+                    {isActive ? "Fazer upgrade" : "Assinar agora"}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {pixLoading && (
+          <div className="flex items-center justify-center py-4 mt-2">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ─── PLANILHA DO ERICK ─── */
+function ErickPlanilhaSection() {
+  const [planilhaPix, setPlanilhaPix] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
+  const [planilhaLoading, setPlanilhaLoading] = useState(false);
+  const [planilhaVerifying, setPlanilhaVerifying] = useState(false);
+  const [planilhaPaga, setPlanilhaPaga] = useState(false);
+  const [planilhaBaixando, setPlanilhaBaixando] = useState(false);
+
+  return (
+    <section className="rounded-xl bg-card border border-border p-5 space-y-4">
+      <div className="flex items-center gap-2 mb-1">
+        <FileSpreadsheet className="h-4 w-4 text-primary" />
+        <h2 className="font-display font-semibold">Planilha do Erick</h2>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Versão oficial da planilha em Excel (.xlsx) — R$ 70 <strong>pra sempre</strong> seu.
+        Mesma planilha que o Erick usa, sem marca d'água, sem assinatura.
+      </p>
+
+      {!planilhaPaga && planilhaPix && (
+        <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
+          <p className="text-sm font-semibold">Pague R$ 70 via Pix</p>
+          {planilhaPix.qrcode && (<img src={`data:image/png;base64,${planilhaPix.qrcode}`} alt="QR Code Pix" className="mx-auto w-44 h-44 rounded-xl" />)}
+          <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
+            <span className="flex-1 truncate">{planilhaPix.pixCopiaECola}</span>
+            <button onClick={() => { navigator.clipboard.writeText(planilhaPix.pixCopiaECola); toast.success("Código Pix copiado!"); }} className="shrink-0 text-primary hover:text-primary/80"><Copy className="h-4 w-4" /></button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={() => setPlanilhaPix(null)} variant="outline" size="sm">Cancelar</Button>
+            <Button onClick={async () => {
+              setPlanilhaVerifying(true);
+              try {
+                const m = await import("@/lib/planilha-compra.functions");
+                const r = await m.verificarCompraPlanilha({ data: { txid: planilhaPix.txid } });
+                if (r.ok) { toast.success("Pagamento confirmado!"); setPlanilhaPaga(true); setPlanilhaPix(null); }
+                else { toast.error(r.error); }
+              } catch (e: any) { toast.error(e.message ?? "Erro ao verificar"); }
+              finally { setPlanilhaVerifying(false); }
+            }} disabled={planilhaVerifying} size="sm">
+              {planilhaVerifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}Já paguei
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {planilhaPaga ? (
+        <div className="rounded-xl bg-positive-soft border border-positive/20 p-4 text-center space-y-2">
+          <Check className="h-6 w-6 text-positive mx-auto" />
+          <p className="font-semibold text-positive">Planilha liberada!</p>
+          <p className="text-xs text-muted-foreground">Ela é sua pra sempre.</p>
+          <Button onClick={async () => {
+            setPlanilhaBaixando(true);
+            try {
+              const m = await import("@/lib/planilha-compra.functions");
+              const r = await m.baixarPlanilha();
+              if (r.ok) { const blob = new Blob([Uint8Array.from(atob(r.base64), c => c.charCodeAt(0))], { type: r.tipo }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = r.nome; a.click(); URL.revokeObjectURL(url); toast.success("Download iniciado!"); }
+              else { toast.error(r.error); }
+            } catch (e: any) { toast.error(e.message ?? "Erro ao baixar"); }
+            finally { setPlanilhaBaixando(false); }
+          }} disabled={planilhaBaixando} className="w-full">
+            {planilhaBaixando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}Baixar planilha
+          </Button>
+        </div>
+      ) : !planilhaPix ? (
+        <Button onClick={async () => {
+          setPlanilhaLoading(true);
+          try {
+            const m = await import("@/lib/planilha-compra.functions");
+            const r = await m.criarCompraPlanilha();
+            if (r.ok) setPlanilhaPix(r);
+            else toast.error(r.error);
+          } catch (e: any) { toast.error(e.message ?? "Erro ao gerar Pix"); }
+          finally { setPlanilhaLoading(false); }
+        }} disabled={planilhaLoading} className="w-full">
+          {planilhaLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+          Comprar por R$ 70
+        </Button>
+      ) : null}
+    </section>
   );
 }
