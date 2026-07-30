@@ -65,6 +65,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#059669" },
       { name: "apple-mobile-web-app-title", content: "planilhafuturo" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
       { property: "og:title", content: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
