@@ -111,12 +111,15 @@ export function ChatWidget({ appData }: Props) {
       const { insertRow } = await import("@/lib/db");
       const { data: d } = action;
 
+      console.log("DEBUG: Dados recebidos da IA:", d);
+
       // Validate required fields
-      if (!d.tipo || !["entrada_fixa", "entrada_diaria", "saida_diaria"].includes(d.tipo)) {
+      if (!d.tipo || d.valor === undefined || d.valor === null) {
+        console.error("DEBUG: Validação falhou. Dados:", d);
         setMsgs((prev) => [...prev, {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: "❌ Tipo de lançamento inválido. Use: entrada_fixa, entrada_diaria ou saida_diaria.",
+          text: `❌ Erro de formato: dados incompletos.`,
           error: true,
         }]);
         return;
