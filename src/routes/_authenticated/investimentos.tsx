@@ -168,7 +168,7 @@ function InvestPage() {
                           <td className="px-4 py-2.5"><Input defaultValue={r.renda ?? ""} onBlur={(e) => e.target.value !== r.renda && upd.mutate({ id: r.id, patch: { renda: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
                           <td className="px-4 py-2.5 text-right"><MoneyInput value={Number(r.valor_aplicado) || 0} onCommit={(v) => v !== Number(r.valor_aplicado) && upd.mutate({ id: r.id, patch: { valor_aplicado: v } })} size="sm" align="right" className="w-full" /></td>
                           <td className="px-4 py-2.5 text-right"><MoneyInput value={Number(r.posicao_atual) || 0} onCommit={(v) => v !== Number(r.posicao_atual) && upd.mutate({ id: r.id, patch: { posicao_atual: v } })} size="sm" align="right" className="w-full" inputClassName="font-semibold" /></td>
-                          <td className={cn("px-4 py-2.5 text-right font-bold", rend >= 0 ? "text-positive" : "text-negative")}><Money value={rend} signed showSign /></td>
+                          <td className="px-4 py-2.5 text-right font-bold"><Money value={rend} signed showSign /></td>
                           <td className="px-4 py-2.5"><Input type="date" defaultValue={r.vencimento ?? ""} onBlur={(e) => e.target.value !== r.vencimento && upd.mutate({ id: r.id, patch: { vencimento: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
                           <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
                         </tr>

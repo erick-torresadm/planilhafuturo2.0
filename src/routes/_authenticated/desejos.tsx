@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow, getProfile } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Check, X, Clock, Sparkles, TrendingUp, PiggyBank, Target, Shield, Gift, Car, BookOpen, type LucideIcon } from "lucide-react";
 import { totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
@@ -22,8 +22,12 @@ export const Route = createFileRoute("/_authenticated/desejos")({
 const TIPOS = ["Tecnologia", "Casa", "Lazer", "Educacao", "Vestuario", "Outros"];
 
 const CAIXA_ICONS: Record<string, LucideIcon> = {
-  "🛡️": PiggyBank,
-  "✈️": Target,
+  reserva: PiggyBank,
+  viagem: Target,
+  emergencia: Shield,
+  presente: Gift,
+  carro: Car,
+  educacao: BookOpen,
 };
 
 function DesejosPage() {
@@ -96,15 +100,15 @@ function DesejosPage() {
           <div className="flex items-center gap-2 eyebrow mb-1">
             <TrendingUp className="h-3.5 w-3.5" /> Sobra mensal estimada
           </div>
-          <div className={cn("font-display text-4xl lg:text-5xl font-bold tabular-nums", sobra >= 0 ? "text-positive" : "text-negative")}>
+          <div className="font-display text-4xl lg:text-5xl font-bold tabular-nums">
             <Money value={sobra} signed showSign />
           </div>
-          <div className="stat-row mt-2">
-            <span className="text-xs text-muted-foreground">Renda <Money value={renda} /></span>
-            <span className="text-xs text-muted-foreground/40">−</span>
-            <span className="text-xs text-muted-foreground">Fixos <Money value={fixos} /></span>
-            <span className="text-xs text-muted-foreground/40">−</span>
-            <span className="text-xs text-muted-foreground">Parcelas <Money value={parcMes} /></span>
+          <div className="flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <span className="text-xs text-muted-foreground shrink-0">Renda <Money value={renda} /></span>
+            <span className="text-xs text-muted-foreground/40 shrink-0">−</span>
+            <span className="text-xs text-muted-foreground shrink-0">Fixos <Money value={fixos} /></span>
+            <span className="text-xs text-muted-foreground/40 shrink-0">−</span>
+            <span className="text-xs text-muted-foreground shrink-0">Parcelas <Money value={parcMes} /></span>
           </div>
         </div>
       </div>

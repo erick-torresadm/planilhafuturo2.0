@@ -48,14 +48,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ─── Desktop Sidebar ─── */}
       <aside className="hidden lg:flex flex-col w-[220px] shrink-0 border-r border-border bg-card">
         {/* Brand */}
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-primary grid place-items-center shrink-0">
-            <Logo size={14} withWordmark={false} />
-          </div>
-          <div className="min-w-0">
-            <div className="font-display text-[14px] font-semibold tracking-tight leading-tight truncate">planilhafuturo</div>
-            <div className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight">Fluxo financeiro</div>
-          </div>
+        <div className="h-14 flex items-center px-4 border-b border-border shrink-0">
+          <Logo size={18} />
         </div>
 
         {/* Navigation */}
@@ -121,15 +115,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
           <div className="h-14 lg:h-14 flex items-center gap-3 px-4 lg:px-6 safe-top">
             {/* Mobile brand */}
-            <div className="lg:hidden flex items-center gap-2 min-w-0 flex-1">
-              <div className="h-8 w-8 rounded-lg bg-primary grid place-items-center shrink-0">
-                <Logo size={13} withWordmark={false} />
-              </div>
-              <div className="min-w-0">
-                <div className="font-display text-[15px] font-bold leading-none truncate">
-                  {current?.label ?? "Planilha"}
-                </div>
-              </div>
+            <div className="lg:hidden flex items-center min-w-0 flex-1">
+              <Logo size={18} />
             </div>
 
             {/* Desktop page title */}
@@ -138,7 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {current?.label ?? "planilhafuturo"}
               </h1>
               {current?.hint && (
-                <span className="text-[11px] text-muted-foreground truncate hidden xl:block">
+                <span className="text-xs text-muted-foreground truncate hidden xl:block">
                   — {current.hint}
                 </span>
               )}
@@ -184,7 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}>
                   <Icon className={cn("h-[18px] w-[18px]")} strokeWidth={a ? 2.5 : 1.8} />
                 </div>
-                <span className={cn("text-[9.5px] font-semibold tracking-tight", a && "text-primary")}>
+                <span className={cn("eyebrow mt-0.5", a && "text-primary")}>
                   {n.label}
                 </span>
               </Link>
@@ -207,7 +194,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <circle cx="12" cy="19" r="1.5" fill="currentColor" />
               </svg>
             </div>
-            <span className={cn("text-[9.5px] font-semibold tracking-tight", inMore && "text-primary")}>Mais</span>
+            <span className={cn("eyebrow mt-0.5", inMore && "text-primary")}>Mais</span>
           </button>
         </div>
       </nav>
@@ -222,7 +209,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="px-3 pt-2 pb-1">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground px-2 mb-3">Navegar</p>
+              <p className="eyebrow px-2 mb-3">Navegar</p>
               <div className="grid grid-cols-4 gap-2">
                 {ALL.map((n) => {
                   const Icon = n.icon;
@@ -244,7 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <Icon className="h-[20px] w-[20px]" strokeWidth={a ? 2.2 : 1.8} />
                       </div>
                       <span className={cn(
-                        "text-[10px] font-medium text-center leading-tight",
+                        "eyebrow text-center leading-tight",
                         a ? "text-primary" : "text-muted-foreground",
                       )}>
                         {n.label}

@@ -7,10 +7,12 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "../lib/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -60,7 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#51f0a8" },
+      { name: "theme-color", content: "#2563eb" },
       { name: "apple-mobile-web-app-title", content: "planilhafuturo" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
@@ -161,9 +163,87 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [installEvent, setInstallEvent] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
+
+  // Capture beforeinstallprompt
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallEvent(e);
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  // Register service worker + update detection
+  useEffect(() => {
+    if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
+
+    let toastId: string | number | undefined;
+
+    navigator.serviceWorker.register("/sw.js").then((reg) => {
+      // Check for updates on each page load
+      reg.addEventListener("updatefound", () => {
+        const newSW = reg.installing;
+        if (!newSW) return;
+        newSW.addEventListener("statechange", () => {
+          if (newSW.state === "installed" && navigator.serviceWorker.controller) {
+            // New version available
+            toastId = toast("Nova versão disponível", {
+              description: "Atualize para a versão mais recente.",
+              action: {
+                label: "Atualizar",
+                onClick: () => {
+                  newSW.postMessage({ type: "SKIP_WAITING" });
+                  window.location.reload();
+                },
+              },
+              duration: 10000,
+            });
+          }
+        });
+      });
+    }).catch(() => {});
+
+    // Reload when a waiting SW takes over
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
+
+    return () => { /* cleanup handled by navigator lifetime */ };
+  }, []);
+
+  // Handle install
+  const handleInstall = useCallback(() => {
+    if (!installEvent) return;
+    installEvent.prompt();
+    installEvent.userChoice.then(() => {
+      setCanInstall(false);
+      setInstallEvent(null);
+    });
+  }, [installEvent]);
+
+  // Expose install handler globally so any component can trigger it (e.g. sidebar)
+  useEffect(() => {
+    (window as any).__installPWA = handleInstall;
+    return () => { delete (window as any).__installPWA; };
+  }, [handleInstall]);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+        {canInstall && (
+          <button
+            onClick={handleInstall}
+            className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg hover:opacity-90 transition-opacity sm:bottom-4"
+          >
+            Instalar app
+          </button>
+        )}
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

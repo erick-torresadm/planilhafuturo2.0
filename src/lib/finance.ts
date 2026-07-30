@@ -62,7 +62,10 @@ export function saidaFixaDia(
     s += Number(g.valor) || 0;
   }
   for (const p of parcelas) {
-    s += valorParcelaNoMes(p, y, m0);
+    const diaParcela = new Date(p.data + "T00:00:00").getDate();
+    if (d === diaParcela) {
+      s += valorParcelaNoMes(p, y, m0);
+    }
   }
   return s;
 }

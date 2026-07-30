@@ -86,19 +86,21 @@ function FluxoPage() {
                   key={i}
                   onClick={() => setMonthOffset(i)}
                   className={cn(
-                    "snap-start shrink-0 px-3.5 py-2 rounded-xl border transition-all min-w-[100px] text-left",
+                    "snap-start shrink-0 px-2.5 sm:px-3.5 py-2 rounded-xl border transition-all min-w-[68px] sm:min-w-[100px] text-left",
                     active
                       ? "bg-primary text-primary-foreground border-primary"
                       : saldoFim < 0
                         ? "border-negative/30 bg-negative-soft/50 text-negative"
-                        : "border-border bg-card hover:bg-muted",
+                        : saldoFim > 0
+                          ? "border-positive/30 bg-positive-soft/50 text-positive"
+                          : "border-border bg-card hover:bg-muted",
                   )}
                 >
                   <div className={cn("text-xs uppercase tracking-widest font-semibold", active ? "opacity-80" : "opacity-70")}>
                     {MESES_ABREV[m.m]}/{String(m.y).slice(2)}
                     {isToday && !active && <span className="ml-1 text-primary">•</span>}
                   </div>
-                  <div className="font-mono font-bold text-xs tabular-nums truncate">{brl(saldoFim)}</div>
+                  <div className={cn("font-mono font-bold text-xs tabular-nums truncate", !active && saldoFim < 0 && "text-negative", !active && saldoFim > 0 && "text-positive")}>{brl(saldoFim)}</div>
                 </button>
               );
             })
@@ -143,6 +145,8 @@ function FluxoPage() {
 function MiniChart({ dias }: { dias: any[] }) {
   if (!dias || dias.length === 0) return null;
   const maxVal = Math.max(1, ...dias.map((d: any) => Math.abs(d.saldo)));
+  const finalSaldo = dias[dias.length - 1]?.saldo ?? 0;
+  const chartTone = finalSaldo < 0 ? "negative" : finalSaldo > 0 ? "positive" : "muted";
   const pts = dias.map((d: any, i: number) => ({
     x: (i / Math.max(1, dias.length - 1)) * 100,
     y: 28 - ((d.saldo / maxVal) * 24),
@@ -159,8 +163,8 @@ function MiniChart({ dias }: { dias: any[] }) {
             <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={fill} fill="url(#fluxo-fill)" className="text-primary" />
-        <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-primary" />
+        <path d={fill} fill="url(#fluxo-fill)" className={chartTone === "negative" ? "text-negative" : chartTone === "positive" ? "text-positive" : "text-muted"} />
+        <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={chartTone === "negative" ? "text-negative" : chartTone === "positive" ? "text-positive" : "text-muted"} />
       </svg>
     </div>
   );
@@ -335,8 +339,8 @@ function MonthTable({ mm, today, onCommit }: any) {
   useEffect(() => { todayRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, [mm.y, mm.m]);
 
   return (
-    <div className="rounded-xl bg-card border border-border overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="rounded-xl bg-card border border-border overflow-x-auto">
+      <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="bg-muted">
             <th className="eyebrow text-left px-4 py-3 w-14">Dia</th>
@@ -411,7 +415,7 @@ function MonthTable({ mm, today, onCommit }: any) {
             <td className="px-4 py-3 text-right tabular-nums text-positive">{brl(totalED)}</td>
             <td className="px-4 py-3 text-right tabular-nums text-negative">{brl(totalSF)}</td>
             <td className="px-4 py-3 text-right tabular-nums text-negative">{brl(totalSD)}</td>
-            <td className="px-4 py-3 text-right tabular-nums text-primary">{brl(saldoFim)}</td>
+            <td className={cn("px-4 py-3 text-right tabular-nums", saldoFim < 0 ? "text-negative" : "text-positive")}>{brl(saldoFim)}</td>
             <td></td>
           </tr>
         </tfoot>

@@ -1,197 +1,226 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
-import { chatWithFutura } from "@/lib/chat.functions";
+import { useState, useRef, useEffect } from "react";
+import { MessageCircle, X, Send, Bot, User, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { chat, buildSystemPrompt, parseAction, hasApiKey, type AIChatMessage, type AppDataForAI } from "@/lib/ai-service";
+import { useQueryClient } from "@tanstack/react-query";
 
-type Msg = { role: "user" | "assistant"; content: string };
-
-const QUICK: Array<{ label: string; text: string }> = [
-  { label: "Quanto custa?", text: "Quanto custa o plano completo?" },
-  { label: "É seguro?", text: "Como funciona a segurança dos meus dados?" },
-  { label: "App ou planilha?", text: "Devo comprar o app ou a planilha? Qual é a diferença?" },
-  { label: "Quero começar", text: "Quero começar agora, o que eu faço?" },
-];
-
-const WELCOME: Msg = {
-  role: "assistant",
-  content:
-    "Oi! Eu sou a Futura 👋 assistente do planilhafuturo. Posso te ajudar com preços, funcionalidades, segurança ou te levar direto pro cadastro. O que você quer saber?",
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  error?: boolean;
 };
 
-export function ChatWidget() {
+interface Props {
+  appData: AppDataForAI;
+}
+
+export function ChatWidget({ appData }: Props) {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([WELCOME]);
+  const [msgs, setMsgs] = useState<ChatMessage[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      text: hasApiKey()
+        ? "Olá! 👋 Como posso ajudar? Posso registrar gastos, analisar suas finanças ou dar dicas."
+        : "Olá! 👋 Configure sua chave da API Gemini em **Configurações > IA** para eu poder ajudar.",
+    },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [unread, setUnread] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const qc = useQueryClient();
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading]);
-
-  useEffect(() => {
-    if (open) setUnread(false);
+    if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
 
-  async function send(text: string) {
-    const clean = text.trim();
-    if (!clean || loading) return;
-    const next = [...messages, { role: "user" as const, content: clean }];
-    setMessages(next);
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+  }, [msgs]);
+
+  async function send() {
+    const text = input.trim();
+    if (!text || loading) return;
     setInput("");
+
+    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", text };
+    setMsgs((prev) => [...prev, userMsg]);
+
     setLoading(true);
     try {
-      const res = await chatWithFutura({
-        data: { messages: next.slice(-10) },
-      });
-      setMessages((m) => [...m, { role: "assistant", content: res.reply }]);
-    } catch {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          content: "Deu ruim aqui do meu lado. Tenta de novo? Se persistir, escreve pra contato@planilhafuturo.com.br 🙏",
-        },
+      const system = buildSystemPrompt(appData);
+      const history: AIChatMessage[] = [
+        { role: "system", content: system },
+        ...msgs
+          .filter((m) => m.id !== "welcome")
+          .map((m) => ({ role: m.role as "user" | "assistant", content: m.text })),
+        { role: "user", content: text },
+      ];
+
+      const reply = await chat(history);
+
+      // Check if AI wants to perform an action
+      const action = parseAction(reply);
+      if (action) {
+        await executeAction(action);
+        qc.invalidateQueries(); // Refresh all data
+      }
+
+      // Clean action JSON from display text
+      const cleanText = reply.replace(/\{[\s\S]*?\}\n?---?\n?/, "").trim() || reply;
+
+      setMsgs((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", text: cleanText }]);
+    } catch (err: any) {
+      setMsgs((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", text: err.message || "Erro ao comunicar com a IA.", error: true },
       ]);
     } finally {
       setLoading(false);
     }
   }
 
+  async function executeAction(action: { action: string; data: any }) {
+    if (action.action === "add_lancamento") {
+      const { insertRow } = await import("@/lib/db");
+      const { data: d } = action;
+      try {
+        await insertRow("lancamentos", {
+          data: d.data || new Date().toISOString().slice(0, 10),
+          tipo: d.tipo,
+          valor: d.valor,
+          descricao: d.descricao || "",
+        });
+      } catch {}
+    }
+  }
+
   return (
     <>
-      {/* Launcher */}
-      <motion.button
-        onClick={() => setOpen((v) => !v)}
-        initial={{ scale: 0, rotate: -20 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ delay: 1.2, type: "spring", stiffness: 200, damping: 15 }}
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
-        aria-label={open ? "Fechar chat" : "Abrir chat"}
-        className="fixed bottom-4 right-4 z-[65] h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-[0_0_0_1px_rgba(115,255,184,0.5),0_20px_50px_-10px_rgba(45,212,168,0.7)] flex items-center justify-center"
-      >
-        <AnimatePresence mode="wait">
-          {open ? (
-            <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-              <X className="h-6 w-6" />
-            </motion.div>
-          ) : (
-            <motion.div key="msg" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-              <MessageCircle className="h-6 w-6" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {unread && !open && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-negative text-[10px] font-mono flex items-center justify-center text-background">
-            1
-          </span>
-        )}
-        <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping -z-10" />
-      </motion.button>
+      {/* FAB to open chat */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-20 right-5 lg:bottom-24 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-[#4f9cf7] text-white shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
+          aria-label="Abrir chat IA"
+        >
+          <MessageCircle className="h-5 w-5" strokeWidth={2} />
+        </button>
+      )}
 
-      {/* Panel */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-20 right-4 left-4 sm:left-auto sm:w-[380px] h-[70vh] sm:h-[560px] max-h-[calc(100vh-6rem)] z-[65] rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-end sm:pb-24 sm:pr-8 pointer-events-none">
+          <div
+            className="pointer-events-auto relative w-full sm:w-[380px] h-[70vh] sm:h-[520px] sm:max-h-[80vh] bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-modal flex flex-col overflow-hidden animate-in-fast"
           >
-            {/* header */}
-            <div className="px-4 py-3 border-b border-border bg-gradient-to-r from-primary/10 to-transparent flex items-center gap-3">
-              <div className="relative h-9 w-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary border-2 border-card" />
-              </div>
-              <div className="flex-1">
-                <div className="font-semibold text-sm leading-tight">Futura</div>
-                <div className="text-[10px] font-mono text-primary flex items-center gap-1">
-                  <span className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                  online · responde em segundos
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-gradient-to-r from-primary/5 to-transparent shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 grid place-items-center">
+                  <Bot className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">Assistente Financeiro</div>
+                  <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-positive inline-block" />
+                    {hasApiKey() ? "Gemini ativo" : "Sem API key"}
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground" aria-label="Fechar">
+              <button onClick={() => setOpen(false)} className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 text-sm">
-              {messages.map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+            {/* Messages */}
+            <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+              {msgs.map((m) => (
+                <div key={m.id} className={cn("flex gap-2", m.role === "user" ? "justify-end" : "justify-start")}>
+                  {m.role === "assistant" && (
+                    <div className="h-7 w-7 rounded-full bg-primary/10 grid place-items-center shrink-0 mt-0.5">
+                      <Bot className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                  )}
                   <div
-                    className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl leading-relaxed whitespace-pre-wrap ${
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
                       m.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-surface-2/60 border border-border rounded-bl-md"
-                    }`}
+                        ? "bg-primary text-primary-foreground rounded-tr-md"
+                        : m.error
+                          ? "bg-negative-soft text-negative border border-negative/20 rounded-tl-md"
+                          : "bg-muted text-foreground rounded-tl-md",
+                    )}
                   >
-                    {m.content}
+                    {m.text}
                   </div>
-                </motion.div>
+                  {m.role === "user" && (
+                    <div className="h-7 w-7 rounded-full bg-primary grid place-items-center shrink-0 mt-0.5">
+                      <User className="h-3.5 w-3.5 text-primary-foreground" />
+                    </div>
+                  )}
+                </div>
               ))}
               {loading && (
-                <div className="flex justify-start">
-                  <div className="bg-surface-2/60 border border-border px-4 py-3 rounded-2xl rounded-bl-md flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "120ms" }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "240ms" }} />
+                <div className="flex gap-2">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 grid place-items-center shrink-0">
+                    <Bot className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="bg-muted rounded-2xl rounded-tl-md px-3.5 py-2.5 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Pensando...
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* quick replies */}
-            {messages.length <= 2 && !loading && (
-              <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-                {QUICK.map((q) => (
+            {/* Suggestions */}
+            {msgs.length <= 1 && hasApiKey() && (
+              <div className="px-4 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                {["Comprei sorvete R$10", "Analise minhas finanças", "Quanto posso gastar?"].map((s) => (
                   <button
-                    key={q.label}
-                    onClick={() => send(q.text)}
-                    className="text-[11px] font-mono rounded-full border border-primary/30 bg-primary/5 text-primary px-2.5 py-1 hover:bg-primary hover:text-primary-foreground transition"
+                    key={s}
+                    onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                    className="shrink-0 text-[11px] px-2.5 py-1.5 rounded-full bg-muted text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap"
                   >
-                    {q.label}
+                    <Sparkles className="h-3 w-3 inline mr-1" />
+                    {s}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* composer */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                send(input);
-              }}
-              className="p-3 border-t border-border flex items-center gap-2"
-            >
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Escreva sua dúvida…"
-                disabled={loading}
-                className="flex-1 rounded-full border border-border bg-background/60 px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-              />
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                aria-label="Enviar"
-                className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:brightness-110 disabled:opacity-40"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {/* Input */}
+            <div className="p-3 border-t border-border shrink-0">
+              <div className="flex items-center gap-2 bg-muted/50 rounded-xl border border-border focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all">
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  placeholder={hasApiKey() ? "Digite sua mensagem..." : "Configure a API key..."}
+                  disabled={!hasApiKey()}
+                  className="flex-1 bg-transparent outline-none px-3.5 py-2.5 text-sm"
+                />
+                <button
+                  onClick={send}
+                  disabled={!input.trim() || loading || !hasApiKey()}
+                  className="h-8 w-8 rounded-lg bg-primary text-primary-foreground grid place-items-center mr-1.5 disabled:opacity-30 active:scale-90 transition-all"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 mt-1.5 text-center">
+                Google Gemini · <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">gratuito</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

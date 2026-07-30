@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   value: number | string | null | undefined;
   className?: string;
-  /** color the number based on sign */
+  /** color the number based on sign (default: true) */
   signed?: boolean;
   /** show + sign for positives when signed */
   showSign?: boolean;
@@ -12,16 +12,16 @@ type Props = {
   compact?: boolean;
 };
 
-export function Money({ value, className, signed, showSign, muted, compact }: Props) {
+export function Money({ value, className, signed = true, showSign, muted, compact }: Props) {
   const n = typeof value === "string" ? Number(value) : (value ?? 0);
-  const cls = signed
-    ? n > 0
-      ? "text-positive"
-      : n < 0
-        ? "text-negative"
-        : "text-muted-foreground"
-    : muted
-      ? "text-muted-foreground"
+  const cls = muted
+    ? "text-muted-foreground"
+    : signed
+      ? n > 0
+        ? "text-positive"
+        : n < 0
+          ? "text-negative"
+          : "text-muted-foreground"
       : "";
   let str = brl(Math.abs(n));
   if (compact && Math.abs(n) >= 1000) {

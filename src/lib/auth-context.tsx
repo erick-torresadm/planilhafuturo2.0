@@ -1,37 +1,71 @@
-/**
- * Simple auth provider for local development.
- * No real authentication — always provides a mock user.
- * Swap for real auth (Supabase/Auth.js) in production.
- */
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import type { User } from "@supabase/supabase-js";
 
-import { createContext, useContext, type ReactNode } from "react";
-
-type AuthUser = {
-  id: string;
-  email: string;
-  name: string;
-};
-
-type AuthContext = {
-  user: AuthUser | null;
+type AuthContextType = {
+  user: User | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
-const Ctx = createContext<AuthContext>({
-  user: { id: "local-dev-user", email: "dev@local.dev", name: "Você" },
-  loading: false,
+const Ctx = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  signIn: async () => ({ error: "AuthProvider not mounted" }),
+  signUp: async () => ({ error: "AuthProvider not mounted" }),
+  signInWithGoogle: async () => {},
   logout: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const value: AuthContext = {
-    user: { id: "local-dev-user", email: "dev@local.dev", name: "Você" },
-    loading: false,
-    logout: async () => {},
-  };
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  useEffect(() => {
+    // Hydrate session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function signIn(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  }
+
+  async function signUp(email: string, password: string) {
+    const { error } = await supabase.auth.signUp({ email, password });
+    return { error: error?.message ?? null };
+  }
+
+  async function signInWithGoogle() {
+    const { signInWithOAuth } = await import("@/integrations/lovable");
+    await signInWithOAuth("google");
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    qc.clear();
+  }
+
+  return (
+    <Ctx.Provider value={{ user, loading, signIn, signUp, signInWithGoogle, logout }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useAuth() {

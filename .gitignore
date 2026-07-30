@@ -1,3 +1,12 @@
+# ─── Sensitive ───
+.env
+.env.*
+!.env.example
+sensivel/
+dados/
+dados.txt
+*.local
+
 # Logs
 logs
 *.log
@@ -7,14 +16,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
 .output
 .vinxi
 .tanstack/**
 .nitro
-*.local
 
 # Wrangler / Cloudflare
 .wrangler/
@@ -30,3 +41,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code
+.claude/

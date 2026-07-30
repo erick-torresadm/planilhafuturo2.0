@@ -67,10 +67,20 @@
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Shadows */
+  /* Shadows / elevation */
   --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
   --shadow-elevated: 0 4px 16px -4px rgba(0,0,0,0.06), 0 2px 8px -4px rgba(0,0,0,0.04);
   --shadow-modal: 0 8px 40px -12px rgba(0,0,0,0.15), 0 24px 64px -16px rgba(0,0,0,0.10);
+  --shadow-elevation-1: 0 1px 2px rgba(0,0,0,0.03), 0 1px 4px rgba(0,0,0,0.02);
+  --shadow-elevation-2: 0 2px 8px -2px rgba(0,0,0,0.05), 0 1px 4px -1px rgba(0,0,0,0.03);
+  --shadow-elevation-3: 0 8px 24px -6px rgba(0,0,0,0.08), 0 4px 12px -4px rgba(0,0,0,0.04);
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
 }
 
 /* ─── Light (default) ─── */
@@ -393,10 +403,13 @@
   max-width: 80rem;
   margin-left: auto;
   margin-right: auto;
-  padding: 1.25rem 1rem 1.5rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+@media (min-width: 640px) {
+  .page-container { padding: 1.5rem 1.5rem 2rem; }
 }
 @media (min-width: 1024px) {
-  .page-container { padding: 1.5rem 1.5rem 1.5rem; }
+  .page-container { padding: 1.75rem 2rem 2.5rem; }
 }
 .page-container-sm { max-width: 42rem; }
 
@@ -437,4 +450,65 @@
 /* ─── Entrance animation ─── */
 .animate-in {
   animation: fade-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-in-fast {
+  animation: fade-up 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Micro-interaction utilities ─── */
+.scale-on-click {
+  transition: transform 0.1s var(--ease-spring);
+}
+.scale-on-click:active {
+  transform: scale(0.97);
+}
+
+.hover-lift {
+  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-spring);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Stagger animation helpers */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 180ms; }
+.stagger-5 { animation-delay: 240ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* ─── Landing page utilities ─── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee {
+  animation: marquee 30s linear infinite;
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+.grid-bg {
+  background-image: linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.num-lg {
+  font-variant-numeric: proportional-nums;
+  letter-spacing: -0.03em;
+}
+.tap-target {
+  min-height: 44px;
+}
+.mint-gradient {
+  background: linear-gradient(135deg, var(--color-primary), #4f9cf7);
+  color: var(--color-primary-foreground);
+}
+:root {
+  --shadow-hero: 0 20px 60px -20px rgba(0,0,0,0.08), 0 4px 20px -8px rgba(0,0,0,0.06);
+}
+.dark {
+  --shadow-hero: 0 20px 60px -20px rgba(0,0,0,0.4), 0 4px 20px -8px rgba(0,0,0,0.3);
 }

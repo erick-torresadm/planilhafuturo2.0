@@ -1,21 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { selectAll, getProfile } from "@/lib/db";
-import { computaMes, type GastoFixo, type Parcela, type Lancamento } from "@/lib/finance";
+import { computaMes, totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
 import { MESES, MESES_ABREV } from "@/lib/format";
-import { Money } from "@/components/Money";
-import { KpiCard } from "@/components/KpiCard";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
-import {
-  Plus, TrendingUp, TrendingDown,
-  AlertTriangle, CheckCircle2, Receipt,
-  CreditCard, Target, Wallet, ArrowRight,
-  PiggyBank,
-} from "lucide-react";
+import { useExternalData } from "@/hooks/useExternalData";
+import { Plus, TrendingUp, DollarSign, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { DashboardMercury } from "@/components/dashboards";
+import { ChatWidget } from "@/components/ChatWidget";
+import type { AppDataForAI } from "@/lib/ai-service";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Hoje — planilhafuturo" }] }),
   component: HojePage,
@@ -32,10 +28,17 @@ function HojePage() {
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
+  const invest = useQuery({ queryKey: ["investimentos"], queryFn: () => selectAll("investimentos") });
   const { list: lanc } = useLancamentosLocal();
+
+  const { data: extData } = useExternalData();
+
+  const loading = profile.isPending || gastos.isPending || parcelas.isPending;
 
   const saldoInicial = Number(profile.data?.saldo_inicial ?? 0);
   const nome = (profile.data?.nome ?? "").split(" ")[0] || "você";
+
+  const [saldoVisivel, setSaldoVisivel] = useState(true);
 
   const seis = useMemo(() => {
     const g = (gastos.data ?? []) as GastoFixo[];
@@ -53,7 +56,7 @@ function HojePage() {
   const mesAtual = seis[0];
   const diaHoje = mesAtual?.dias.find((d: any) => d.dia === dToday) ?? mesAtual?.dias[0];
   const saldoHoje = diaHoje?.saldo ?? saldoInicial;
-  const saldoFimMes = mesAtual?.saldofim ?? saldoInicial;
+  const saldoFimMes = mesAtual?.dias[mesAtual.dias.length - 1]?.saldo ?? saldoInicial;
 
   const totalEntradasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0) ?? 0;
   const totalSaidasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0) ?? 0;
@@ -61,16 +64,14 @@ function HojePage() {
   const primeiroNegativo = seis.find((mm) => mm.saldoFim < 0);
   const ultimoPositivo = [...seis].reverse().find((mm) => mm.saldoFim >= 0);
 
-  /* Sparkline data */
-  const maxAbs = useMemo(() => Math.max(1, ...seis.map((s) => Math.abs(s.saldoFim))), [seis]);
-  const sparkH = 48;
-  const sparkPts = seis.map((s, i) => ({
-    x: i * 20,
-    y: sparkH / 2 - ((s.saldoFim / maxAbs) * (sparkH / 2 - 4)),
-    v: s.saldoFim,
-  }));
-  const sparkLine = sparkPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-  const sparkArea = sparkLine + ` L${sparkPts[sparkPts.length - 1].x},${sparkH} L0,${sparkH} Z`;
+  const totalInvestido = ((invest.data ?? []) as any[]).reduce((a, r) => a + Number(r.posicao_atual), 0);
+
+  const chartData = useMemo(() => seis.map((s) => ({
+    label: MESES_ABREV[s.m],
+    saldo: s.saldoFim,
+    entradas: s.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0),
+    saidas: s.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0),
+  })), [seis]);
 
   const [qaOpen, setQaOpen] = useState<null | "in" | "out">(null);
   const [qaValor, setQaValor] = useState("");
@@ -79,199 +80,91 @@ function HojePage() {
     const n = Number(qaValor.replace(/\./g, "").replace(",", ".")) || 0;
     if (n <= 0 || !diaHoje) { setQaOpen(null); setQaValor(""); return; }
     playSound(qaOpen === "in" ? "kaching" : "pop");
-    // TODO: persist lancamento
     setQaOpen(null); setQaValor("");
+  }
+
+  const variacaoPercentual = saldoInicial ? ((saldoHoje - saldoInicial) / saldoInicial) * 100 : 0;
+
+  const renda = Number(profile.data?.renda_mensal ?? 0);
+  const fixos = totalGastoFixoMensal(((gastos.data ?? []) as GastoFixo[]));
+  const parcMes = parcelasNoMes(((parcelas.data ?? []) as unknown as Parcela[]), y, m0);
+
+  const appData: AppDataForAI = {
+    saldoHoje, saldoInicial, saldoFimMes, totalInvestido,
+    totalEntradas: totalEntradasMes,
+    totalSaidas: totalSaidasMes,
+    gastosFixos: fixos,
+    parcelasMes: parcMes,
+    rendaMensal: renda,
+  };
+
+  const dashboardProps = {
+    saldoHoje, saldoFimMes, saldoInicial,
+    totalEntradasMes, totalSaidasMes,
+    nome, dayName, dToday, m0,
+    chartData, seis,
+    primeiroNegativo, ultimoPositivo,
+    totalInvestido, variacaoPercentual,
+    saldoVisivel, setSaldoVisivel,
+  };
+
+  if (loading) {
+    return (
+      <div className="page-container space-y-4 animate-in">
+        <div className="skeleton h-12 w-60 rounded-lg" />
+        <div className="skeleton h-40 w-full rounded-xl" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-28 w-full rounded-xl" />)}
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="page-container space-y-4 animate-in">
-      {/* Greeting */}
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="eyebrow">Olá, {nome}</p>
-          <h1 className="font-display text-2xl font-semibold tracking-tight mt-0.5">{dayName}</h1>
+      <DashboardMercury {...dashboardProps} />
+
+      {/* External economic data */}
+      {(extData.usd || extData.selic) && (
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <span className="eyebrow">Mercado</span>
+          {extData.usd && (
+            <span className="chip chip-ghost flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" /> USD <strong className="tabular-nums">R$ {extData.usd.toFixed(2)}</strong>
+            </span>
+          )}
+          {extData.eur && (
+            <span className="chip chip-ghost flex items-center gap-1">
+              <DollarSign className="h-3 w-3" /> EUR <strong className="tabular-nums">R$ {extData.eur.toFixed(2)}</strong>
+            </span>
+          )}
+          {extData.selic && (
+            <span className="chip chip-ghost flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" /> Selic <strong className="tabular-nums">{extData.selic.toFixed(2)}%</strong>
+            </span>
+          )}
+          {extData.ipca && (
+            <span className="chip chip-ghost flex items-center gap-1">
+              <PiggyBank className="h-3 w-3" /> IPCA <strong className="tabular-nums">{extData.ipca.toFixed(1)}%</strong>
+            </span>
+          )}
+          {extData.updatedAt && (
+            <span className="text-[10px] text-muted-foreground/50">· {extData.updatedAt}</span>
+          )}
         </div>
-        <Link to="/fluxo" className="text-xs font-semibold text-primary hover:underline">
-          Ver fluxo <ArrowRight className="h-3 w-3 inline" />
-        </Link>
-      </div>
+      )}
 
-      {/* Bento grid */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-        {/* Hero — Saldo */}
-        <div className="metric-card md:col-span-3">
-          <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_top_right,var(--color-primary),transparent_60%)] pointer-events-none" />
-          <div className="relative">
-            <div className="flex items-center justify-between">
-              <span className="eyebrow">Saldo disponível</span>
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {dToday} {MESES[m0].toLowerCase()}
-              </span>
-            </div>
-            <div className={cn(
-              "font-mono text-4xl font-bold tracking-tight leading-none mt-2 tabular-nums",
-              saldoHoje < 0 ? "text-negative" : "text-foreground",
-            )}>
-              <Money value={saldoHoje} />
-            </div>
-
-            {/* Sparkline */}
-            <div className="mt-4 h-12">
-              <svg viewBox="0 0 100 48" className="w-full h-full" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="spark-bg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="currentColor" stopOpacity="0.12" />
-                    <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d={sparkArea} fill="url(#spark-bg)" className="text-primary" />
-                <path d={sparkLine} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
-                {sparkPts.map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="currentColor" className="text-primary" />
-                ))}
-              </svg>
-            </div>
-
-            <div className="mt-3 flex items-center gap-3 text-xs">
-              <span className="text-muted-foreground">Projeção fim do mês</span>
-              <span className={cn(
-                "font-semibold tabular-nums flex items-center gap-1",
-                saldoFimMes < 0 ? "text-negative" : "text-positive",
-              )}>
-                {saldoFimMes < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
-                <Money value={saldoFimMes} />
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Movimento do mês */}
-        <div className="metric-card md:col-span-3 metric-card-positive">
-          <span className="eyebrow">Movimento do mês</span>
-          <div className="grid grid-cols-2 gap-3 mt-3">
-            <div className="rounded-xl bg-positive-soft/70 p-4">
-              <div className="flex items-center gap-1.5 text-positive text-xs font-semibold">
-                <TrendingUp className="h-3.5 w-3.5" /> Entradas
-              </div>
-              <div className="mt-1.5 font-display text-xl font-bold text-positive tabular-nums">
-                <Money value={totalEntradasMes} />
-              </div>
-            </div>
-            <div className="rounded-xl bg-negative-soft/70 p-4">
-              <div className="flex items-center gap-1.5 text-negative text-xs font-semibold">
-                <TrendingDown className="h-3.5 w-3.5" /> Saídas
-              </div>
-              <div className="mt-1.5 font-display text-xl font-bold text-negative tabular-nums">
-                <Money value={totalSaidasMes} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Alerta */}
-        {primeiroNegativo && (
-          <Link to="/fluxo" className="md:col-span-6 card-hover p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-warning-soft grid place-items-center shrink-0">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold">Fica no vermelho em {MESES_ABREV[primeiroNegativo.m]}</div>
-              <div className="text-xs text-muted-foreground">
-                Saldo previsto: <Money value={primeiroNegativo.saldoFim} className="text-negative font-semibold" />
-              </div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-          </Link>
-        )}
-        {!primeiroNegativo && ultimoPositivo && (
-          <div className="md:col-span-6 card-hover p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-positive-soft grid place-items-center shrink-0">
-              <CheckCircle2 className="h-5 w-5 text-positive" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold">Fluxo saudável nos próximos 6 meses</div>
-              <div className="text-xs text-muted-foreground">
-                Continua positivo até pelo menos {MESES[ultimoPositivo.m]}.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Projeção 6 meses — área chart */}
-        <div className="metric-card md:col-span-3">
-          <span className="eyebrow">Projeção 6 meses</span>
-          <div className="mt-3 h-28">
-            <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="proj-fill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {(() => {
-                const maxV = Math.max(1, ...seis.map((s) => Math.abs(s.saldoFim)));
-                const pts = seis.map((s, i) => ({
-                  x: (i / Math.max(1, seis.length - 1)) * 290 + 5,
-                  y: 90 - ((s.saldoFim / maxV) * 75 + (s.saldoFim >= 0 ? 0 : 0)),
-                  v: s.saldoFim,
-                }));
-                const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-                const fill = d + ` L${pts[pts.length - 1].x},95 L5,95 Z`;
-                return (
-                  <>
-                    <path d={fill} fill="url(#proj-fill)" className="text-primary" />
-                    <path d={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-primary" />
-                    {pts.map((p, i) => (
-                      <g key={i}>
-                        <circle cx={p.x} cy={p.y} r="3.5" fill="var(--color-card)" stroke="currentColor" strokeWidth="2" className="text-primary" />
-                        <text x={p.x} y={105} textAnchor="middle" className="fill-muted-foreground" fontSize="9" fontFamily="var(--font-mono)">
-                          {MESES_ABREV[seis[i].m]}
-                        </text>
-                      </g>
-                    ))}
-                  </>
-                );
-              })()}
-            </svg>
-          </div>
-        </div>
-
-        {/* Atalhos */}
-        <div className="md:col-span-3">
-          <span className="eyebrow block mb-2">Atalhos</span>
-          <div className="grid grid-cols-2 gap-2">
-            <Link to="/gastos" className="flex items-center gap-3 p-3 rounded-xl bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 transition-colors">
-              <Receipt className="h-4 w-4" strokeWidth={2} />
-              <span className="text-sm font-semibold">Gastos fixos</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-50" />
-            </Link>
-            <Link to="/parcelas" className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/10 text-violet-600 hover:bg-violet-500/15 transition-colors">
-              <CreditCard className="h-4 w-4" strokeWidth={2} />
-              <span className="text-sm font-semibold">Parcelas</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-50" />
-            </Link>
-            <Link to="/desejos" className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 text-amber-600 hover:bg-amber-500/15 transition-colors">
-              <Target className="h-4 w-4" strokeWidth={2} />
-              <span className="text-sm font-semibold">Desejos</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-50" />
-            </Link>
-            <Link to="/investimentos" className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 transition-colors">
-              <Wallet className="h-4 w-4" strokeWidth={2} />
-              <span className="text-sm font-semibold">Investir</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-50" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* FAB — Quick add */}
+      {/* FABs */}
       <button
         onClick={() => setQaOpen("in")}
-        className="fixed bottom-20 right-5 lg:bottom-8 lg:right-8 z-30 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform"
+        className="fixed bottom-36 right-5 lg:bottom-8 lg:right-8 z-30 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform"
         aria-label="Adicionar lançamento"
       >
         <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
+
+      {/* AI Chat */}
+      <ChatWidget appData={appData} />
 
       {/* Quick-add sheet */}
       {qaOpen && (
@@ -304,15 +197,8 @@ function HojePage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => { setQaOpen(null); setQaValor(""); }} className="h-12 rounded-xl border border-border text-sm font-medium">
-                Cancelar
-              </button>
-              <button
-                onClick={commitQuick}
-                className={cn("h-12 rounded-xl text-white font-bold", qaOpen === "in" ? "bg-positive" : "bg-negative")}
-              >
-                Adicionar
-              </button>
+              <button onClick={() => { setQaOpen(null); setQaValor(""); }} className="h-12 rounded-xl border border-border text-sm font-medium">Cancelar</button>
+              <button onClick={commitQuick} className={cn("h-12 rounded-xl text-white font-bold", qaOpen === "in" ? "bg-positive" : "bg-negative")}>Adicionar</button>
             </div>
           </div>
         </div>

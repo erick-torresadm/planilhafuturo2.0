@@ -1,13 +1,7 @@
 /**
  * Database abstraction layer.
- * Currently uses localStorage for development.
- * Swap implementation for production (Supabase, Prisma, etc.)
+ * Currently backed by Supabase. Falls back to localStorage for migration.
  */
-
-import { seedAllTables } from "./local-db";
-
-// Seed tables once on module load
-seedAllTables();
 
 export {
   selectAll,
@@ -16,6 +10,7 @@ export {
   deleteRow,
   getProfile,
   updateProfile,
-} from "./local-db";
+  seedNewUserData,
+} from "./supabase-db";
 
 export type Row = Record<string, any>;

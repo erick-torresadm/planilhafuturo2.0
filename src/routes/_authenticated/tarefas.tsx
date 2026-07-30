@@ -113,13 +113,13 @@ function TarefasPage() {
           <div className="hidden lg:grid lg:grid-cols-3 gap-3">
             {(["pendente", "atrasado", "feito"] as const).map((col) => {
               const items = rows.filter((r) => r.status === col);
-              const colIcon = col === "feito" ? Check : col === "atrasado" ? AlertTriangle : Clock;
+              const ColIcon = col === "feito" ? Check : col === "atrasado" ? AlertTriangle : Clock;
               const colBorder = col === "feito" ? "border-positive/20" : col === "atrasado" ? "border-negative/20" : "border-border";
               return (
                 <div key={col} className={cn("rounded-xl bg-card border-t-[3px] border-x border-b border-border/40", colBorder)}>
                   <div className="p-4 pb-2">
                     <div className="flex items-center gap-2 text-sm font-semibold capitalize">
-                      <colIcon className={cn(
+                      <ColIcon className={cn(
                         "h-4 w-4",
                         col === "feito" ? "text-positive" : col === "atrasado" ? "text-negative" : "text-muted-foreground",
                       )} />

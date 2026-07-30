@@ -113,11 +113,11 @@ function ParcelasPage() {
                       <div className="mt-3 flex items-baseline justify-between">
                         <div>
                           <span className="eyebrow">Parcela</span>
-                          <div className="font-display text-lg font-bold text-primary mt-0.5"><Money value={parcela} /></div>
+                          <div className="font-display text-lg font-bold text-negative mt-0.5"><Money value={parcela} signed={false} /></div>
                         </div>
                         <div className="text-right">
                           <span className="eyebrow">Total</span>
-                          <div className="text-sm font-semibold mt-0.5"><Money value={Number(r.valor_total)} /></div>
+                          <div className="text-sm font-semibold text-negative mt-0.5"><Money value={Number(r.valor_total)} signed={false} /></div>
                         </div>
                       </div>
                       <div className="mt-3">
@@ -168,7 +168,7 @@ function ParcelasPage() {
                         <td className="px-4 py-2.5"><select value={r.categoria ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { categoria: e.target.value } })} className="bg-transparent outline-none text-sm">{CATEGORIAS.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
                         {meses6.map((mm) => {
                           const v = valorParcelaNoMes(r, mm.y, mm.m);
-                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-2 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} /> : "—"}</td>;
+                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-2 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
                         })}
                         <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
                       </tr>
@@ -177,7 +177,7 @@ function ParcelasPage() {
                   <tfoot>
                     <tr className="bg-muted font-bold border-t border-border">
                       <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={8}>Total por mês</td>
-                      {totalPorMes.map((t, i) => <td key={i} className="px-2 py-3 text-right text-negative"><Money value={t} /></td>)}
+                      {totalPorMes.map((t, i) => <td key={i} className="px-2 py-3 text-right text-negative"><Money value={t} signed={false} /></td>)}
                       <td></td>
                     </tr>
                   </tfoot>
@@ -275,7 +275,7 @@ function NewParcelaDialog({ open, onOpenChange, onSave, saving }: { open: boolea
           {valorParcela > 0 && (
             <div className="rounded-md bg-primary/10 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Cada parcela: </span>
-              <b className="text-primary tabular-nums"><Money value={valorParcela} /></b>
+              <b className="text-negative tabular-nums"><Money value={valorParcela} signed={false} /></b>
             </div>
           )}
           <DialogFooter className="gap-2 pt-2">

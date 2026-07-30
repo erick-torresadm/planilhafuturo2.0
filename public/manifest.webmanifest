@@ -1,15 +1,21 @@
 {
-  "name": "planilhafuturo — planejamento financeiro em 6 meses",
+  "name": "planilhafuturo — Planejamento financeiro em 6 meses",
   "short_name": "planilhafuturo",
-  "description": "Enxergue seus próximos 6 meses de dinheiro em um olhar.",
+  "description": "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas, desejos e investimentos.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f9f7f1",
-  "theme_color": "#0f5132",
+  "background_color": "#f8f9fc",
+  "theme_color": "#2563eb",
+  "categories": ["finance", "productivity", "utilities"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     { "src": "/pwa-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
     { "src": "/pwa-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
-  ]
+  ],
+  "screenshots": [],
+  "edge_side_panel": {}
 }
