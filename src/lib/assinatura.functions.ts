@@ -28,7 +28,7 @@ async function upsertAssinatura(userId: string, planoNome: string) {
   const admin = await getAdminDb();
   const now = new Date().toISOString();
 
-  // Check if an active subscription already exists
+  // Check if an active subscription already exists - use maybeSingle instead of single
   const { data: existing } = await admin
     .from("assinaturas")
     .select("id")

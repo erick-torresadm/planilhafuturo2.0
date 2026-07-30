@@ -42,9 +42,14 @@ export async function insertRow<T extends Record<string, any> = any>(
   const userId = await getUserId();
   const newRow = {
     ...row,
-    id: row.id || crypto.randomUUID(),
+    id: (row as any).id || crypto.randomUUID(),
     ...(isIdentityTable(table) ? {} : { user_id: userId }),
   } as any;
+
+  // Remove undefined/null values to prevent 400 errors on NOT NULL columns
+  Object.keys(newRow).forEach((k) => {
+    if (newRow[k] === undefined) delete newRow[k];
+  });
 
   const { data, error } = await supabase
     .from(table)

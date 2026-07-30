@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Bot, User, Sparkles, Loader2, AlertCircle } fro
 import { cn } from "@/lib/utils";
 import { chat, buildSystemPrompt, parseAction, hasApiKey, type AIChatMessage, type AppDataForAI } from "@/lib/ai-service";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type ChatMessage = {
   id: string;
@@ -95,16 +96,52 @@ export function ChatWidget({ appData }: Props) {
 
   async function executeAction(action: { action: string; data: any }) {
     if (action.action === "add_lancamento") {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) {
+        setMsgs((prev) => [...prev, {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: "⚠️ Você precisa estar autenticado para registrar lançamentos. Faça login e tente novamente.",
+          error: true,
+        }]);
+        return;
+      }
+
       const { insertRow } = await import("@/lib/db");
       const { data: d } = action;
+
+      // Validate required fields
+      if (!d.tipo || !["entrada_fixa", "entrada_diaria", "saida_diaria"].includes(d.tipo)) {
+        setMsgs((prev) => [...prev, {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: "❌ Tipo de lançamento inválido. Use: entrada_fixa, entrada_diaria ou saida_diaria.",
+          error: true,
+        }]);
+        return;
+      }
+
       try {
         await insertRow("lancamentos", {
           data: d.data || new Date().toISOString().slice(0, 10),
           tipo: d.tipo,
-          valor: d.valor,
+          valor: Number(d.valor) || 0,
           descricao: d.descricao || "",
         });
-      } catch {}
+        setMsgs((prev) => [...prev, {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: `✅ Registrado: ${d.descricao || d.tipo} — R$ ${Number(d.valor).toFixed(2)}`,
+        }]);
+      } catch (err: any) {
+        setMsgs((prev) => [...prev, {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: `❌ Erro ao registrar lançamento: ${err.message}`,
+          error: true,
+        }]);
+      }
     }
   }
 
@@ -114,7 +151,7 @@ export function ChatWidget({ appData }: Props) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-16 right-5 lg:bottom-20 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
+          className="fixed bottom-24 right-5 lg:bottom-20 lg:right-8 z-40 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-lg grid place-items-center active:scale-90 transition-transform hover:shadow-xl"
           aria-label="Abrir chat IA"
         >
           <MessageCircle className="h-5 w-5" strokeWidth={2} />

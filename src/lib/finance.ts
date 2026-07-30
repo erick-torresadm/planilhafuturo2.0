@@ -28,9 +28,11 @@ export type Parcela = {
 
 export type Lancamento = {
   id: string;
+  user_id?: string;
   data: string;
   tipo: "entrada_fixa" | "entrada_diaria" | "saida_diaria";
   valor: number;
+  descricao?: string;
 };
 
 /** Shared helper: valor de uma parcela em um mês específico */
