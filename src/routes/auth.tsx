@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { Mail, Lock, Loader2, Eye, EyeOff, Chrome, MailCheck } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, Chrome, MailCheck, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -28,6 +28,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [nome, setNome] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -44,13 +45,14 @@ function AuthPage() {
     setJustSignedUp(false);
 
     if (!email.trim()) { setError("Digite seu email"); return; }
+    if (tab === "criar" && !nome.trim()) { setError("Digite seu nome"); return; }
     if (password.length < 6) { setError("Senha deve ter no mínimo 6 caracteres"); return; }
     if (tab === "criar" && password !== confirmPassword) { setError("Senhas não conferem"); return; }
 
     setSubmitting(true);
 
     if (tab === "criar") {
-      const { error: err, needsConfirmation } = await signUp(email.trim(), password);
+      const { error: err, needsConfirmation } = await signUp(email.trim(), password, nome.trim());
       setSubmitting(false);
 
       if (err) {
@@ -109,7 +111,7 @@ function AuthPage() {
           {(["entrar", "criar"] as Tab[]).map((t) => (
             <button
               key={t}
-              onClick={() => { setTab(t); setError(""); setJustSignedUp(false); }}
+              onClick={() => { setTab(t); setError(""); setJustSignedUp(false); setNome(""); }}
               className={cn(
                 "flex-1 py-2 text-sm font-semibold rounded-lg transition-all",
                 tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
@@ -142,6 +144,22 @@ function AuthPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3">
+          {tab === "criar" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Nome</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  autoComplete="name"
+                />
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</label>
             <div className="relative">
