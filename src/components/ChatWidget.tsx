@@ -128,6 +128,7 @@ export function ChatWidget({ appData }: Props) {
           tipo: d.tipo,
           valor: Number(d.valor) || 0,
           descricao: d.descricao || "",
+          user_id: userId,
         });
         setMsgs((prev) => [...prev, {
           id: crypto.randomUUID(),
