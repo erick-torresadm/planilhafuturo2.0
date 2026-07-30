@@ -7,7 +7,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -15,8 +15,8 @@ type AuthContextType = {
 const Ctx = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signIn: async () => ({ error: "AuthProvider not mounted" }),
-  signUp: async () => ({ error: "AuthProvider not mounted" }),
+  signIn: async () => ({ error: "AuthProvider não montado" }),
+  signUp: async () => ({ error: "AuthProvider não montado", needsConfirmation: false }),
   signInWithGoogle: async () => {},
   logout: async () => {},
 });
@@ -43,12 +43,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    if (!error) return { error: null };
+    const msg =
+      error.message === "Invalid login credentials" ? "Email ou senha incorretos" :
+      error.message.includes("Email not confirmed") ? "Confirme seu email antes de fazer login. Verifique sua caixa de entrada." :
+      error.message;
+    return { error: msg };
   }
 
   async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { error, data } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/auth` },
+    });
+    if (error) {
+      const msg =
+        error.message.includes("already registered") ? "Este email já está cadastrado" :
+        error.message.includes("Password should be") ? "Senha deve ter no mínimo 6 caracteres" :
+        error.message;
+      return { error: msg, needsConfirmation: false };
+    }
+
+    // If no session, email confirmation is required
+    const needsConfirmation = !data.session;
+    return { error: null, needsConfirmation };
   }
 
   async function signInWithGoogle() {

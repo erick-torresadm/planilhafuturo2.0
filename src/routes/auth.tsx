@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/lib/auth-context";
-import { Mail, Lock, Loader2, Eye, EyeOff, Chrome } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, Chrome, MailCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -30,6 +31,7 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
 
   // If already logged in, redirect
   useEffect(() => {
@@ -39,21 +41,44 @@ function AuthPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setJustSignedUp(false);
 
     if (!email.trim()) { setError("Digite seu email"); return; }
     if (password.length < 6) { setError("Senha deve ter no mínimo 6 caracteres"); return; }
     if (tab === "criar" && password !== confirmPassword) { setError("Senhas não conferem"); return; }
 
     setSubmitting(true);
-    const { error: err } = tab === "criar"
-      ? await signUp(email.trim(), password)
-      : await signIn(email.trim(), password);
-    setSubmitting(false);
 
-    if (err) {
-      setError(err === "Invalid login credentials" ? "Email ou senha incorretos" : err);
+    if (tab === "criar") {
+      const { error: err, needsConfirmation } = await signUp(email.trim(), password);
+      setSubmitting(false);
+
+      if (err) {
+        setError(err);
+        toast.error(err);
+        return;
+      }
+
+      if (needsConfirmation) {
+        toast.success("Conta criada!", { description: "Verifique seu email para ativar sua conta." });
+        setJustSignedUp(true);
+      } else {
+        toast.success("Conta criada com sucesso!");
+        // onAuthStateChange will redirect
+      }
+    } else {
+      const { error: err } = await signIn(email.trim(), password);
+      setSubmitting(false);
+
+      if (err) {
+        setError(err);
+        toast.error(err);
+        return;
+      }
+
+      toast.success("Bem-vindo de volta!");
+      // onAuthStateChange will redirect
     }
-    // On success, the onAuthStateChange will trigger and redirect via effect above
   }
 
   // Show loading while checking session
@@ -84,7 +109,7 @@ function AuthPage() {
           {(["entrar", "criar"] as Tab[]).map((t) => (
             <button
               key={t}
-              onClick={() => { setTab(t); setError(""); }}
+              onClick={() => { setTab(t); setError(""); setJustSignedUp(false); }}
               className={cn(
                 "flex-1 py-2 text-sm font-semibold rounded-lg transition-all",
                 tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
@@ -94,6 +119,19 @@ function AuthPage() {
             </button>
           ))}
         </div>
+
+        {/* Email confirmation notice */}
+        {justSignedUp && (
+          <div className="rounded-xl bg-warning-soft border border-warning/20 px-4 py-3 text-sm flex items-start gap-3">
+            <MailCheck className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-warning mb-0.5">Conta criada!</p>
+              <p className="text-muted-foreground">
+                Enviamos um email de confirmação para <strong>{email}</strong>. Por segurança, confirme seu email antes de fazer login.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -170,7 +208,10 @@ function AuthPage() {
 
         {/* Google OAuth */}
         <button
-          onClick={() => signInWithGoogle()}
+          onClick={async () => {
+            toast.info("Redirecionando para o Google...");
+            await signInWithGoogle();
+          }}
           className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-semibold hover:bg-muted transition-colors"
         >
           <Chrome className="h-4 w-4" />
