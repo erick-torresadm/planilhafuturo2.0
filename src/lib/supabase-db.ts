@@ -40,9 +40,16 @@ export async function insertRow<T extends Record<string, any> = any>(
   row: T,
 ): Promise<T> {
   const userId = await getUserId();
+
+  // Garantir a data caso seja a tabela de lancamentos e o campo data esteja faltando
+  const rowToInsert = { ...row };
+  if (table === "lancamentos" && !rowToInsert.data) {
+    rowToInsert.data = new Date().toISOString().slice(0, 10);
+  }
+
   const newRow = {
-    ...row,
-    id: (row as any).id || crypto.randomUUID(),
+    ...rowToInsert,
+    id: (rowToInsert as any).id || crypto.randomUUID(),
     ...(isIdentityTable(table) ? {} : { user_id: userId }),
   } as any;
 
