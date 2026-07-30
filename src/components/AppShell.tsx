@@ -4,9 +4,14 @@ import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
   Sparkles, Wallet, ListChecks, Zap,
-  Settings, LogOut,
+  Settings, LogOut, Sun, Moon, SunDim,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@/lib/db";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const NAV = [
   { to: "/app",     label: "Hoje",      icon: Home,         hint: "Resumo do dia" },
@@ -37,6 +42,28 @@ export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const nav = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
+  const { logout } = useAuth();
+  const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile(), retry: false });
+
+  const nome = (profile.data as any)?.nome ?? "Usuário";
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return { text: "Bom dia", icon: Sun };
+    if (h < 18) return { text: "Boa tarde", icon: Sun };
+    return { text: "Boa noite", icon: Moon };
+  }
+  const greeting = getGreeting();
+  const GreetingIcon = greeting.icon;
+
+  async function handleLogout() {
+    try {
+      await logout();
+      toast.success("Até logo!");
+    } catch {
+      toast.error("Erro ao sair");
+    }
+  }
 
   const active = (to: string) =>
     loc.pathname === to || loc.pathname.startsWith(to + "/");
@@ -97,10 +124,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="border-t border-border p-2">
+        {/* User greeting + Logout */}
+        <div className="border-t border-border p-3 space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <GreetingIcon className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="text-xs text-muted-foreground truncate">
+              {greeting.text}, <span className="text-foreground font-medium">{nome.split(" ")[0]}</span>
+            </span>
+          </div>
           <button
-            onClick={() => nav({ to: "/auth" })}
+            onClick={handleLogout}
             className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-[13px] text-muted-foreground hover:bg-negative-soft/50 hover:text-negative transition-colors"
           >
             <LogOut className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
@@ -242,9 +275,15 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
 
-            <div className="border-t border-border px-4 py-3">
+            <div className="border-t border-border px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2 px-1">
+                <GreetingIcon className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="text-xs text-muted-foreground truncate">
+                  {greeting.text}, <span className="text-foreground font-medium">{nome.split(" ")[0]}</span>
+                </span>
+              </div>
               <button
-                onClick={() => nav({ to: "/auth" })}
+                onClick={handleLogout}
                 className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-border text-sm font-medium text-negative/80 hover:text-negative hover:bg-negative-soft/50 transition-colors"
               >
                 <LogOut className="h-4 w-4" /> Sair
