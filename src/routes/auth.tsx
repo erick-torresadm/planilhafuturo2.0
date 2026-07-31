@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Entrar — planilhafuturo" },
-      { name: "description", content: "Entre ou crie sua conta na planilhafuturo e enxergue seus próximos 6 meses." },
+      { name: "description", content: "Entre ou crie sua conta na planilhafuturo e enxergue seus próximos 12 meses." },
     ],
   }),
   component: AuthPage,

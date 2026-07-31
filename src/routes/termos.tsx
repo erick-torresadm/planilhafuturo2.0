@@ -5,7 +5,7 @@ export const Route = createFileRoute("/termos")({
   head: () => ({
     meta: [
       { title: "Termos de Uso — planilhafuturo" },
-      { name: "description", content: "Termos de Uso do planilhafuturo — planejamento financeiro para os próximos 6 meses." },
+      { name: "description", content: "Termos de Uso do planilhafuturo — planejamento financeiro para os próximos 12 meses." },
       { property: "og:title", content: "Termos de Uso — planilhafuturo" },
       { property: "og:description", content: "Termos e condições de uso do planilhafuturo." },
       { property: "og:url", content: "https://planilhafuturo.lovable.app/termos" },
@@ -44,7 +44,7 @@ function Termos() {
 
         <Section title="3. O que oferecemos">
           <ul>
-            <li>Software online para projeção de fluxo de caixa pessoal em até 6 meses.</li>
+            <li>Software online para projeção de fluxo de caixa pessoal em até 12 meses.</li>
             <li>Módulos de gastos fixos, parcelas, desejos, investimentos e produtividade.</li>
             <li>Planilha Excel/Sheets vendida em separado (produto digital único).</li>
             <li>Suporte por e-mail e, nos planos Anual e Vitalício, atendimento em call com o fundador.</li>

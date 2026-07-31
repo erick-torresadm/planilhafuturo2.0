@@ -10,7 +10,7 @@ export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
       { title: "Documentação — planilhafuturo" },
-      { name: "description", content: "Guia completo do planilhafuturo: dashboard, fluxo diário, gastos fixos, parcelas, desejos, investimentos e tarefas. Aprenda a planejar seus próximos 6 meses em minutos." },
+      { name: "description", content: "Guia completo do planilhafuturo: dashboard, fluxo diário, gastos fixos, parcelas, desejos, investimentos e tarefas. Aprenda a planejar seus próximos 12 meses em minutos." },
       { property: "og:title", content: "Documentação — planilhafuturo" },
       { property: "og:description", content: "Guia completo do planilhafuturo: fluxo diário, gastos fixos, parcelas, desejos e mais." },
       { property: "og:type", content: "article" },
@@ -77,7 +77,7 @@ function DocsPage() {
               Como usar o <span className="italic text-primary">planilhafuturo</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
-              Um guia direto pra você configurar em 10 minutos e ver seus próximos 6 meses de dinheiro em um olhar.
+              Um guia direto pra você configurar em 10 minutos e ver seus próximos 12 meses de dinheiro em um olhar.
             </p>
           </div>
 
@@ -97,14 +97,14 @@ function DocsPage() {
 
           <Doc id="comecar" title="Começar em 10 minutos" icon={Rocket}>
             <p>
-              O planilhafuturo é um app de planejamento financeiro pessoal. Diferente de aplicativos que só mostram o que já aconteceu, aqui você projeta os próximos <strong>6 meses</strong> — e ajusta antes do problema chegar.
+              O planilhafuturo é um app de planejamento financeiro pessoal. Diferente de aplicativos que só mostram o que já aconteceu, aqui você projeta os próximos <strong>12 meses</strong> — e ajusta antes do problema chegar.
             </p>
             <Steps
               items={[
                 { t: "Crie sua conta", d: "E-mail e senha, ou entre com Google. Sem cartão." },
                 { t: "Cadastre seus gastos fixos", d: "Aluguel, internet, streaming, escola — tudo que se repete todo mês." },
                 { t: "Adicione suas parcelas ativas", d: "Cartão de crédito, financiamento, empréstimo. O app distribui pelos meses automaticamente." },
-                { t: "Confira o fluxo diário", d: "Você já vê o saldo previsto pra cada dia dos próximos 6 meses." },
+                { t: "Confira o fluxo diário", d: "Você já vê o saldo previsto pra cada dia dos próximos 12 meses." },
                 { t: "Ajuste até sobrar", d: "Se algum mês fecha negativo, o app mostra qual dia e por quê. Você decide o que cortar." },
               ]}
             />
@@ -133,9 +133,9 @@ function DocsPage() {
             </p>
           </Doc>
 
-          <Doc id="fluxo" title="Fluxo diário: os próximos 6 meses" icon={CalendarDays}>
+          <Doc id="fluxo" title="Fluxo diário: os próximos 12 meses" icon={CalendarDays}>
             <p>
-              O coração do app. Uma tabela igual planilha, com uma linha pra cada dia dos próximos 6 meses. Em cada dia você lança entradas e saídas — o saldo se recalcula automaticamente.
+              O coração do app. Uma tabela igual planilha, com uma linha pra cada dia dos próximos 12 meses. Em cada dia você lança entradas e saídas — o saldo se recalcula automaticamente.
             </p>
             <Grid>
               <Card title="Cabeçalho fixo">
@@ -283,7 +283,7 @@ function DocsPage() {
           <Doc id="faq" title="Perguntas rápidas" icon={HelpCircle}>
             <Faq
               items={[
-                { q: "Posso usar de graça?", a: "Sim. O plano gratuito mostra o mês atual com fluxo diário e gastos fixos. Pro libera 6 meses de projeção, parcelas, desejos, investimentos e lembretes." },
+                { q: "Posso usar de graça?", a: "Sim. O plano gratuito mostra o mês atual com fluxo diário e gastos fixos. Pro libera 12 meses de projeção, parcelas, desejos, investimentos e lembretes." },
                 { q: "Funciona no celular?", a: "Foi feito com celular em mente — 80% dos usuários acessam pelo mobile. A tabela vira cartões e a navegação por mês fica em chips no topo." },
                 { q: "Meus dados ficam salvos?", a: "Sim, na nuvem, criptografados. Você acessa de qualquer dispositivo entrando na sua conta." },
                 { q: "Posso importar minha planilha antiga?", a: "A importação por CSV está no plano Pro. Formato simples: data, descrição, valor, tipo (entrada ou saída)." },
@@ -298,7 +298,7 @@ function DocsPage() {
             <div className="inline-flex items-center gap-2 chip bg-primary text-primary-foreground mb-4">
               <Table2 className="h-3.5 w-3.5" /> Comece agora
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl">Seus próximos 6 meses <span className="italic text-primary">te esperam.</span></h2>
+            <h2 className="font-display text-3xl sm:text-4xl">Seus próximos 12 meses <span className="italic text-primary">te esperam.</span></h2>
             <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
               Em 10 minutos você tem tudo configurado e enxerga o que vai sobrar (ou faltar) todo mês.
             </p>

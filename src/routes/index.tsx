@@ -9,9 +9,9 @@ import { Logo } from "@/components/Logo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
-      { name: "description", content: "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { property: "og:title", content: "planilhafuturo — Seu dinheiro nos próximos 6 meses" },
+      { title: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha" },
+      { name: "description", content: "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
+      { property: "og:title", content: "planilhafuturo — Seu dinheiro nos próximos 12 meses" },
       { property: "og:description", content: "O app que substitui a planilha complicada: mostra o que vai sobrar ou faltar todo mês, avisa antes do vencimento e permite parcelar seu plano." },
       { property: "og:url", content: "https://planilhafuturo.com.br/" },
       { property: "og:type", content: "website" },
@@ -91,7 +91,7 @@ function Hero() {
           </div>
           <h1 className="font-display text-[2.5rem] leading-[1.05] sm:text-6xl md:text-7xl tracking-tight">
             Seu dinheiro nos<br />
-            <span className="italic text-primary" style={{ fontVariationSettings: '"SOFT" 100, "WONK" 1' }}>próximos 6 meses.</span>
+            <span className="italic text-primary" style={{ fontVariationSettings: '"SOFT" 100, "WONK" 1' }}>próximos 12 meses.</span>
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto">
             Um app simples que mostra o que vai sobrar (ou faltar) todo mês. Sem fórmula, sem aba escondida, sem cara de Excel.
@@ -134,25 +134,25 @@ function Hero() {
 }
 
 function MockupContent() {
-  const meses = ["Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  const saldos = [8420, 9180, 10240, 11530, 12980, 14700];
+  const meses = ["Jul", "Ago", "Set", "Out", "Nov", "Dez", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
+  const saldos = [8420, 9180, 10240, 11530, 12980, 14700, 16100, 17600, 19000, 20500, 22000, 23600];
   const max = Math.max(...saldos);
   return (
     <div className="p-5 sm:p-8">
       <div className="flex items-baseline justify-between mb-6">
         <div>
           <div className="text-xs text-muted-foreground uppercase tracking-widest">Saldo projetado</div>
-          <div className="mt-1 font-display text-4xl num-lg">R$ 14.700</div>
+          <div className="mt-1 font-display text-4xl num-lg">R$ 23.600</div>
         </div>
         <div className="text-right">
-          <div className="text-xs text-muted-foreground">em 6 meses</div>
+          <div className="text-xs text-muted-foreground">em 12 meses</div>
           <div className="text-sm font-semibold text-positive inline-flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +R$ 6.280
+            <TrendingUp className="h-3.5 w-3.5" /> +R$ 15.180
           </div>
         </div>
       </div>
       {/* mini chart */}
-      <div className="grid grid-cols-6 gap-2 h-32">
+      <div className="grid grid-cols-12 gap-1.5 sm:gap-2 h-32">
         {saldos.map((s, i) => (
           <div key={i} className="flex flex-col justify-end items-center gap-2">
             <motion.div
@@ -239,7 +239,7 @@ function Compare() {
 /* ============ FEATURES (bento) ============ */
 function Features() {
   const items = [
-    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 6 meses, com saldo calculado.", accent: "col-span-2 row-span-2" },
+    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 12 meses, com saldo calculado.", accent: "col-span-2 row-span-2" },
     { icon: Receipt, title: "Gastos fixos", desc: "Contas mensais e anuais, cada uma no seu dia." },
     { icon: CreditCard, title: "Parcelas", desc: "Divide sozinho pelos meses. Sabe quando termina." },
     { icon: Sparkles, title: "Desejos & caixinhas", desc: "Metas com data. Ele diz se dá pra comprar." },
@@ -282,7 +282,7 @@ function Steps() {
   const steps = [
     { n: "01", title: "Cadastra sua renda", desc: "Salário, freela, o que vier. Pode ter mais de uma fonte." },
     { n: "02", title: "Solta os gastos", desc: "Aluguel, streaming, mercado. Fixos e parcelas em 1 tela." },
-    { n: "03", title: "Vê o futuro", desc: "6 meses de saldo projetado. Sabe se dá pra viajar em outubro." },
+    { n: "03", title: "Vê o futuro", desc: "12 meses de saldo projetado. Sabe se dá pra viajar em outubro." },
   ];
   return (
     <Section className="py-24">
@@ -326,7 +326,7 @@ function Pricing() {
       linkTo: "/checkout",
       linkSearch: { plan: "anual" },
       features: [
-        "6 meses de projeção diária",
+        "12 meses de projeção diária",
         "Todas as funcionalidades",
         "Assistente IA completo",
         "Suporte prioritário",
@@ -415,7 +415,7 @@ function Faq() {
     { q: "Posso comprar a planilha original?", a: "Sim. A Planilha do Erick em Excel (.xlsx) custa R$ 70 — única parcela, sua pra sempre. Disponível nas Configurações do app." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
     { q: "Suporte se eu travar?", a: "Sim, humano de verdade. Responde em até 24h por e-mail." },
-    { q: "Vocês vão sumir daqui a 6 meses?", a: "Não. É um SaaS pago com receita — a gente sobrevive dos assinantes, não de investidor." },
+    { q: "Vocês vão sumir daqui a 12 meses?", a: "Não. É um SaaS pago com receita — a gente sobrevive dos assinantes, não de investidor." },
   ];
   return (
     <Section id="faq" className="py-24">

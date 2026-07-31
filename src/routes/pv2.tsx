@@ -20,9 +20,9 @@ export const Route = createFileRoute("/pv2")({
   head: () => ({
     meta: [
       { title: "planilhafuturo — Pare de rezar pra planilha não quebrar" },
-      { name: "description", content: "O método simples pra enxergar seus próximos 6 meses de dinheiro em um olhar. App + suporte em call com erick." },
+      { name: "description", content: "O método simples pra enxergar seus próximos 12 meses de dinheiro em um olhar. App + suporte em call com erick." },
       { property: "og:title", content: "planilhafuturo — Método completo pra organizar sua vida financeira" },
-      { property: "og:description", content: "App + call de suporte semanal + método. Enxergue seus próximos 6 meses em um olhar." },
+      { property: "og:description", content: "App + call de suporte semanal + método. Enxergue seus próximos 12 meses em um olhar." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -192,7 +192,7 @@ function ThreeThings() {
   const items = [
     { n: 1, text: <>Qual o melhor jeito de começar a organizar seu dinheiro, <strong>usando um app simples</strong> — sem fórmula, sem aba escondida.</> },
     { n: 2, text: <>Um plano de ação para <strong>parar de viver no vermelho e sobrar dinheiro todo mês</strong>, mesmo ganhando o mesmo salário.</> },
-    { n: 3, text: <>Como <strong>enxergar seus próximos 6 meses de dinheiro em um olhar</strong> — e saber se dá pra viajar em outubro sem quebrar em novembro.</> },
+    { n: 3, text: <>Como <strong>enxergar seus próximos 12 meses de dinheiro em um olhar</strong> — e saber se dá pra viajar em outubro sem quebrar em novembro.</> },
   ];
   return (
     <Section className="py-8">
@@ -368,7 +368,7 @@ function MethodIntro() {
     <Section id="metodo" className="py-20 text-center">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
         <h2 className="font-display text-3xl sm:text-5xl font-black leading-tight">
-          Um plano <Hi>simples</Hi> para organizar seu dinheiro em 6 meses
+          Um plano <Hi>simples</Hi> para organizar seu dinheiro em 12 meses
         </h2>
         <p className="mt-6 text-lg text-muted-foreground">
           Essa é a base do método <strong className="text-foreground">Planejamento Futuro</strong>.
@@ -394,10 +394,10 @@ function Phases() {
       chips: ["Renda", "Gastos fixos", "Sobra mensal"],
     },
     {
-      tag: "Visionário", title: "Ver os próximos 6 meses", icon: TrendingUp,
+      tag: "Visionário", title: "Ver os próximos 12 meses", icon: TrendingUp,
       goal: "Objetivo: parar de ser surpreendido",
       body: <>É fácil demais quebrar quando um IPVA aparece do nada em janeiro. Aqui você começa a ver <strong>o saldo do seu dia 15 de dezembro, hoje.</strong><br /><br />Sem susto, sem "achismo". Só olhando.</>,
-      chips: ["Fluxo diário", "Projeção 6 meses", "Saldo por dia"],
+      chips: ["Fluxo diário", "Projeção 12 meses", "Saldo por dia"],
     },
     {
       tag: "Organizado", title: "Sistema que não quebra", icon: ListChecks,
@@ -620,7 +620,7 @@ function ForWho() {
 /* ================= BONUSES ================= */
 function Bonuses() {
   const core = [
-    { icon: CalendarDays, title: "Fluxo diário dos 6 meses", body: "Todos os dias, com saldo calculado sozinho. Zero fórmula.", value: "R$ 297" },
+    { icon: CalendarDays, title: "Fluxo diário dos 12 meses", body: "Todos os dias, com saldo calculado sozinho. Zero fórmula.", value: "R$ 297" },
     { icon: Receipt, title: "Gastos fixos + anuais", body: "IPVA, IPTU, seguro — cada um no seu dia certo. Não escapa.", value: "R$ 197" },
     { icon: CreditCard, title: "Parcelas ilimitadas", body: "Divide sozinho pelos meses. Você sabe quando termina.", value: "R$ 197" },
     { icon: Sparkles, title: "Desejos & caixinhas", body: "Metas com data. O app te diz se cabe no seu bolso.", value: "R$ 147" },
@@ -918,7 +918,7 @@ function Faq() {
     { q: "E se eu nunca me organizei antes?", a: "Melhor ainda. O app foi feito pra ser óbvio, e na call semanal a gente te ajuda a montar do zero." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa. Seus dados ficam disponíveis pra exportar por 30 dias." },
     { q: "Meus dados ficam seguros?", a: "Ficam. Tudo criptografado, infraestrutura de nível bancário. Só você acessa sua conta." },
-    { q: "Vocês vão sumir daqui a 6 meses?", a: "Não. É SaaS pago com receita real — sobrevive de assinante, não de investidor." },
+    { q: "Vocês vão sumir daqui a 12 meses?", a: "Não. É SaaS pago com receita real — sobrevive de assinante, não de investidor." },
   ];
   return (
     <Section id="faq" className="py-24 border-t border-border">
