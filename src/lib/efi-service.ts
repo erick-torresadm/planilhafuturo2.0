@@ -328,7 +328,8 @@ export async function createCreditCardCharge(
           cpf: card.customer.cpf.replace(/\D/g, ""),
           email: card.customer.email,
           phone_number: phone,
-          birth: card.customer.birth ?? "",
+          // birth é opcional: se vazio, omitir (a Efí rejeita string vazia "")
+          ...(card.customer.birth ? { birth: card.customer.birth } : {}),
         },
         installments: card.installments ?? 1,
         payment_token: card.paymentToken,
