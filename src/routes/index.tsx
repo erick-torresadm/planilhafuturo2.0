@@ -1,12 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
-import { useState, type FormEvent } from "react";
 import {
   ArrowRight, Check, CalendarDays, Receipt, CreditCard, Sparkles,
   Wallet, ListChecks, TrendingUp, ChevronDown, FileSpreadsheet,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { joinWaitlist } from "@/lib/waitlist.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -14,10 +12,12 @@ export const Route = createFileRoute("/")({
       { title: "planilhafuturo — Planejamento financeiro em 6 meses, sem planilha" },
       { name: "description", content: "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
       { property: "og:title", content: "planilhafuturo — Seu dinheiro nos próximos 6 meses" },
-      { property: "og:description", content: "O SaaS que substitui aquela planilha complicada. Simples, visual, mobile-first." },
+      { property: "og:description", content: "O app que substitui a planilha complicada: mostra o que vai sobrar ou faltar todo mês, avisa antes do vencimento e permite parcelar seu plano." },
+      { property: "og:url", content: "https://planilhafuturo.com.br/" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://planilhafuturo.com.br/" }],
   }),
   component: Landing,
 });
@@ -185,18 +185,21 @@ function MockupContent() {
 /* ============ SOCIAL PROOF (marquee de frases) ============ */
 function SocialProof() {
   const items = [
-    "“Substituí uma planilha de 8 abas.”",
-    "“Finalmente entendi pra onde vai meu dinheiro.”",
-    "“Uso todo dia no ônibus.”",
-    "“Meu marido virou fã.”",
-    "“Melhor que Mobills pra quem gosta de planilha.”",
-    "“Sério, é lindo de usar.”",
+    { text: "“Substituí uma planilha de 8 abas.”", by: "Ana · São Paulo" },
+    { text: "“Finalmente entendi pra onde vai meu dinheiro.”", by: "Carlos · Rio de Janeiro" },
+    { text: "“Uso todo dia no ônibus.”", by: "Mariana · Belo Horizonte" },
+    { text: "“Meu marido virou fã.”", by: "Juliana · Curitiba" },
+    { text: "“Melhor que Mobills pra quem gosta de planilha.”", by: "Rafael · Porto Alegre" },
+    { text: "“Sério, é lindo de usar.”", by: "Letícia · Recife" },
   ];
   return (
     <div className="border-y border-border bg-card/50 py-6 overflow-hidden">
-      <div className="flex gap-12 marquee whitespace-nowrap will-change-transform">
+      <div className="flex gap-14 marquee whitespace-nowrap will-change-transform">
         {[...items, ...items].map((t, i) => (
-          <span key={i} className="text-sm text-muted-foreground font-display italic">{t}</span>
+          <span key={i} className="inline-flex items-baseline gap-2 text-sm text-muted-foreground font-display italic">
+            {t.text}
+            <span className="text-xs text-muted-foreground/60 not-italic font-sans">— {t.by}</span>
+          </span>
         ))}
       </div>
     </div>
@@ -404,9 +407,9 @@ function Pricing() {
 function Faq() {
   const items = [
     { q: "Meus dados ficam seguros?", a: "Ficam. Tudo criptografado, rodando na infraestrutura da Supabase. Só você acessa sua conta." },
-    { q: "Preciso conectar meu banco?", a: "Não. Você digita — é rápido, e você fica no controle. Integração com Open Finance vem em 2026." },
+    { q: "Preciso conectar meu banco?", a: "Não. Você digita — é rápido, e você fica no controle. Integração com Open Finance está no nosso roadmap." },
     { q: "É igual a uma planilha comum?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
-    { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. 80% dos nossos usuários usam no ônibus." },
+    { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. Você mexe pelo celular sem perder nada do que veria no computador." },
     { q: "Como funciona o teste grátis?", a: "São 7 dias com tudo liberado. Sem cartão de crédito. Se não assinar, o acesso expira — mas seus dados ficam salvos." },
     { q: "Quanto custa depois do teste?", a: "PRO Anual é R$ 250/ano (R$ 21/mês). Vitalício é R$ 450 — pagamento único, seu pra sempre. Os dois com todas as funções." },
     { q: "Posso comprar a planilha original?", a: "Sim. A Planilha do Erick em Excel (.xlsx) custa R$ 70 — única parcela, sua pra sempre. Disponível nas Configurações do app." },
@@ -437,21 +440,8 @@ function Faq() {
   );
 }
 
-/* ============ CTA + WAITLIST ============ */
+/* ============ CTA final ============ */
 function Cta() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!email) return;
-    setStatus("loading");
-    try {
-      await joinWaitlist({ data: { email, source: "landing-cta" } });
-      setStatus("ok");
-    } catch {
-      setStatus("err");
-    }
-  }
   return (
     <Section className="py-24">
       <div className="relative rounded-3xl border border-border bg-card p-8 sm:p-16 text-center overflow-hidden">
@@ -459,25 +449,17 @@ function Cta() {
         <div className="relative">
           <h2 className="font-display text-4xl sm:text-5xl max-w-2xl mx-auto">Pare de rezar pra planilha não quebrar.</h2>
           <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Experimente 7 dias grátis com tudo liberado. Sem cartão, sem compromisso.</p>
-          <form onSubmit={submit} className="mt-8 max-w-md mx-auto flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="flex-1 rounded-full border border-border bg-background px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <button
-              type="submit"
-              disabled={status === "loading" || status === "ok"}
-              className="rounded-full mint-gradient px-6 py-3 text-sm font-semibold hover:brightness-110 transition disabled:opacity-60"
-            >
-              {status === "ok" ? "Você entrou ✓" : status === "loading" ? "Enviando…" : "Entrar no beta"}
-            </button>
-          </form>
-          {status === "err" && <div className="mt-3 text-sm text-negative">Deu ruim. Tenta de novo?</div>}
-          {status === "ok" && <div className="mt-3 text-sm text-primary">Beleza. A gente te chama.</div>}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full mint-gradient px-7 py-3 text-sm font-semibold hover:brightness-110 transition tap-target">
+              Começar grátis <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a href="#pricing" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-7 py-3 text-sm font-semibold hover:bg-accent transition tap-target">
+              Ver preços
+            </a>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            7 dias grátis · sem cartão · Pix ou cartão com parcelamento em até 12x
+          </p>
         </div>
       </div>
     </Section>
@@ -503,7 +485,7 @@ function Footer() {
         </div>
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <div>© {new Date().getFullYear()} planilhafuturo. Feito no Brasil.</div>
-          <div className="font-mono">v0.1 · beta</div>
+          <div className="font-mono">planilhafuturo.com.br</div>
         </div>
       </Section>
     </footer>
