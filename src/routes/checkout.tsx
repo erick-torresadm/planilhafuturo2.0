@@ -1,9 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
-import { Check, Copy, Crown, Loader2, ArrowRight, CreditCard, QrCode, ChevronLeft, ArrowLeft } from "lucide-react";
+import {
+  Check, Copy, Crown, Loader2, ArrowRight, CreditCard, QrCode, ChevronLeft, ArrowLeft,
+  ShieldCheck, Sparkles, BadgeCheck, RefreshCcw, Mail,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -21,9 +24,19 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const PLANOS = {
-  anual: { nome: "PRO Anual", valor: 250, detalhe: "R$ 21/mês", badge: "Mais escolhido" },
-  vitalicio: { nome: "Vitalício", valor: 450, detalhe: "Única parcela · pra sempre", badge: "Melhor custo-benefício" },
+  anual: { nome: "PRO Anual", valor: 250, detalhe: "R$ 21/mês", badge: "Mais escolhido", beneficio: "Projeção de 12 meses + IA" },
+  vitalicio: { nome: "Vitalício", valor: 450, detalhe: "Única parcela · pra sempre", badge: "Melhor custo-benefício", beneficio: "Acesso pra sempre + atualizações" },
 } as const;
+
+/**
+ * Ambiente do tokenizador do cartão. Precisa bater com o ambiente da API Efí:
+ * homologação usa sandbox, produção usa production. Lê VITE_EFI_ENV (baked no
+ * build); sem ele, segue o modo dev.
+ */
+function efiTokenizerEnv(): "sandbox" | "production" {
+  const e = (import.meta.env.VITE_EFI_ENV as string | undefined) ?? (import.meta.env.DEV ? "homologacao" : "producao");
+  return e === "producao" || e === "prod" ? "production" : "sandbox";
+}
 
 function CheckoutPage() {
   const { plan: planParam } = Route.useSearch();
@@ -174,7 +187,7 @@ function CheckoutPage() {
       const brand = await EfiPay.CreditCard.setCardNumber(cardNumero.replace(/\s/g, "")).verifyCardBrand();
       const tokenResult = await EfiPay.CreditCard
         .setAccount(payeeCode)
-        .setEnvironment(import.meta.env.DEV ? "sandbox" : "production")
+        .setEnvironment(efiTokenizerEnv())
         .setCreditCardData({
           brand,
           number: cardNumero.replace(/\s/g, ""),
@@ -234,10 +247,13 @@ function CheckoutPage() {
     nav({ to: "/auth", search: { email: email.trim(), plan: plano } });
   }
 
+  const inputCls =
+    "w-full h-12 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Simple header */}
-      <header className="h-14 flex items-center px-4 border-b border-border">
+      {/* Header */}
+      <header className="h-14 flex items-center px-4 border-b border-border shrink-0">
         {step !== "form" && step !== "done" ? (
           <button onClick={() => setStep("form")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Voltar
@@ -256,15 +272,19 @@ function CheckoutPage() {
       <div className="flex-1 flex items-start justify-center px-4 py-8">
         <div className="w-full max-w-md space-y-5">
 
-          {/* Step: Plan selection + email + payment */}
+          {/* ─── Step: plan + email + payment ─── */}
           {step === "form" && (
             <>
-              {/* Plan toggle */}
+              {/* Heading */}
               <div className="text-center">
-                <h1 className="font-display text-2xl font-bold">Assinar planilhafuturo</h1>
-                <p className="text-sm text-muted-foreground mt-1">Escolha seu plano e comece agora</p>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-3">
+                  <Crown className="h-3.5 w-3.5" /> Garantia de 7 dias
+                </div>
+                <h1 className="font-display text-2xl font-bold tracking-tight">Assine o planilhafuturo</h1>
+                <p className="text-sm text-muted-foreground mt-1">Pague agora e crie sua conta depois</p>
               </div>
 
+              {/* Plan selector */}
               <div className="grid grid-cols-2 gap-3">
                 {(["anual", "vitalicio"] as const).map((p) => {
                   const info = PLANOS[p];
@@ -272,36 +292,65 @@ function CheckoutPage() {
                   return (
                     <button
                       key={p}
+                      type="button"
                       onClick={() => setPlano(p)}
                       className={cn(
-                        "rounded-xl border-2 p-4 text-center transition-all",
-                        active ? "border-primary bg-primary/[0.04]" : "border-border hover:border-primary/40",
+                        "relative rounded-2xl border-2 p-4 text-left transition-all",
+                        active ? "border-primary bg-primary/[0.04] shadow-sm" : "border-border bg-card hover:border-primary/40",
                       )}
                     >
                       {info.badge && (
-                        <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold mb-1.5">
+                        <span className={cn(
+                          "absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                          active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                        )}>
                           {info.badge}
                         </span>
                       )}
-                      <div className="font-display text-lg font-bold">{info.nome}</div>
-                      <div className="text-2xl font-bold tabular-nums mt-1">R$ {info.valor}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{info.detalhe}</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-display text-sm font-bold">{info.nome}</span>
+                        <span className={cn(
+                          "grid h-5 w-5 place-items-center rounded-full border-2 shrink-0 transition-colors",
+                          active ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30",
+                        )}>
+                          {active && <Check className="h-3 w-3" strokeWidth={3} />}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 text-2xl font-bold tabular-nums">R$ {info.valor}</div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{info.detalhe}</p>
                     </button>
                   );
                 })}
               </div>
 
+              {/* Selected plan summary */}
+              <div className="rounded-2xl border border-border bg-card p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 grid place-items-center shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">{planInfo.nome}</p>
+                    <p className="text-xs text-muted-foreground truncate">{planInfo.beneficio}</p>
+                  </div>
+                </div>
+                <p className="text-lg font-bold tabular-nums shrink-0">R$ {planInfo.valor}</p>
+              </div>
+
               {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                  autoComplete="email"
-                />
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className={cn(inputCls, "pl-10")}
+                    autoComplete="email"
+                  />
+                </div>
               </div>
 
               {/* Payment method tabs */}
@@ -312,6 +361,7 @@ function CheckoutPage() {
                 ]).map((m) => (
                   <button
                     key={m.id}
+                    type="button"
                     onClick={() => { setMetodo(m.id); setError(""); }}
                     className={cn(
                       "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all",
@@ -344,63 +394,29 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Nome no cartão</label>
-                    <input
-                      value={cardNome}
-                      onChange={(e) => setCardNome(e.target.value)}
-                      placeholder="Como está no cartão"
-                      className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                    />
+                    <input value={cardNome} onChange={(e) => setCardNome(e.target.value)} placeholder="Como está no cartão" className={inputCls} />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">CPF do titular</label>
-                    <input
-                      value={cardCpf}
-                      onChange={(e) => setCardCpf(formatCpf(e.target.value))}
-                      placeholder="000.000.000-00"
-                      className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono"
-                    />
+                    <input value={cardCpf} onChange={(e) => setCardCpf(formatCpf(e.target.value))} placeholder="000.000.000-00" className={cn(inputCls, "font-mono")} />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Número do cartão</label>
-                    <input
-                      value={cardNumero}
-                      onChange={(e) => setCardNumero(formatCardNumber(e.target.value))}
-                      placeholder="0000 0000 0000 0000"
-                      className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono"
-                      inputMode="numeric"
-                    />
+                    <input value={cardNumero} onChange={(e) => setCardNumero(formatCardNumber(e.target.value))} placeholder="0000 0000 0000 0000" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Validade</label>
-                      <input
-                        value={cardValidade}
-                        onChange={(e) => setCardValidade(formatValidade(e.target.value))}
-                        placeholder="MM/AA"
-                        className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono"
-                        inputMode="numeric"
-                      />
+                      <input value={cardValidade} onChange={(e) => setCardValidade(formatValidade(e.target.value))} placeholder="MM/AA" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">CVV</label>
-                      <input
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                        placeholder="000"
-                        className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono"
-                        inputMode="numeric"
-                      />
+                      <input value={cardCvv} onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="000" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Telefone <span className="text-muted-foreground/50">(opcional)</span></label>
-                    <input
-                      value={cardPhone}
-                      onChange={(e) => setCardPhone(formatPhone(e.target.value))}
-                      placeholder="(11) 99999-9999"
-                      className="w-full h-11 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono"
-                      inputMode="numeric"
-                    />
+                    <input value={cardPhone} onChange={(e) => setCardPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                   </div>
                   <Button onClick={handlePagarCartao} disabled={loading} className="w-full h-12 rounded-xl font-semibold">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
@@ -412,13 +428,19 @@ function CheckoutPage() {
                 </div>
               )}
 
+              {/* Trust row */}
+              <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground pt-1">
+                <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Pagamento seguro</span>
+                <span className="flex items-center gap-1"><RefreshCcw className="h-3.5 w-3.5" /> Reembolso em 7 dias</span>
+              </div>
+
               <p className="text-xs text-center text-muted-foreground">
                 Já tem conta? <Link to="/auth" className="text-primary font-semibold hover:underline">Entrar</Link>
               </p>
             </>
           )}
 
-          {/* Step: Pix QR Code */}
+          {/* ─── Step: Pix QR Code ─── */}
           {step === "pix_qr" && pixData && (
             <div className="text-center space-y-4">
               <div className="h-14 w-14 rounded-2xl bg-primary/10 grid place-items-center mx-auto">
@@ -426,15 +448,13 @@ function CheckoutPage() {
               </div>
               <div>
                 <h2 className="font-display text-xl font-bold">Pague via Pix</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Escaneie o QR Code ou copie o código abaixo
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Escaneie o QR Code ou copie o código abaixo</p>
                 <p className="text-2xl font-bold tabular-nums mt-2 text-primary">R$ {pixData.valor.toFixed(2)}</p>
               </div>
 
               {pixData.pixCopiaECola && (
-                <div className="mx-auto w-56 h-56 rounded-2xl border border-border bg-white p-3 flex items-center justify-center">
-                  <QRCodeSVG value={pixData.pixCopiaECola} size={200} level="M" />
+                <div className="mx-auto w-64 h-64 rounded-2xl border border-border bg-white p-3 flex items-center justify-center shadow-sm">
+                  <QRCodeSVG value={pixData.pixCopiaECola} size={232} level="M" />
                 </div>
               )}
 
@@ -446,7 +466,7 @@ function CheckoutPage() {
               </div>
 
               <Button onClick={handleVerificarPix} disabled={verifying} className="w-full h-12 rounded-xl font-semibold">
-                {verifying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                {verifying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BadgeCheck className="h-4 w-4 mr-2" />}
                 {verifying ? "Verificando..." : "Já paguei"}
               </Button>
 
@@ -456,7 +476,7 @@ function CheckoutPage() {
             </div>
           )}
 
-          {/* Step: Card result (paid or failed) */}
+          {/* ─── Step: Card result (paid or failed) ─── */}
           {step === "card_result" && (
             <div className="text-center space-y-4">
               <div className="h-14 w-14 rounded-2xl bg-negative/10 grid place-items-center mx-auto">
@@ -477,7 +497,7 @@ function CheckoutPage() {
             </div>
           )}
 
-          {/* Step: Done → redirect to auth */}
+          {/* ─── Step: Done → redirect to auth ─── */}
           {step === "done" && (
             <div className="text-center space-y-4 animate-in">
               <div className="h-16 w-16 rounded-full bg-positive/10 grid place-items-center mx-auto">

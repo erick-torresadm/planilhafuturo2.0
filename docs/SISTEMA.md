@@ -169,7 +169,7 @@ Página **pública** `checkout.tsx`:
 
 1. Usuário escolhe plano (anual/vitalício), digita email e escolhe método (Pix ou Cartão).
 2. **Pix:** server fn `createPreSignupCheckout` cria a cobrança na Efí (`createPixCharge`) e registra em `pre_pagamentos` (status `pendente`). A página mostra QR Code + copia-e-cola. "Já paguei" → `verifyPreSignupPayment` consulta `checkPixStatus`; se `CONCLUIDA`, marca `pre_pagamentos.status = pago` + `paid_at`.
-3. **Cartão:** o navegador valida (Luhn), carrega a lib `payment-token-efi` do Efí (CDN jsdelivr) e **tokeniza o cartão no browser** (com `payee_code`, brand, número, CVV, validade, titular) → gera `payment_token`. Só o token vai para o servidor (`createPreSignupCheckout` → `createCreditCardCharge`). Se aprovado, `pre_pagamentos` nasce já `pago`; senão mostra tela de recusa com opção de tentar Pix.
+3. **Cartão:** o navegador valida (Luhn), carrega a lib `payment-token-efi` do Efí (CDN jsdelivr) e **tokeniza o cartão no browser** (com `payee_code`, brand, número, CVV, validade, titular) → gera `payment_token`. O ambiente do tokenizador é `sandbox` quando `VITE_EFI_ENV` é `homologacao`, e `production` quando `producao` — **deve bater com o `EFI_ENV` da API**, senão a Efí rejeita o token. Só o token vai para o servidor (`createPreSignupCheckout` → `createCreditCardCharge`). Se aprovado, `pre_pagamentos` nasce já `pago`; senão mostra tela de recusa com opção de tentar Pix.
 4. **Ativação:** "Criar conta" → redirect para `/auth?email=x&plan=anual`. O email vem travado. Após cadastro/login, `activatePlanPostSignup(email)`:
    - localiza `pre_pagamentos` com esse email, `status = pago`, `activated_at` nulo;
    - cria/atualiza a `assinaturas` (via admin, `upsertAssinatura`) e marca `plano` no profile;
@@ -282,6 +282,7 @@ Apenas **nomes e propósito** (valores ficam em `.env`/Vercel, fora do repositó
 | `EFI_CERT` / `EFI_KEY` | Alternativa PEM ao P12 |
 | `EFI_PIX_KEY` | Chave Pix registrada na Efí (colocada na cobrança) |
 | `VITE_EFI_PAYEE_CODE` | Identificador de conta (payee_code) p/ tokenização do cartão no browser — **vira build** |
+| `VITE_EFI_ENV` | Ambiente do **tokenizador** do cartão no browser (`homologacao`→sandbox, `producao`→production) — **vira build**; deve bater com `EFI_ENV` |
 | `EFI_WEBHOOK_TOKEN` | Token opcional p/ validar webhooks |
 
 ### IA / outros
