@@ -25,7 +25,7 @@ export function DashboardMercury(p: DashboardProps) {
         <KpiCard label="Investimentos" value={p.totalInvestido} icon={Target} tone="default" />
       </div>
       <div className="metric-card">
-        <span className="eyebrow">Projeção 6 meses</span>
+        <span className="eyebrow">Projeção 12 meses</span>
         <div className="h-40 mt-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={p.chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>

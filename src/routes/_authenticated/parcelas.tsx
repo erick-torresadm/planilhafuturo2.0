@@ -51,12 +51,12 @@ function ParcelasPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["parcelas"] }),
   });
 
-  const meses6 = useMemo(() => Array.from({ length: 6 }, (_, i) => {
+  const meses12 = useMemo(() => Array.from({ length: 12 }, (_, i) => {
     const d = new Date(anchor.y, anchor.m + i, 1);
     return { y: d.getFullYear(), m: d.getMonth() };
   }), [anchor]);
 
-  const totalPorMes = meses6.map((mm) => rows.reduce((a, p) => a + valorParcelaNoMes(p, mm.y, mm.m), 0));
+  const totalPorMes = meses12.map((mm) => rows.reduce((a, p) => a + valorParcelaNoMes(p, mm.y, mm.m), 0));
   const totalGeral = rows.reduce((a, p) => a + Number(p.valor_total), 0);
   const loading = q.isPending;
 
@@ -151,7 +151,7 @@ function ParcelasPage() {
                       <th className="eyebrow text-right px-4 py-3">Parcela</th>
                       <th className="eyebrow text-left px-4 py-3">Cartão</th>
                       <th className="eyebrow text-left px-4 py-3">Categ.</th>
-                      {meses6.map((mm) => <th key={`${mm.y}-${mm.m}`} className="eyebrow text-right px-2 py-3">{MESES_ABREV[mm.m]}</th>)}
+                      {meses12.map((mm) => <th key={`${mm.y}-${mm.m}`} className="eyebrow text-right px-2 py-3">{MESES_ABREV[mm.m]}</th>)}
                       <th className="w-10 px-4 py-3"></th>
                     </tr>
                   </thead>
@@ -166,7 +166,7 @@ function ParcelasPage() {
                         <td className="px-4 py-2.5 text-right font-semibold text-primary"><Money value={Number(r.valor_total) / Math.max(1, r.qtd_parcelas)} /></td>
                         <td className="px-4 py-2.5"><select value={r.cartao ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { cartao: e.target.value } })} className="bg-transparent outline-none text-sm">{CARTOES.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
                         <td className="px-4 py-2.5"><select value={r.categoria ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { categoria: e.target.value } })} className="bg-transparent outline-none text-sm">{CATEGORIAS.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
-                        {meses6.map((mm) => {
+                        {meses12.map((mm) => {
                           const v = valorParcelaNoMes(r, mm.y, mm.m);
                           return <td key={`${mm.y}-${mm.m}`} className={cn("px-2 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
                         })}

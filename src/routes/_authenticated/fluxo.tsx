@@ -30,7 +30,7 @@ function FluxoPage() {
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const { list: lanc, upsert } = useLancamentosLocal();
 
-  const meses = useMemo(() => Array.from({ length: 6 }, (_, i) => {
+  const meses = useMemo(() => Array.from({ length: 12 }, (_, i) => {
     const d = new Date(anchor.y, anchor.m + i, 1);
     return { y: d.getFullYear(), m: d.getMonth() };
   }), [anchor]);

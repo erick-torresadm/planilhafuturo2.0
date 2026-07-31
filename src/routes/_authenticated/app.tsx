@@ -38,11 +38,11 @@ function HojePage() {
 
   const [saldoVisivel, setSaldoVisivel] = useState(true);
 
-  const seis = useMemo(() => {
+  const meses12 = useMemo(() => {
     const g = (gastos.data ?? []) as GastoFixo[];
     const p = (parcelas.data ?? []) as unknown as Parcela[];
     let carry = saldoInicial;
-    return Array.from({ length: 6 }, (_, i) => {
+    return Array.from({ length: 12 }, (_, i) => {
       const d = new Date(y, m0 + i, 1);
       const yy = d.getFullYear(); const mm = d.getMonth();
       const dias = computaMes(yy, mm, carry, g, p, lanc);
@@ -51,7 +51,7 @@ function HojePage() {
     });
   }, [gastos.data, parcelas.data, lanc, saldoInicial, y, m0]);
 
-  const mesAtual = seis[0];
+  const mesAtual = meses12[0];
   const diaHoje = mesAtual?.dias.find((d: any) => d.dia === dToday) ?? mesAtual?.dias[0];
   const saldoHoje = diaHoje?.saldo ?? saldoInicial;
   const saldoFimMes = mesAtual?.dias[mesAtual.dias.length - 1]?.saldo ?? saldoInicial;
@@ -59,17 +59,17 @@ function HojePage() {
   const totalEntradasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0) ?? 0;
   const totalSaidasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0) ?? 0;
 
-  const primeiroNegativo = seis.find((mm) => mm.saldoFim < 0);
-  const ultimoPositivo = [...seis].reverse().find((mm) => mm.saldoFim >= 0);
+  const primeiroNegativo = meses12.find((mm) => mm.saldoFim < 0);
+  const ultimoPositivo = [...meses12].reverse().find((mm) => mm.saldoFim >= 0);
 
   const totalInvestido = ((invest.data ?? []) as any[]).reduce((a, r) => a + Number(r.posicao_atual), 0);
 
-  const chartData = useMemo(() => seis.map((s) => ({
-    label: MESES_ABREV[s.m],
+  const chartData = useMemo(() => meses12.map((s) => ({
+    label: `${MESES_ABREV[s.m]}/${String(s.y).slice(2)}`,
     saldo: s.saldoFim,
     entradas: s.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0),
     saidas: s.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0),
-  })), [seis]);
+  })), [meses12]);
 
   const [qaOpen, setQaOpen] = useState<null | "in" | "out">(null);
   const [qaValor, setQaValor] = useState("");
@@ -108,7 +108,7 @@ function HojePage() {
     saldoHoje, saldoFimMes, saldoInicial,
     totalEntradasMes, totalSaidasMes,
     nome, dayName, dToday, m0,
-    chartData, seis,
+    chartData, seis: meses12,
     primeiroNegativo, ultimoPositivo,
     totalInvestido, variacaoPercentual,
     saldoVisivel, setSaldoVisivel,
