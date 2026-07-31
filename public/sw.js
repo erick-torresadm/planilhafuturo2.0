@@ -1,4 +1,4 @@
-const CACHE = "planilha-v5";
+const CACHE = "planilha-v6";
 const STATIC_ASSETS = [
   "/",
   "/app",
