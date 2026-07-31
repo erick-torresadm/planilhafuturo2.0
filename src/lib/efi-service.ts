@@ -259,7 +259,7 @@ export interface CreditCardRequest {
     phone?: string;
     birth?: string;
   };
-  /** Required by Efí's one-step: all fields must be non-empty */
+  /** OPCIONAL na Efí. Só enviado quando completo (string vazia é rejeitada). */
   billing?: {
     street?: string;
     number?: string;
@@ -300,18 +300,11 @@ export async function createCreditCardCharge(
     return { charge_id: 0, status: "error", valor: 0, message: "Telefone inválido. Use DDD + número (ex: 11 99999-9999).", code: 422 };
   }
 
+  // billing_address é OPCIONAL na Efí (aprova sem ele). Só enviar se vier
+  // completo — campo presente com string vazia é rejeitado pela API.
   const billing = card.billing ?? {};
-  const requiredBilling = ["street", "number", "neighborhood", "city", "state", "zipcode"] as const;
-  const missing = requiredBilling.filter((k) => !String(billing[k] ?? "").trim());
-  if (missing.length) {
-    return {
-      charge_id: 0,
-      status: "error",
-      valor: 0,
-      message: `Endereço de cobrança incompleto: ${missing.join(", ")}.`,
-      code: 422,
-    };
-  }
+  const billingFields = ["street", "number", "neighborhood", "city", "state", "zipcode"] as const;
+  const billingComplete = billingFields.every((k) => String(billing[k] ?? "").trim());
 
   const body = {
     items: [
@@ -333,14 +326,18 @@ export async function createCreditCardCharge(
         },
         installments: card.installments ?? 1,
         payment_token: card.paymentToken,
-        billing_address: {
-          street: String(billing.street ?? "").trim(),
-          number: String(billing.number ?? "").trim(),
-          neighborhood: String(billing.neighborhood ?? "").trim(),
-          city: String(billing.city ?? "").trim(),
-          state: String(billing.state ?? "").trim(),
-          zipcode: String(billing.zipcode ?? "").trim(),
-        },
+        ...(billingComplete
+          ? {
+              billing_address: {
+                street: String(billing.street ?? "").trim(),
+                number: String(billing.number ?? "").trim(),
+                neighborhood: String(billing.neighborhood ?? "").trim(),
+                city: String(billing.city ?? "").trim(),
+                state: String(billing.state ?? "").trim(),
+                zipcode: String(billing.zipcode ?? "").trim(),
+              },
+            }
+          : {}),
       },
     },
   };

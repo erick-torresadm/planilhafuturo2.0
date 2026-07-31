@@ -121,14 +121,6 @@ function CheckoutPage() {
   const [cardCvv, setCardCvv] = useState("");
   const [cardPhone, setCardPhone] = useState("");
 
-  // Billing address (obrigatório pela Efí para cobrança no cartão)
-  const [addrStreet, setAddrStreet] = useState("");
-  const [addrNumero, setAddrNumero] = useState("");
-  const [addrBairro, setAddrBairro] = useState("");
-  const [addrCidade, setAddrCidade] = useState("");
-  const [addrEstado, setAddrEstado] = useState("");
-  const [addrCep, setAddrCep] = useState("");
-
   // General state
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -160,11 +152,6 @@ function CheckoutPage() {
     if (digits.length <= 2) return `(${digits}`;
     if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-  function formatCep(val: string) {
-    const digits = val.replace(/\D/g, "").slice(0, 8);
-    if (digits.length > 5) return digits.slice(0, 5) + "-" + digits.slice(5);
-    return digits;
   }
   // ── Parcelamento (cartão) ────────────────────────────────
   function detectBrand(numero: string): string {
@@ -203,7 +190,6 @@ function CheckoutPage() {
         }));
         setParcelasOpts(opts);
         // reset to 1x when card number changes
-        setParcelas((p) => (p > (opts[0]?.installment ?? 1) ? opts[0]?.installment ?? 1 : p));
         setParcelas(1);
       })
       .catch(() => {});
@@ -287,13 +273,6 @@ function CheckoutPage() {
     if (cardValidade.replace(/\D/g, "").length !== 4) { setError("Data de validade inválida"); return; }
     if (cardCvv.replace(/\D/g, "").length < 3) { setError("CVV inválido"); return; }
     if (cardPhone.replace(/\D/g, "").length < 10) { setError("Telefone é obrigatório (DDD + número)"); return; }
-    if (
-      !addrStreet.trim() || !addrNumero.trim() || !addrBairro.trim() ||
-      !addrCidade.trim() || !addrEstado.trim() || addrCep.replace(/\D/g, "").length !== 8
-    ) {
-      setError("Preencha o endereço de cobrança completo (CEP com 8 dígitos)");
-      return;
-    }
 
     setError("");
     setLoading(true);
@@ -337,14 +316,6 @@ function CheckoutPage() {
           customerName: cardNome,
           customerCpf: cardCpf.replace(/\D/g, ""),
           customerPhone: cardPhone.replace(/\D/g, ""),
-          billing: {
-            street: addrStreet,
-            number: addrNumero,
-            neighborhood: addrBairro,
-            city: addrCidade,
-            state: addrEstado,
-            zipcode: addrCep.replace(/\D/g, ""),
-          },
           installments: parcelas,
         },
       });
@@ -655,44 +626,6 @@ function CheckoutPage() {
                             <input value={cardPhone} onChange={(e) => setCardPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                           </div>
 
-                          {/* Endereço de cobrança — obrigatório pela Efí */}
-                          <div className="pt-1">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Endereço de cobrança</p>
-                            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Exigido pela operadora do cartão</p>
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Rua</label>
-                            <input value={addrStreet} onChange={(e) => setAddrStreet(e.target.value)} placeholder="Rua, avenida..." className={inputCls} />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Número</label>
-                              <input value={addrNumero} onChange={(e) => setAddrNumero(e.target.value)} placeholder="123" className={inputCls} />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Bairro</label>
-                              <input value={addrBairro} onChange={(e) => setAddrBairro(e.target.value)} placeholder="Centro" className={inputCls} />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cidade</label>
-                              <input value={addrCidade} onChange={(e) => setAddrCidade(e.target.value)} placeholder="São Paulo" className={inputCls} />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">CEP</label>
-                              <input value={addrCep} onChange={(e) => setAddrCep(formatCep(e.target.value))} placeholder="00000-000" className={cn(inputCls, "font-mono")} inputMode="numeric" />
-                            </div>
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Estado</label>
-                            <select value={addrEstado} onChange={(e) => setAddrEstado(e.target.value)} className={cn(inputCls, "appearance-none")}>
-                              <option value="">Selecione a UF</option>
-                              {["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map((uf) => (
-                                <option key={uf} value={uf}>{uf}</option>
-                              ))}
-                            </select>
-                          </div>
                           {(() => {
                             const opt = parcelasOpts.find((o) => o.installment === parcelas);
                             const totalReal = opt && parcelas > 1 ? (opt.value * parcelas) / 100 : planInfo.valor;
@@ -799,7 +732,7 @@ function CheckoutPage() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{planInfo.nome}</p>
-                    <p className="text-xs text-muted-foreground">{planInfo.beneficio}</p>
+                    <p className="text-xs text-muted-foreground">{planInfo.beneficios[0]}</p>
                   </div>
                   <p className="text-sm font-semibold tabular-nums shrink-0">R$ {planInfo.valor}</p>
                 </div>
