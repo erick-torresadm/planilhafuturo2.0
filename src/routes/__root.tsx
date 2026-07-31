@@ -131,9 +131,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               operatingSystem: "Web, iOS, Android",
               description: "Planejamento financeiro pessoal com projeção diária de 6 meses.",
               offers: [
-                { "@type": "Offer", name: "Starter", price: "69.90", priceCurrency: "BRL" },
-                { "@type": "Offer", name: "Anual", price: "300.00", priceCurrency: "BRL" },
-                { "@type": "Offer", name: "Vitalício", price: "800.00", priceCurrency: "BRL" },
+                { "@type": "Offer", name: "Anual", price: "250.00", priceCurrency: "BRL" },
+                { "@type": "Offer", name: "Vitalício", price: "450.00", priceCurrency: "BRL" },
               ],
               aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "142" },
             },

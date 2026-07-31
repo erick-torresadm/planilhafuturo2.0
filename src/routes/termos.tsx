@@ -55,10 +55,10 @@ function Termos() {
 
         <Section title="4. Planos e pagamento">
           <ul>
-            <li><strong>Starter</strong> — R$ 69,90/ano, com 1 mês de projeção.</li>
-            <li><strong>Anual</strong> — R$ 300/ano, projeção completa e suporte em call.</li>
-            <li><strong>Vitalício</strong> — R$ 800 pagamento único, acesso permanente.</li>
-            <li><strong>Planilha</strong> — R$ 129,90, produto digital de entrega manual.</li>
+            <li><strong>Grátis</strong> — teste de 7 dias com todos os recursos, sem cartão.</li>
+            <li><strong>Anual</strong> — R$ 250/ano, projeção completa e suporte em call.</li>
+            <li><strong>Vitalício</strong> — R$ 450 pagamento único, acesso permanente.</li>
+            <li><strong>Planilha</strong> — R$ 70, produto digital de entrega manual.</li>
           </ul>
           Pagamentos processados por provedores parceiros. Preços podem mudar; a alteração nunca afeta
           contratos vigentes.

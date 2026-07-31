@@ -49,3 +49,5 @@ dist-ssr
 server-assets/*.xlsx
 server-assets/*.pdf
 !server-assets/.gitkeep
+
+.vercel

@@ -21,10 +21,10 @@ PRODUTO:
 - Dados criptografados, na Lovable Cloud, com Row-Level Security
 
 PLANOS:
-- Starter — R$ 69,90/ano (1 mês de projeção, gastos fixos ilimitados, sem produtividade nem suporte em call)
-- Anual — R$ 300/ano (tudo liberado + suporte exclusivo em call com o fundador Erick) — RECOMENDADO
-- Vitalício — R$ 800 pagamento único (tudo + acesso pra sempre + selo fundador + suporte prioritário)
-- Planilha Excel/Sheets — R$ 129,90, pagamento único (pra quem prefere planilha em vez do app)
+- Grátis — teste 7 dias com tudo liberado, sem cartão
+- PRO Anual — R$ 250/ano (todas as funcionalidades, projeção de 12 meses, assistente IA, suporte prioritário) — RECOMENDADO
+- Vitalício — R$ 450 pagamento único (tudo do PRO + acesso pra sempre + atualizações futuras)
+- Planilha Excel/Sheets — R$ 70, pagamento único (pra quem prefere planilha em vez do app)
 - Garantia de 7 dias em todos, reembolso sem burocracia
 
 REGRAS:

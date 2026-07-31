@@ -202,6 +202,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function PlanSection() {
   const [planoStatus, setPlanoStatus] = useState<{ status: string; plano?: string; diasRestantes?: number } | null>(null);
   const [pixData, setPixData] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
+  const [planoPix, setPlanoPix] = useState<string>("anual");
   const [pixLoading, setPixLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -223,7 +224,7 @@ function PlanSection() {
     try {
       const m = await import("@/lib/assinatura.functions");
       const result = await m.createCheckoutSession({ data: { plano } });
-      if (result.ok) setPixData(result);
+      if (result.ok) { setPixData(result); setPlanoPix(plano); }
       else toast.error(result.error);
     } catch (e: any) { toast.error(e.message ?? "Erro ao gerar Pix"); }
     finally { setPixLoading(false); }
@@ -234,7 +235,7 @@ function PlanSection() {
     setVerifying(true);
     try {
       const m = await import("@/lib/assinatura.functions");
-      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: "anual" } });
+      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: planoPix } });
       if (result.paid) {
         toast.success(`Assinatura ${result.plano} ativada!`);
         setPixData(null);

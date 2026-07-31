@@ -797,9 +797,9 @@ function PriceStack() {
         <div className="mt-10 text-center">
           <div className="text-sm text-muted-foreground">Você paga apenas</div>
           <div className="mt-2 font-display text-6xl sm:text-7xl font-black tracking-tight num-lg">
-            R$ 300<span className="text-2xl text-muted-foreground">/ano</span>
+            R$ 250<span className="text-2xl text-muted-foreground">/ano</span>
           </div>
-          <div className="mt-2 text-base text-muted-foreground">ou <strong className="text-foreground">12x de R$ 29,90</strong> no cartão</div>
+          <div className="mt-2 text-base text-muted-foreground">ou <strong className="text-foreground">12x de R$ 23,90</strong> no cartão</div>
 
           <div className="mt-8">
             <CtaButton>Quero minha vida financeira organizada</CtaButton>
@@ -821,7 +821,7 @@ function PriceStack() {
             <div className="text-sm opacity-70 mt-1">Compre uma vez. Não pague nunca mais. Inclui suporte em call com erick.</div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-4xl font-black num-lg">R$ 800</span>
+            <span className="font-display text-4xl font-black num-lg">R$ 450</span>
             <span className="text-xs opacity-70">único</span>
           </div>
         </div>
@@ -841,22 +841,22 @@ function PriceStack() {
         </Link>
       </div>
 
-      {/* Starter — barreira baixa */}
+      {/* Grátis — teste 7 dias */}
       <div className="mt-6 rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-display text-xl font-black">Starter</span>
+            <span className="font-display text-xl font-black">Grátis</span>
             <span className="chip bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest">Barreira baixa</span>
           </div>
-          <div className="text-sm text-muted-foreground mt-1">Testa o app com 1 mês de projeção. Fluxo, gastos e parcelas — sem suporte em call.</div>
+          <div className="text-sm text-muted-foreground mt-1">Teste 7 dias com tudo liberado. Fluxo, gastos e parcelas — sem cartão de crédito.</div>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-baseline gap-1">
-            <span className="font-display text-3xl font-black num-lg">R$ 69,90</span>
-            <span className="text-xs text-muted-foreground">/ano</span>
+            <span className="font-display text-3xl font-black num-lg">R$ 0</span>
+            <span className="text-xs text-muted-foreground">/7 dias</span>
           </div>
           <Link to="/auth" className="inline-flex items-center gap-2 rounded-full border border-foreground text-foreground px-4 py-2.5 text-sm font-bold hover:bg-foreground hover:text-background transition">
-            Começar <ArrowRight className="h-4 w-4" />
+            Começar grátis <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -872,17 +872,12 @@ function PriceStack() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-baseline gap-1">
-            <span className="font-display text-3xl font-black num-lg">R$ 129,90</span>
+            <span className="font-display text-3xl font-black num-lg">R$ 70</span>
             <span className="text-xs text-muted-foreground">único</span>
           </div>
-          <a
-            href="https://wa.me/5599999999999?text=Ol%C3%A1%21%20Quero%20comprar%20a%20planilha%20por%20R%24%20129%2C90"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-bold hover:brightness-110 transition"
-          >
+          <Link to="/auth" className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-bold hover:brightness-110 transition">
             Quero a planilha <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
       </div>
 
