@@ -1,12 +1,32 @@
 /**
  * Efí Pagamentos API client (server-only).
- * Sandbox mode by default — set EFI_ENDPOINT for production.
+ *
+ * Efí uses two separate APIs with different hosts:
+ *  - API Pix (Pix charges):     pix.api.efipay.com.br      (prod) / pix-h.api.efipay.com.br      (homolog)
+ *  - API Cobranças (credit card): cobrancas.api.efipay.com.br (prod) / cobrancas-h.api.efipay.com.br (homolog)
+ *
+ * Both require a mutual-TLS (mTLS) client certificate for every request,
+ * including the OAuth token exchange. Provide it via env vars:
+ *  - EFI_PFX        (base64-encoded .p12/.pfx certificate)
+ *  - EFI_PFX_PASS   (password of the .p12, optional)
+ *  - or EFI_CERT + EFI_KEY (PEM cert + PEM private key)
  *
  * API docs: https://dev.efipay.com.br/docs/api-pix
  */
 
-const EFI_ENDPOINT = () =>
-  process.env.EFI_ENDPOINT ?? "https://sandbox.efipay.com.br";
+import https from "node:https";
+
+// ─── Endpoints ──────────────────────────────────────────────
+
+export function pixEndpoint(): string {
+  return process.env.EFI_PIX_ENDPOINT ?? "https://pix-h.api.efipay.com.br";
+}
+
+export function cobrancasEndpoint(): string {
+  return process.env.EFI_COBRANCAS_ENDPOINT ?? "https://cobrancas-h.api.efipay.com.br";
+}
+
+// ─── Credentials ────────────────────────────────────────────
 
 function getCredentials() {
   const clientId = process.env.EFI_CLIENT_ID;
@@ -17,16 +37,86 @@ function getCredentials() {
   return { clientId, clientSecret };
 }
 
-let _token: { access: string; expiresAt: number } | null = null;
+// ─── mTLS agent ─────────────────────────────────────────────
 
-/** Get OAuth2 access token (cached until expiry) */
-async function getAccessToken(): Promise<string> {
-  if (_token && Date.now() < _token.expiresAt) return _token.access;
+let _agent: https.Agent | null | undefined; // undefined = not resolved yet
+
+/** Build the mTLS https.Agent once. Returns null when no cert is configured. */
+function getMtlsAgent(): https.Agent | null {
+  if (_agent !== undefined) return _agent;
+
+  const pfx = process.env.EFI_PFX;
+  const pass = process.env.EFI_PFX_PASS ?? "";
+  const cert = process.env.EFI_CERT;
+  const key = process.env.EFI_KEY;
+
+  if (pfx) {
+    _agent = new https.Agent({ pfx: Buffer.from(pfx, "base64"), passphrase: pass });
+  } else if (cert && key) {
+    _agent = new https.Agent({ cert, key });
+  } else {
+    _agent = null;
+  }
+  return _agent;
+}
+
+/** fetch wrapper that attaches the mTLS client certificate when configured. */
+async function efiFetch(url: string, init?: RequestInit): Promise<Response> {
+  const agent = getMtlsAgent();
+  if (!agent) return fetch(url, init);
+
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const headers = new Headers(init?.headers);
+    const body = typeof init?.body === "string" ? init.body : undefined;
+
+    const req = https.request(
+      {
+        hostname: u.hostname,
+        port: u.port || 443,
+        path: u.pathname + u.search,
+        method: init?.method ?? "GET",
+        headers: Object.fromEntries(headers.entries()),
+        agent,
+      },
+      (res) => {
+        let data = "";
+        res.setEncoding("utf8");
+        res.on("data", (c) => (data += c));
+        res.on("end", () => {
+          const status = res.statusCode ?? 0;
+          resolve({
+            ok: status >= 200 && status < 300,
+            status,
+            statusText: res.statusMessage ?? "",
+            text: () => Promise.resolve(data),
+            json: () => Promise.resolve(JSON.parse(data)),
+          } as unknown as Response);
+        });
+      },
+    );
+    req.on("error", reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+// ─── OAuth2 tokens (cached; one per API) ────────────────────
+
+let _pixToken: { access: string; expiresAt: number } | null = null;
+let _cobToken: { access: string; expiresAt: number } | null = null;
+
+async function getToken(
+  cache: { access: string; expiresAt: number } | null,
+  endpoint: string,
+  oauthPath: string,
+): Promise<string> {
+  if (cache && Date.now() < cache.expiresAt) return cache.access;
 
   const { clientId, clientSecret } = getCredentials();
   const basic = btoa(`${clientId}:${clientSecret}`);
 
-  const res = await fetch(`${EFI_ENDPOINT()}/oauth/token`, {
+  const res = await efiFetch(`${endpoint}${oauthPath}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -37,16 +127,28 @@ async function getAccessToken(): Promise<string> {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`EfI auth error (${res.status}): ${err}`);
+    throw new Error(`Efí auth error (${res.status}): ${err.slice(0, 300)}`);
   }
 
   const data = await res.json();
-  _token = {
+  const token = {
     access: data.access_token,
-    expiresAt: Date.now() + (data.expires_in - 60) * 1000, // 1min buffer
+    expiresAt: Date.now() + (Number(data.expires_in || 3600) - 60) * 1000, // 1min buffer
   };
-  return _token.access;
+  if (endpoint === pixEndpoint()) _pixToken = token;
+  else _cobToken = token;
+  return token.access;
 }
+
+function getPixToken(): Promise<string> {
+  return getToken(_pixToken, pixEndpoint(), "/oauth/token");
+}
+
+function getCobrancasToken(): Promise<string> {
+  return getToken(_cobToken, cobrancasEndpoint(), "/v1/authorize");
+}
+
+// ─── Pix ────────────────────────────────────────────────────
 
 export interface PixCharge {
   txid: string;
@@ -61,7 +163,7 @@ export async function createPixCharge(
   descricao: string,
   txid?: string,
 ): Promise<PixCharge> {
-  const token = await getAccessToken();
+  const token = await getPixToken();
   const generatedTxid = txid ?? crypto.randomUUID().replace(/-/g, "").slice(0, 35);
 
   const body = {
@@ -72,8 +174,8 @@ export async function createPixCharge(
     solicitacaoPagador: descricao,
   };
 
-  const res = await fetch(
-    `${EFI_ENDPOINT()}/v2/cob/${encodeURIComponent(generatedTxid)}`,
+  const res = await efiFetch(
+    `${pixEndpoint()}/v2/cob/${encodeURIComponent(generatedTxid)}`,
     {
       method: "PUT",
       headers: {
@@ -86,7 +188,7 @@ export async function createPixCharge(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`EfI Pix error (${res.status}): ${err}`);
+    throw new Error(`Efí Pix error (${res.status}): ${err.slice(0, 300)}`);
   }
 
   const data = await res.json();
@@ -105,13 +207,11 @@ export interface PixStatus {
 
 /** Check payment status of a Pix charge */
 export async function checkPixStatus(txid: string): Promise<PixStatus> {
-  const token = await getAccessToken();
+  const token = await getPixToken();
 
-  const res = await fetch(
-    `${EFI_ENDPOINT()}/v2/cob/${encodeURIComponent(txid)}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
+  const res = await efiFetch(
+    `${pixEndpoint()}/v2/cob/${encodeURIComponent(txid)}`,
+    { headers: { Authorization: `Bearer ${token}` } },
   );
 
   if (res.status === 404) {
@@ -120,7 +220,7 @@ export async function checkPixStatus(txid: string): Promise<PixStatus> {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`EfI consult error (${res.status}): ${err}`);
+    throw new Error(`Efí consult error (${res.status}): ${err.slice(0, 300)}`);
   }
 
   const data = await res.json();
@@ -130,46 +230,48 @@ export async function checkPixStatus(txid: string): Promise<PixStatus> {
   };
 }
 
-// ─── Credit Card ───────────────────────────────────────────────
+// ─── Credit Card ────────────────────────────────────────────
 
-export interface CreditCardDetails {
-  card_number: string;
-  card_cvv: string;
-  card_expiration_month: string;
-  card_expiration_year: string;
-  card_holder_name: string;
-  customer_cpf: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone?: string;
-  customer_birth?: string;
-  billing_street?: string;
-  billing_number?: string;
-  billing_neighborhood?: string;
-  billing_city?: string;
-  billing_state?: string;
-  billing_zipcode?: string;
+export interface CreditCardRequest {
+  /** payment_token generated in the browser by Efí's payment-token-efi lib */
+  paymentToken: string;
+  customer: {
+    name: string;
+    cpf: string;
+    email: string;
+    phone?: string;
+    birth?: string;
+  };
+  billing?: {
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zipcode?: string;
+  };
+  installments?: number;
 }
 
 export interface CreditCardResult {
   charge_id: number;
-  status: string;
+  status: "paid" | "unpaid" | "error";
   valor: number;
   message?: string;
   code?: number;
 }
 
 /**
- * Create a credit card charge via Efí API (one-step).
- * Card details are sent server-side — Efí handles PCI compliance.
+ * Create a credit card charge via Efí API Cobranças (one-step).
+ * Card data never reaches this server — a payment_token generated in the
+ * browser (Efí payment-token-efi lib) is used instead.
  */
 export async function createCreditCardCharge(
   valor: number,
   descricao: string,
-  card: CreditCardDetails,
-  installments: number = 1,
+  card: CreditCardRequest,
 ): Promise<CreditCardResult> {
-  const token = await getAccessToken();
+  const token = await getCobrancasToken();
 
   const body = {
     items: [
@@ -181,63 +283,61 @@ export async function createCreditCardCharge(
     ],
     payment: {
       credit_card: {
-        installments,
-        payment_token: null as string | null,
         customer: {
-          name: card.customer_name,
-          cpf: card.customer_cpf.replace(/\D/g, ""),
-          email: card.customer_email,
-          phone_number: card.customer_phone ?? "",
-          birth: card.customer_birth ?? "",
+          name: card.customer.name,
+          cpf: card.customer.cpf.replace(/\D/g, ""),
+          email: card.customer.email,
+          phone_number: card.customer.phone ?? "",
+          birth: card.customer.birth ?? "",
         },
+        installments: card.installments ?? 1,
+        payment_token: card.paymentToken,
         billing_address: {
-          street: card.billing_street ?? "",
-          number: card.billing_number ?? "",
-          neighborhood: card.billing_neighborhood ?? "",
-          city: card.billing_city ?? "",
-          state: card.billing_state ?? "",
-          zipcode: card.billing_zipcode ?? "",
+          street: card.billing?.street ?? "",
+          number: card.billing?.number ?? "",
+          neighborhood: card.billing?.neighborhood ?? "",
+          city: card.billing?.city ?? "",
+          state: card.billing?.state ?? "",
+          zipcode: card.billing?.zipcode ?? "",
         },
       },
     },
   };
 
-  // Efí accepts raw card details in the one-step endpoint
-  (body.payment.credit_card as any).card_number = card.card_number.replace(/\D/g, "");
-  (body.payment.credit_card as any).card_cvv = card.card_cvv;
-  (body.payment.credit_card as any).card_expiration_month = card.card_expiration_month;
-  (body.payment.credit_card as any).card_expiration_year = card.card_expiration_year;
-  (body.payment.credit_card as any).card_holder_name = card.card_holder_name;
-
-  const res = await fetch(
-    `${EFI_ENDPOINT()}/v1/charge/one-step/credit-card`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
+  const res = await efiFetch(`${cobrancasEndpoint()}/v1/charge/one-step`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-  );
+    body: JSON.stringify(body),
+  });
 
-  const data = await res.json();
+  const json = (await res.json().catch(() => ({}))) as any;
+  const data = json?.data ?? json; // Efí wraps responses in { code, data }
 
   if (!res.ok) {
     return {
       charge_id: 0,
       status: "error",
       valor: 0,
-      message: data.message ?? data.error_description ?? `Erro Efí (${res.status})`,
+      message:
+        data?.refusal?.reason ??
+        data?.error_description ??
+        data?.message ??
+        `Erro Efí (${res.status})`,
       code: res.status,
     };
   }
 
+  // Efí returns HTTP 200 for both approved and refused transactions
+  const rawStatus: string = data?.status ?? "";
+  const paid = rawStatus === "approved" || rawStatus === "paid";
   return {
-    charge_id: data.charge_id ?? 0,
-    status: data.status,
-    valor: parseFloat(String(data.valor ?? valor)),
-    message: data.message,
+    charge_id: data?.charge_id ?? 0,
+    status: paid ? "paid" : "unpaid",
+    valor: (Number(data?.total ?? 0) || 0) / 100,
+    message: paid ? undefined : data?.refusal?.reason,
   };
 }
 

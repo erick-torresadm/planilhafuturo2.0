@@ -4,7 +4,7 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { createPixCharge, checkPixStatus, createCreditCardCharge, type CreditCardDetails } from "./efi-service";
+import { createPixCharge, checkPixStatus, createCreditCardCharge } from "./efi-service";
 import { supabase } from "@/integrations/supabase/client";
 
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
@@ -162,7 +162,15 @@ type PreSignupCheckoutResult =
   | { ok: false; error: string };
 
 export const createPreSignupCheckout = createServerFn({ method: "POST" })
-  .validator((data: { email: string; plano: string; metodo: "pix" | "cartao"; cardDetails?: CreditCardDetails }) => data)
+  .validator((data: {
+    email: string;
+    plano: string;
+    metodo: "pix" | "cartao";
+    paymentToken?: string;
+    customerName?: string;
+    customerCpf?: string;
+    customerPhone?: string;
+  }) => data)
   .handler(async ({ data }): Promise<PreSignupCheckoutResult> => {
     const plano = PLANOS[data.plano];
     if (!plano) return { ok: false, error: "Plano inválido" };
@@ -193,16 +201,25 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
           valor: pix.valor,
         };
       } else {
-        // Credit card
-        if (!data.cardDetails) return { ok: false, error: "Dados do cartão são obrigatórios" };
+        // Credit card — card was tokenized in the browser by Efí's
+        // payment-token-efi lib; only the payment_token reaches this server.
+        if (!data.paymentToken) return { ok: false, error: "Token do cartão não gerado. Tente novamente." };
 
         const cardResult = await createCreditCardCharge(
           plano.valor,
           `Planilhafuturo ${plano.nome}`,
-          data.cardDetails,
+          {
+            paymentToken: data.paymentToken,
+            customer: {
+              name: data.customerName ?? "Cliente",
+              cpf: data.customerCpf ?? "",
+              email: data.email,
+              phone: data.customerPhone,
+            },
+          },
         );
 
-        const paid = cardResult.status === "paid" || cardResult.status === "completed";
+        const paid = cardResult.status === "paid";
         const status = paid ? "pago" : "pendente";
 
         await admin.from("pre_pagamentos").insert({

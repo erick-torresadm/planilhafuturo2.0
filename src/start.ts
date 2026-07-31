@@ -39,11 +39,11 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => 
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // framework needs these for hot-reload & client-side rendering
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net", // jsdelivr = Efí payment-token-efi lib (card tokenization)
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://efipay.com.br https://sandbox.efipay.com.br https://api.efipay.com.br https://ai.gateway.lovable.dev https://economia.awesomeapi.com.br https://brasilapi.com.br",
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://efipay.com.br https://pix.api.efipay.com.br https://pix-h.api.efipay.com.br https://cobrancas.api.efipay.com.br https://cobrancas-h.api.efipay.com.br https://tokenizer.sejaefi.com.br https://device.clearsale.com.br https://web.fpcs-monitor.com.br https://ai.gateway.lovable.dev https://economia.awesomeapi.com.br https://brasilapi.com.br",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "object-src 'none'",

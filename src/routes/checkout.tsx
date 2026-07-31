@@ -92,6 +92,19 @@ function CheckoutPage() {
     return sum % 10 === 0;
   }
 
+  /** Dynamically load Efí's payment-token-efi lib (UMD exposes window.EfiPay) */
+  function loadEfiPayLib(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const w = window as any;
+      if (w.EfiPay) return resolve(w.EfiPay);
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/gh/efipay/js-payment-token-efi/dist/payment-token-efi-umd.min.js";
+      s.onload = () => resolve(w.EfiPay);
+      s.onerror = () => reject(new Error("Não foi possível carregar o processador de pagamento."));
+      document.head.appendChild(s);
+    });
+  }
+
   async function handlePagarPix() {
     if (!email.trim()) { setError("Digite seu email"); return; }
     setError("");
@@ -150,23 +163,39 @@ function CheckoutPage() {
     ];
 
     try {
+      // Tokenize the card in the browser (card data never reaches our server)
+      const EfiPay = await loadEfiPayLib();
+      const payeeCode = import.meta.env.VITE_EFI_PAYEE_CODE as string | undefined;
+      if (!payeeCode) {
+        setError("Pagamento por cartão ainda não configurado. Use Pix por enquanto.");
+        return;
+      }
+      const brand = await EfiPay.CreditCard.setCardNumber(cardNumero.replace(/\s/g, "")).verifyCardBrand();
+      const tokenResult = await EfiPay.CreditCard
+        .setAccount(payeeCode)
+        .setEnvironment(import.meta.env.DEV ? "sandbox" : "production")
+        .setCreditCardData({
+          brand,
+          number: cardNumero.replace(/\s/g, ""),
+          cvv: cardCvv,
+          expirationMonth: mm,
+          expirationYear: "20" + yy,
+          holderName: cardNome,
+          holderDocument: cardCpf.replace(/\D/g, ""),
+          reuse: false,
+        })
+        .getPaymentToken();
+
       const m = await import("@/lib/assinatura.functions");
       const result = await m.createPreSignupCheckout({
         data: {
           email: email.trim(),
           plano,
           metodo: "cartao",
-          cardDetails: {
-            card_number: cardNumero.replace(/\s/g, ""),
-            card_cvv: cardCvv,
-            card_expiration_month: mm,
-            card_expiration_year: "20" + yy,
-            card_holder_name: cardNome,
-            customer_cpf: cardCpf.replace(/\D/g, ""),
-            customer_name: cardNome,
-            customer_email: email.trim(),
-            customer_phone: cardPhone.replace(/\D/g, ""),
-          },
+          paymentToken: tokenResult.payment_token,
+          customerName: cardNome,
+          customerCpf: cardCpf.replace(/\D/g, ""),
+          customerPhone: cardPhone.replace(/\D/g, ""),
         },
       });
 
@@ -183,8 +212,9 @@ function CheckoutPage() {
         toast.error(result.error);
       }
     } catch (e: any) {
-      setError(e.message ?? "Erro ao processar pagamento");
-      toast.error(e.message ?? "Erro ao processar pagamento");
+      const msg = e?.error_description ?? e?.error ?? e?.message ?? "Erro ao processar pagamento";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
