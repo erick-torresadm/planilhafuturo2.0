@@ -16,23 +16,39 @@
 
 import https from "node:https";
 
+// ─── Environment switch (producao | homologacao) ──────────────
+// Set EFI_ENV = "producao" or "homologacao" to pick which set of
+// *_PROD / *_HOMOLOG env vars to use. This lets both environments stay
+// registered in Vercel and only the switch needs changing.
+
+function efiEnv(): "producao" | "homologacao" {
+  const e = (process.env.EFI_ENV ?? "").toLowerCase();
+  return e === "producao" || e === "prod" ? "producao" : "homologacao";
+}
+
+/** Read the env var for the active environment: EFI_*_PROD or EFI_*_HOMOLOG */
+function envOf(prefix: string): string | undefined {
+  const suffix = efiEnv() === "producao" ? "PROD" : "HOMOLOG";
+  return process.env[`${prefix}_${suffix}`] ?? process.env[prefix];
+}
+
 // ─── Endpoints ──────────────────────────────────────────────
 
 export function pixEndpoint(): string {
-  return process.env.EFI_PIX_ENDPOINT ?? "https://pix-h.api.efipay.com.br";
+  return envOf("EFI_PIX_ENDPOINT") ?? "https://pix-h.api.efipay.com.br";
 }
 
 export function cobrancasEndpoint(): string {
-  return process.env.EFI_COBRANCAS_ENDPOINT ?? "https://cobrancas-h.api.efipay.com.br";
+  return envOf("EFI_COBRANCAS_ENDPOINT") ?? "https://cobrancas-h.api.efipay.com.br";
 }
 
 // ─── Credentials ────────────────────────────────────────────
 
 function getCredentials() {
-  const clientId = process.env.EFI_CLIENT_ID;
-  const clientSecret = process.env.EFI_CLIENT_SECRET;
+  const clientId = envOf("EFI_CLIENT_ID");
+  const clientSecret = envOf("EFI_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
-    throw new Error("EFI_CLIENT_ID e EFI_CLIENT_SECRET não configurados");
+    throw new Error(`EFI_CLIENT_ID e EFI_CLIENT_SECRET não configurados (EFI_ENV=${efiEnv()})`);
   }
   return { clientId, clientSecret };
 }
@@ -45,10 +61,10 @@ let _agent: https.Agent | null | undefined; // undefined = not resolved yet
 function getMtlsAgent(): https.Agent | null {
   if (_agent !== undefined) return _agent;
 
-  const pfx = process.env.EFI_PFX;
+  const pfx = envOf("EFI_PFX");
   const pass = process.env.EFI_PFX_PASS ?? "";
-  const cert = process.env.EFI_CERT;
-  const key = process.env.EFI_KEY;
+  const cert = envOf("EFI_CERT");
+  const key = envOf("EFI_KEY");
 
   if (pfx) {
     _agent = new https.Agent({ pfx: Buffer.from(pfx, "base64"), passphrase: pass });
