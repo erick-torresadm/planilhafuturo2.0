@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { Check, Copy, Crown, Loader2, ArrowRight, CreditCard, QrCode, ChevronLeft, ArrowLeft } from "lucide-react";
@@ -431,12 +432,10 @@ function CheckoutPage() {
                 <p className="text-2xl font-bold tabular-nums mt-2 text-primary">R$ {pixData.valor.toFixed(2)}</p>
               </div>
 
-              {pixData.qrcode && (
-                <img
-                  src={`data:image/png;base64,${pixData.qrcode}`}
-                  alt="QR Code Pix"
-                  className="mx-auto w-56 h-56 rounded-2xl border border-border"
-                />
+              {pixData.pixCopiaECola && (
+                <div className="mx-auto w-56 h-56 rounded-2xl border border-border bg-white p-3 flex items-center justify-center">
+                  <QRCodeSVG value={pixData.pixCopiaECola} size={200} level="M" />
+                </div>
               )}
 
               <div className="flex items-center gap-2 bg-muted border border-border rounded-xl p-3 text-xs font-mono">
