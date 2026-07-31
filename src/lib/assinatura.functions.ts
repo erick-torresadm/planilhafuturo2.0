@@ -178,6 +178,7 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
       state: string;
       zipcode: string;
     };
+    installments?: number;
   }) => data)
   .handler(async ({ data }): Promise<PreSignupCheckoutResult> => {
     const plano = PLANOS[data.plano];
@@ -225,6 +226,7 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
               phone: data.customerPhone,
             },
             billing: data.billing,
+            installments: data.installments,
           },
         );
 

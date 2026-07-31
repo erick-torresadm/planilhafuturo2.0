@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -26,8 +26,14 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const PLANOS = {
-  anual: { nome: "PRO Anual", valor: 250, detalhe: "R$ 21/mês", badge: "Mais escolhido", beneficio: "Projeção de 12 meses + IA" },
-  vitalicio: { nome: "Vitalício", valor: 450, detalhe: "Única parcela · pra sempre", badge: "Melhor custo-benefício", beneficio: "Acesso pra sempre + atualizações" },
+  anual: {
+    nome: "PRO Anual", valor: 250, detalhe: "R$ 21/mês", badge: "Mais escolhido",
+    beneficios: ["Projeção de 12 meses + IA"],
+  },
+  vitalicio: {
+    nome: "Vitalício", valor: 450, detalhe: "Única parcela · pra sempre", badge: "Melhor custo-benefício",
+    beneficios: ["Acesso pra sempre + atualizações", "Call de 30 min com o Erick para analisar seu projeto"],
+  },
 } as const;
 
 type Phase = "plano" | "pagamento" | "pix_qr" | "card_result" | "done";
@@ -129,6 +135,10 @@ function CheckoutPage() {
   const [error, setError] = useState("");
   const [cardMsg, setCardMsg] = useState("");
 
+  // Parcelamento (cartão)
+  const [parcelasOpts, setParcelasOpts] = useState<{ installment: number; value: number; has_interest: boolean }[]>([]);
+  const [parcelas, setParcelas] = useState(1);
+
   const planInfo = PLANOS[plano];
 
   // ── Formatters ─────────────────────────────────────────────
@@ -156,6 +166,50 @@ function CheckoutPage() {
     if (digits.length > 5) return digits.slice(0, 5) + "-" + digits.slice(5);
     return digits;
   }
+  // ── Parcelamento (cartão) ────────────────────────────────
+  function detectBrand(numero: string): string {
+    const n = numero.replace(/\D/g, "");
+    if (/^4/.test(n)) return "visa";
+    if (/^5[1-5]/.test(n) || /^2[2-7]/.test(n)) return "mastercard";
+    if (/^3[47]/.test(n)) return "amex";
+    if (/^(636368|438935|504175|451416|509048|509067|509049|509069|509074|509073|509072|509071|509070|627780|636297|506699|506698|506697|506696)/.test(n)) return "elo";
+    return "";
+  }
+
+  // Busca as opções de parcelamento na API da Efí (pública), com juros reais
+  useEffect(() => {
+    let cancelled = false;
+    const brand = detectBrand(cardNumero);
+    if (!brand || cardNumero.replace(/\D/g, "").length < 13) {
+      setParcelasOpts([]);
+      setParcelas(1);
+      return;
+    }
+    const totalCents = Math.round(planInfo.valor * 100);
+    const host = efiTokenizerEnv() === "production"
+      ? "https://cobrancas.api.efipay.com.br"
+      : "https://cobrancas-h.api.efipay.com.br";
+    const payee = import.meta.env.VITE_EFI_PAYEE_CODE as string | undefined;
+    if (!payee) return;
+    const url = `${host}/v1/installments/${payee}/jsonp?brand=${brand}&total=${totalCents}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((j) => {
+        if (cancelled || !j?.data?.installments) return;
+        const opts = j.data.installments.map((x: any) => ({
+          installment: x.installment,
+          value: x.value,
+          has_interest: !!x.has_interest,
+        }));
+        setParcelasOpts(opts);
+        // reset to 1x when card number changes
+        setParcelas((p) => (p > (opts[0]?.installment ?? 1) ? opts[0]?.installment ?? 1 : p));
+        setParcelas(1);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [cardNumero, planInfo.valor]);
+
   function luhnCheck(card: string): boolean {
     const digits = card.replace(/\D/g, "");
     if (digits.length < 13) return false;
@@ -291,6 +345,7 @@ function CheckoutPage() {
             state: addrEstado,
             zipcode: addrCep.replace(/\D/g, ""),
           },
+          installments: parcelas,
         },
       });
 
@@ -447,9 +502,13 @@ function CheckoutPage() {
                               </div>
                               <div className="mt-2 text-3xl font-bold tabular-nums">R$ {info.valor}</div>
                               <p className="text-xs text-muted-foreground mt-1">{info.detalhe}</p>
-                              <p className="text-xs text-foreground/70 mt-2 flex items-center gap-1">
-                                <Sparkles className="h-3.5 w-3.5 text-primary" /> {info.beneficio}
-                              </p>
+                              <div className="mt-2 space-y-1">
+                                {info.beneficios.map((b) => (
+                                  <p key={b} className="text-xs text-foreground/70 flex items-center gap-1">
+                                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" /> {b}
+                                  </p>
+                                ))}
+                              </div>
                             </motion.button>
                           );
                         })}
@@ -569,6 +628,28 @@ function CheckoutPage() {
                               <input value={cardCvv} onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="000" className={cn(inputCls, "font-mono")} inputMode="numeric" />
                             </div>
                           </div>
+
+                          {/* Parcelamento */}
+                          {parcelasOpts.length > 0 && (
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Parcelas</label>
+                              <select
+                                value={parcelas}
+                                onChange={(e) => setParcelas(Number(e.target.value))}
+                                className={cn(inputCls, "appearance-none")}
+                              >
+                                {parcelasOpts.map((o) => (
+                                  <option key={o.installment} value={o.installment}>
+                                    {o.installment}x de R$ {(o.value / 100).toFixed(2).replace(".", ",")}
+                                    {o.installment > 1 ? ` (total R$ ${((o.value * o.installment) / 100).toFixed(2).replace(".", ",")})` : ""}
+                                  </option>
+                                ))}
+                              </select>
+                              <p className="text-[11px] text-muted-foreground/60">
+                                Parcelamento em até 12x processado pela Efí Pagamentos. Valores com juros conforme a operadora.
+                              </p>
+                            </div>
+                          )}
                           <div className="space-y-1.5">
                             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Telefone <span className="text-muted-foreground/50">(com DDD)</span></label>
                             <input value={cardPhone} onChange={(e) => setCardPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" className={cn(inputCls, "font-mono")} inputMode="numeric" />
@@ -612,10 +693,20 @@ function CheckoutPage() {
                               ))}
                             </select>
                           </div>
-                          <Button onClick={handlePagarCartao} disabled={loading} className="w-full h-12 rounded-xl font-semibold">
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                            {loading ? "Processando..." : `Pagar R$ ${planInfo.valor} no cartão`}
-                          </Button>
+                          {(() => {
+                            const opt = parcelasOpts.find((o) => o.installment === parcelas);
+                            const totalReal = opt && parcelas > 1 ? (opt.value * parcelas) / 100 : planInfo.valor;
+                            return (
+                              <Button onClick={handlePagarCartao} disabled={loading} className="w-full h-12 rounded-xl font-semibold">
+                                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                                {loading
+                                  ? "Processando..."
+                                  : parcelas > 1 && opt
+                                    ? `Pagar ${parcelas}x de R$ ${(opt.value / 100).toFixed(2).replace(".", ",")} (total R$ ${totalReal.toFixed(2).replace(".", ",")})`
+                                    : `Pagar R$ ${totalReal.toFixed(2).replace(".", ",")} no cartão`}
+                              </Button>
+                            );
+                          })()}
                           <p className="text-[10px] text-center text-muted-foreground/60">
                             Pagamento processado via Efí Pagamentos. Dados do cartão trafegam de forma segura.
                           </p>

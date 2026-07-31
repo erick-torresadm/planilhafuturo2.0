@@ -257,7 +257,7 @@ function PlanSection() {
     },
     {
       id: "vitalicio" as const, nome: "Vitalício", valor: 450, detalhe: "Única parcela",
-      features: ["Tudo do PRO Anual", "Pagamento único", "Acesso vitalício", "Todas as atualizações futuras"],
+      features: ["Tudo do PRO Anual", "Pagamento único", "Acesso vitalício", "Todas as atualizações futuras", "Call de 30 min com o Erick para analisar seu projeto"],
       tag: "Melhor custo-benefício",
     },
   ];

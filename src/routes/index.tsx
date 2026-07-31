@@ -343,7 +343,7 @@ function Pricing() {
         "Sem renovação anual",
         "Acesso vitalício",
         "Atualizações futuras inclusas",
-        "Sua planilha pra sempre",
+        "Call de 30 min com o Erick para analisar seu projeto",
       ],
       cta: "Garantir vitalício",
     },

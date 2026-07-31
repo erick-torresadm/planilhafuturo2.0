@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
+import { NotificationPrompt } from "../components/NotificationPrompt";
 
 function NotFoundComponent() {
   return (
@@ -236,6 +237,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
+        <NotificationPrompt />
         {canInstall && (
           <button
             onClick={handleInstall}
