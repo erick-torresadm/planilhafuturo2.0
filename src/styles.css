@@ -167,7 +167,12 @@
 /* ─── Base ─── */
 @layer base {
   * { border-color: var(--color-border); }
-  html { -webkit-tap-highlight-color: transparent; }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
   body {
     background: var(--color-background);
     color: var(--color-foreground);
@@ -175,6 +180,10 @@
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     line-height: 1.5;
+  }
+  /* Evita zoom de duplo-toque ao tocar em elementos interativos no mobile */
+  a, button, [role="button"], input, select, textarea, label, summary {
+    touch-action: manipulation;
   }
   h1, h2, h3 {
     font-family: var(--font-display);
@@ -192,6 +201,14 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--color-muted-fg) 20%, transparent); border-radius: 8px; }
   *:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: 4px; }
+}
+
+/* iOS/Safari: input com fonte < 16px dispara zoom automático no foco.
+   Com user-scalable=no no viewport o zoom já é bloqueado; este é o reforço. */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px;
+  }
 }
 
 /* ─── Card system ─── */

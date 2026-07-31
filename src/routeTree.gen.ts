@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as GuiaRouteImport } from './routes/guia'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as Pv2RouteImport } from './routes/pv2'
@@ -59,6 +60,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuiaRoute = GuiaRouteImport.update({
+  id: '/guia',
+  path: '/guia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
+  '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
+  '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
+  '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/cookies'
     | '/docs'
+    | '/guia'
     | '/onboarding'
     | '/privacidade'
     | '/pv2'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/cookies'
     | '/docs'
+    | '/guia'
     | '/onboarding'
     | '/privacidade'
     | '/pv2'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/cookies'
     | '/docs'
+    | '/guia'
     | '/onboarding'
     | '/privacidade'
     | '/pv2'
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   CookiesRoute: typeof CookiesRoute
   DocsRoute: typeof DocsRoute
+  GuiaRoute: typeof GuiaRoute
   OnboardingRoute: typeof OnboardingRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   Pv2Route: typeof Pv2Route
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guia': {
+      id: '/guia'
+      path: '/guia'
+      fullPath: '/guia'
+      preLoaderRoute: typeof GuiaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   CookiesRoute: CookiesRoute,
   DocsRoute: DocsRoute,
+  GuiaRoute: GuiaRoute,
   OnboardingRoute: OnboardingRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   Pv2Route: Pv2Route,

@@ -8,10 +8,10 @@ export const Route = createFileRoute("/termos")({
       { name: "description", content: "Termos de Uso do planilhafuturo — planejamento financeiro para os próximos 12 meses." },
       { property: "og:title", content: "Termos de Uso — planilhafuturo" },
       { property: "og:description", content: "Termos e condições de uso do planilhafuturo." },
-      { property: "og:url", content: "https://planilhafuturo.lovable.app/termos" },
+      { property: "og:url", content: "https://planilhafuturo.com.br/termos" },
       { property: "og:type", content: "article" },
     ],
-    links: [{ rel: "canonical", href: "https://planilhafuturo.lovable.app/termos" }],
+    links: [{ rel: "canonical", href: "https://planilhafuturo.com.br/termos" }],
   }),
   component: Termos,
 });

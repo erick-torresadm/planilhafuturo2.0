@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
 import { NotificationPrompt } from "../components/NotificationPrompt";
+import { CookieConsent } from "../components/CookieConsent";
 
 function NotFoundComponent() {
   return (
@@ -62,7 +63,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" },
       { name: "theme-color", content: "#059669" },
       { name: "apple-mobile-web-app-title", content: "planilhafuturo" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -238,6 +239,7 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
         <NotificationPrompt />
+        <CookieConsent />
         {canInstall && (
           <button
             onClick={handleInstall}

@@ -476,16 +476,22 @@ function Footer() {
             <Logo size={24} />
             <div className="mt-2 text-xs text-muted-foreground">Planejamento financeiro que cabe no bolso.</div>
           </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground">Produto</a>
             <a href="#pricing" className="hover:text-foreground">Preços</a>
             <a href="#faq" className="hover:text-foreground">Perguntas</a>
+            <Link to="/guia" className="hover:text-foreground">Como usar</Link>
             <Link to="/auth" className="hover:text-foreground">Entrar</Link>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <div>© {new Date().getFullYear()} planilhafuturo. Feito no Brasil.</div>
-          <div className="font-mono">planilhafuturo.com.br</div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
+            <Link to="/termos" className="hover:text-foreground">Termos</Link>
+            <Link to="/privacidade" className="hover:text-foreground">Privacidade</Link>
+            <Link to="/cookies" className="hover:text-foreground">Cookies</Link>
+            <a href="mailto:contato@planilhafuturo.com.br" className="hover:text-foreground">Contato</a>
+          </div>
         </div>
       </Section>
     </footer>

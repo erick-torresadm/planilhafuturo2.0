@@ -526,7 +526,7 @@ function PlanSection() {
           <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
             <p className="text-sm font-semibold">Pague via Pix</p>
             <p className="text-xs text-muted-foreground">R$ {pixData.valor.toFixed(2)} — escaneie o QR Code ou copie o código</p>
-            {pixData.qrcode && <img src={`data:image/png;base64,${pixData.qrcode}`} alt="QR Code Pix" className="mx-auto w-48 h-48 rounded-xl" />}
+            {pixData.qrcode && <img src={pixData.qrcode} alt="QR Code Pix" className="mx-auto w-48 h-48 rounded-xl" />}
             <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
               <span className="flex-1 truncate">{pixData.pixCopiaECola}</span>
               <button onClick={copyPixCode} className="shrink-0 text-primary hover:text-primary/80">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
@@ -635,7 +635,7 @@ function ErickPlanilhaSection() {
       {!planilhaPaga && planilhaPix && (
         <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
           <p className="text-sm font-semibold">Pague R$ 70 via Pix</p>
-          {planilhaPix.qrcode && (<img src={`data:image/png;base64,${planilhaPix.qrcode}`} alt="QR Code Pix" className="mx-auto w-44 h-44 rounded-xl" />)}
+          {planilhaPix.qrcode && (<img src={planilhaPix.qrcode} alt="QR Code Pix" className="mx-auto w-44 h-44 rounded-xl" />)}
           <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
             <span className="flex-1 truncate">{planilhaPix.pixCopiaECola}</span>
             <button onClick={() => { navigator.clipboard.writeText(planilhaPix.pixCopiaECola); toast.success("Código Pix copiado!"); }} className="shrink-0 text-primary hover:text-primary/80"><Copy className="h-4 w-4" /></button>

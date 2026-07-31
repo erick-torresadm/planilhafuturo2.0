@@ -8,10 +8,10 @@ export const Route = createFileRoute("/cookies")({
       { name: "description", content: "Quais cookies usamos, por quê e como você controla." },
       { property: "og:title", content: "Política de Cookies — planilhafuturo" },
       { property: "og:description", content: "Cookies essenciais e de análise. Sem rastreadores publicitários." },
-      { property: "og:url", content: "https://planilhafuturo.lovable.app/cookies" },
+      { property: "og:url", content: "https://planilhafuturo.com.br/cookies" },
       { property: "og:type", content: "article" },
     ],
-    links: [{ rel: "canonical", href: "https://planilhafuturo.lovable.app/cookies" }],
+    links: [{ rel: "canonical", href: "https://planilhafuturo.com.br/cookies" }],
   }),
   component: Cookies,
 });

@@ -8,10 +8,10 @@ export const Route = createFileRoute("/privacidade")({
       { name: "description", content: "Como o planilhafuturo coleta, usa e protege seus dados pessoais, em conformidade com a LGPD." },
       { property: "og:title", content: "Política de Privacidade — planilhafuturo" },
       { property: "og:description", content: "Conformidade com a LGPD. Seus dados, criptografados e nunca vendidos." },
-      { property: "og:url", content: "https://planilhafuturo.lovable.app/privacidade" },
+      { property: "og:url", content: "https://planilhafuturo.com.br/privacidade" },
       { property: "og:type", content: "article" },
     ],
-    links: [{ rel: "canonical", href: "https://planilhafuturo.lovable.app/privacidade" }],
+    links: [{ rel: "canonical", href: "https://planilhafuturo.com.br/privacidade" }],
   }),
   component: Privacidade,
 });
