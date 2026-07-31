@@ -43,6 +43,7 @@ export async function insertRow<T extends Record<string, any> = any>(
 
   // Garantir a data caso seja a tabela de lancamentos e o campo data esteja faltando
   const rowToInsert = { ...row };
+  console.log("DEBUG: Tentando inserir:", table, rowToInsert);
   if (table === "lancamentos" && !rowToInsert.data) {
     rowToInsert.data = new Date().toISOString().slice(0, 10);
   }
@@ -57,6 +58,11 @@ export async function insertRow<T extends Record<string, any> = any>(
   Object.keys(newRow).forEach((k) => {
     if (newRow[k] === undefined) delete newRow[k];
   });
+
+  if (table === "lancamentos" && !newRow.tipo) {
+    console.error("DEBUG: Lancamento sem TIPO:", newRow);
+    throw new Error("Lançamento sem tipo definido");
+  }
 
   console.log("Tentando salvar no Supabase:", table, newRow);
 

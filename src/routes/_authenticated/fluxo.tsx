@@ -50,7 +50,7 @@ function FluxoPage() {
 
   function commit(data: string, tipo: string, valor: number, prev: number) {
     if (valor === prev) return;
-    upsert(data, tipo, valor);
+    upsert({ data, tipo, valor });
     if (valor > 0 && tipo.startsWith("entrada")) playSound("kaching");
     else if (valor > 0) playSound("pop");
   }

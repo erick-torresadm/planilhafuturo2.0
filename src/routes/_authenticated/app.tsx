@@ -27,7 +27,7 @@ function HojePage() {
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const invest = useQuery({ queryKey: ["investimentos"], queryFn: () => selectAll("investimentos") });
-  const { list: lanc } = useLancamentosLocal();
+  const { list: lanc, upsert } = useLancamentosLocal();
 
   const { data: extData } = useExternalData();
 
@@ -77,6 +77,14 @@ function HojePage() {
   function commitQuick() {
     const n = Number(qaValor.replace(/\./g, "").replace(",", ".")) || 0;
     if (n <= 0 || !diaHoje) { setQaOpen(null); setQaValor(""); return; }
+
+    // Add lancamento
+    upsert({
+      data: diaHoje.data,
+      tipo: qaOpen === "in" ? "entrada_diaria" : "saida_diaria",
+      valor: n
+    });
+
     playSound(qaOpen === "in" ? "kaching" : "pop");
     setQaOpen(null); setQaValor("");
   }
