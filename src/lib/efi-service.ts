@@ -255,9 +255,11 @@ export interface CreditCardRequest {
     name: string;
     cpf: string;
     email: string;
+    /** Required by Efí: DDD + number, e.g. "11987654321" (pattern ^[1-9]{2}9?[0-9]{8}$) */
     phone?: string;
     birth?: string;
   };
+  /** Required by Efí's one-step: all fields must be non-empty */
   billing?: {
     street?: string;
     number?: string;
@@ -289,6 +291,28 @@ export async function createCreditCardCharge(
 ): Promise<CreditCardResult> {
   const token = await getCobrancasToken();
 
+  // Efí's one-step requires a valid phone (DDD + number) and a complete billing address.
+  const phone = (card.customer.phone ?? "").replace(/\D/g, "");
+  if (!phone) {
+    return { charge_id: 0, status: "error", valor: 0, message: "Telefone é obrigatório para pagamento com cartão.", code: 422 };
+  }
+  if (!/^[1-9]{2}9?[0-9]{8}$/.test(phone)) {
+    return { charge_id: 0, status: "error", valor: 0, message: "Telefone inválido. Use DDD + número (ex: 11 99999-9999).", code: 422 };
+  }
+
+  const billing = card.billing ?? {};
+  const requiredBilling = ["street", "number", "neighborhood", "city", "state", "zipcode"] as const;
+  const missing = requiredBilling.filter((k) => !String(billing[k] ?? "").trim());
+  if (missing.length) {
+    return {
+      charge_id: 0,
+      status: "error",
+      valor: 0,
+      message: `Endereço de cobrança incompleto: ${missing.join(", ")}.`,
+      code: 422,
+    };
+  }
+
   const body = {
     items: [
       {
@@ -303,18 +327,18 @@ export async function createCreditCardCharge(
           name: card.customer.name,
           cpf: card.customer.cpf.replace(/\D/g, ""),
           email: card.customer.email,
-          phone_number: card.customer.phone ?? "",
+          phone_number: phone,
           birth: card.customer.birth ?? "",
         },
         installments: card.installments ?? 1,
         payment_token: card.paymentToken,
         billing_address: {
-          street: card.billing?.street ?? "",
-          number: card.billing?.number ?? "",
-          neighborhood: card.billing?.neighborhood ?? "",
-          city: card.billing?.city ?? "",
-          state: card.billing?.state ?? "",
-          zipcode: card.billing?.zipcode ?? "",
+          street: String(billing.street ?? "").trim(),
+          number: String(billing.number ?? "").trim(),
+          neighborhood: String(billing.neighborhood ?? "").trim(),
+          city: String(billing.city ?? "").trim(),
+          state: String(billing.state ?? "").trim(),
+          zipcode: String(billing.zipcode ?? "").trim(),
         },
       },
     },
@@ -333,13 +357,19 @@ export async function createCreditCardCharge(
   const data = json?.data ?? json; // Efí wraps responses in { code, data }
 
   if (!res.ok) {
+    // Efí returns 400/500 validation errors with error_description that may be
+    // a string OR an object { property, message }.
+    const desc = data?.error_description;
+    const detail = typeof desc === "object" && desc !== null && desc.message
+      ? `${desc.property ? desc.property + ": " : ""}${desc.message}`
+      : desc;
     return {
       charge_id: 0,
       status: "error",
       valor: 0,
       message:
         data?.refusal?.reason ??
-        data?.error_description ??
+        detail ??
         data?.message ??
         `Erro Efí (${res.status})`,
       code: res.status,

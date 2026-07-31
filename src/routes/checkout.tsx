@@ -115,10 +115,19 @@ function CheckoutPage() {
   const [cardCvv, setCardCvv] = useState("");
   const [cardPhone, setCardPhone] = useState("");
 
+  // Billing address (obrigatório pela Efí para cobrança no cartão)
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrNumero, setAddrNumero] = useState("");
+  const [addrBairro, setAddrBairro] = useState("");
+  const [addrCidade, setAddrCidade] = useState("");
+  const [addrEstado, setAddrEstado] = useState("");
+  const [addrCep, setAddrCep] = useState("");
+
   // General state
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
+  const [cardMsg, setCardMsg] = useState("");
 
   const planInfo = PLANOS[plano];
 
@@ -141,6 +150,11 @@ function CheckoutPage() {
     if (digits.length <= 2) return `(${digits}`;
     if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  function formatCep(val: string) {
+    const digits = val.replace(/\D/g, "").slice(0, 8);
+    if (digits.length > 5) return digits.slice(0, 5) + "-" + digits.slice(5);
+    return digits;
   }
   function luhnCheck(card: string): boolean {
     const digits = card.replace(/\D/g, "");
@@ -218,6 +232,14 @@ function CheckoutPage() {
     if (!luhnCheck(cardNumero)) { setError("Número do cartão inválido"); return; }
     if (cardValidade.replace(/\D/g, "").length !== 4) { setError("Data de validade inválida"); return; }
     if (cardCvv.replace(/\D/g, "").length < 3) { setError("CVV inválido"); return; }
+    if (cardPhone.replace(/\D/g, "").length < 10) { setError("Telefone é obrigatório (DDD + número)"); return; }
+    if (
+      !addrStreet.trim() || !addrNumero.trim() || !addrBairro.trim() ||
+      !addrCidade.trim() || !addrEstado.trim() || addrCep.replace(/\D/g, "").length !== 8
+    ) {
+      setError("Preencha o endereço de cobrança completo (CEP com 8 dígitos)");
+      return;
+    }
 
     setError("");
     setLoading(true);
@@ -261,6 +283,14 @@ function CheckoutPage() {
           customerName: cardNome,
           customerCpf: cardCpf.replace(/\D/g, ""),
           customerPhone: cardPhone.replace(/\D/g, ""),
+          billing: {
+            street: addrStreet,
+            number: addrNumero,
+            neighborhood: addrBairro,
+            city: addrCidade,
+            state: addrEstado,
+            zipcode: addrCep.replace(/\D/g, ""),
+          },
         },
       });
 
@@ -269,6 +299,7 @@ function CheckoutPage() {
           setPhase("done");
           toast.success("Pagamento aprovado!");
         } else {
+          setCardMsg(result.message || "");
           setPhase("card_result");
           toast.error(result.message || "Pagamento não aprovado. Tente outro cartão.");
         }
@@ -539,8 +570,47 @@ function CheckoutPage() {
                             </div>
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Telefone <span className="text-muted-foreground/50">(opcional)</span></label>
+                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Telefone <span className="text-muted-foreground/50">(com DDD)</span></label>
                             <input value={cardPhone} onChange={(e) => setCardPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" className={cn(inputCls, "font-mono")} inputMode="numeric" />
+                          </div>
+
+                          {/* Endereço de cobrança — obrigatório pela Efí */}
+                          <div className="pt-1">
+                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Endereço de cobrança</p>
+                            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Exigido pela operadora do cartão</p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Rua</label>
+                            <input value={addrStreet} onChange={(e) => setAddrStreet(e.target.value)} placeholder="Rua, avenida..." className={inputCls} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Número</label>
+                              <input value={addrNumero} onChange={(e) => setAddrNumero(e.target.value)} placeholder="123" className={inputCls} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Bairro</label>
+                              <input value={addrBairro} onChange={(e) => setAddrBairro(e.target.value)} placeholder="Centro" className={inputCls} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cidade</label>
+                              <input value={addrCidade} onChange={(e) => setAddrCidade(e.target.value)} placeholder="São Paulo" className={inputCls} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">CEP</label>
+                              <input value={addrCep} onChange={(e) => setAddrCep(formatCep(e.target.value))} placeholder="00000-000" className={cn(inputCls, "font-mono")} inputMode="numeric" />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Estado</label>
+                            <select value={addrEstado} onChange={(e) => setAddrEstado(e.target.value)} className={cn(inputCls, "appearance-none")}>
+                              <option value="">Selecione a UF</option>
+                              {["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map((uf) => (
+                                <option key={uf} value={uf}>{uf}</option>
+                              ))}
+                            </select>
                           </div>
                           <Button onClick={handlePagarCartao} disabled={loading} className="w-full h-12 rounded-xl font-semibold">
                             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
@@ -606,9 +676,13 @@ function CheckoutPage() {
                       </div>
                       <div>
                         <h2 className="font-display text-xl font-bold">Pagamento não aprovado</h2>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Tente novamente com outro cartão ou escolha Pix.
-                        </p>
+                        {cardMsg ? (
+                          <p className="text-sm text-muted-foreground mt-1">{cardMsg}</p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Tente novamente com outro cartão ou escolha Pix.
+                          </p>
+                        )}
                       </div>
                       <Button onClick={() => { setMetodo("pix"); setPhase("pagamento"); }} variant="outline" className="w-full h-12 rounded-xl">
                         <QrCode className="h-4 w-4 mr-2" /> Tentar via Pix
