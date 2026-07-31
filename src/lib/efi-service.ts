@@ -168,7 +168,7 @@ export async function createPixCharge(
 
   const body = {
     calendario: { expiracao: 3600 }, // 1 hour
-    devedor: { nome: "Planilhafuturo" },
+    // devedor is omitted: Efí requires cpf/cnpj if present, and we don't collect it in the Pix flow
     valor: { original: valor.toFixed(2) },
     chave: process.env.EFI_PIX_KEY ?? "", // Pix key registered in Efí
     solicitacaoPagador: descricao,
