@@ -6,12 +6,25 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { getActiveWorkspace } from "./workspace";
 
-async function getUserId(): Promise<string> {
+/** Sempre o id do usuário logado (nunca o owner de um workspace ativo). */
+async function getSessionUserId(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id;
   if (!userId) throw new Error("Usuário não autenticado");
   return userId;
+}
+
+/**
+ * Id do "dono dos dados": o workspace ativo quando o usuário é ADM de outro
+ * workspace, ou o próprio usuário logado caso contrário. Usado apenas por
+ * operações de DADOS (selectAll/insertRow/updateRow/deleteRow).
+ */
+async function getUserId(): Promise<string> {
+  const sessionId = await getSessionUserId();
+  const ws = getActiveWorkspace();
+  return ws && ws !== sessionId ? ws : sessionId;
 }
 
 /** Tables that use `id = auth.uid()` instead of `user_id` column */
@@ -116,9 +129,9 @@ export async function deleteRow(table: string, id: string): Promise<boolean> {
   return (count ?? 0) > 0;
 }
 
-/** Get the authenticated user's profile */
+/** Get the authenticated user's profile (sempre a própria sessão, nunca o owner ativo) */
 export async function getProfile(): Promise<Record<string, any>> {
-  const userId = await getUserId();
+  const userId = await getSessionUserId();
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -136,9 +149,9 @@ export async function getProfile(): Promise<Record<string, any>> {
   return data ?? {};
 }
 
-/** Update the authenticated user's profile */
+/** Update the authenticated user's profile (sempre a própria sessão, nunca o owner ativo) */
 export async function updateProfile(patch: Record<string, any>) {
-  const userId = await getUserId();
+  const userId = await getSessionUserId();
   const { data, error } = await supabase
     .from("profiles")
     .update(patch)

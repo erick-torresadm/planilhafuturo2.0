@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -36,8 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      // Se veio de um link de convite, retorna para a página de aceite após login
+      if (event === "SIGNED_IN") {
+        const invite = sessionStorage.getItem("planilhafuturo_pending_invite");
+        if (invite) {
+          sessionStorage.removeItem("planilhafuturo_pending_invite");
+          window.location.href = `/convite/${invite}`;
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -77,13 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signInWithGoogle() {
     try {
-      // Use Lovable Cloud Auth popup — avoids port redirect issues with Supabase OAuth
-      const result = await lovable.auth.signInWithOAuth("google");
-      if (result.error) {
-        console.error("Google OAuth error:", result.error);
-        toast?.error(result.error.message || "Erro ao fazer login com Google");
-      }
-      // Session is set automatically by lovable → supabase.auth.setSession()
+      // OAuth nativo do Supabase — redirect de página inteira. Funciona em
+      // qualquer host (Vercel), diferente do Lovable Cloud Auth que precisava
+      // dos endpoints server-side ~oauth/initiate (só existem na infra da Lovable).
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      if (error) throw error;
+      // A session é restaurada no retorno pelo persistSession + onAuthStateChange
     } catch (err: any) {
       console.error("Google OAuth error:", err);
       toast?.error(err.message || "Erro ao fazer login com Google");

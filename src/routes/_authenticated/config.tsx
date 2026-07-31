@@ -11,7 +11,8 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { getApiKey, setApiKey, hasApiKey } from "@/lib/ai-service";
 import { toast } from "sonner";
-import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Money } from "@/components/Money";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,9 @@ function ConfigPage() {
 
       {/* ─── PLANO / ASSINATURA (REDESIGNED) ─── */}
       <PlanSection />
+
+      {/* ─── EQUIPE / ADM ─── */}
+      <EquipeSection />
 
       {/* ─── PERFIL ─── */}
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">
@@ -195,6 +199,194 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</Label>
       {children}
     </div>
+  );
+}
+
+/* ─── EQUIPE / ADM ─── */
+type ConviteRow = {
+  id: string;
+  email: string | null;
+  status: "pendente" | "aceito" | "revogado";
+  token: string;
+  criado_em: string;
+  expira_em: string;
+};
+
+function EquipeSection() {
+  const qc = useQueryClient();
+  const [link, setLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const sessionId = useQuery({
+    queryKey: ["session_id"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.user?.id ?? null;
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
+
+  const invites = useQuery({
+    queryKey: ["convites"],
+    queryFn: async (): Promise<ConviteRow[]> => {
+      const { data } = await supabase
+        .from("convites")
+        .select("id, email, status, token, criado_em, expira_em")
+        .order("criado_em", { ascending: false });
+      return data ?? [];
+    },
+    enabled: !!sessionId.data,
+    retry: false,
+  });
+
+  const members = useQuery({
+    queryKey: ["workspace_members"],
+    queryFn: async (): Promise<{ member_id: string; nome: string }[]> => {
+      const { data: rows } = await supabase
+        .from("workspace_members")
+        .select("member_id");
+      const memberIds = (rows ?? []).map((r) => r.member_id);
+      if (memberIds.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, nome, email")
+        .in("id", memberIds);
+      const nameById = new Map((profs ?? []).map((p) => [p.id, p.nome || p.email]));
+      return (rows ?? []).map((r) => ({ member_id: r.member_id, nome: nameById.get(r.member_id) ?? "Usuário" }));
+    },
+    enabled: !!sessionId.data,
+    retry: false,
+  });
+
+  async function generate() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const ownerId = session?.user?.id;
+    if (!ownerId) return;
+    setGenerating(true);
+    const token = crypto.randomUUID().replace(/-/g, "");
+    const expira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from("convites")
+      .insert({ owner_id: ownerId, token, expira_em: expira })
+      .select("token")
+      .single();
+    setGenerating(false);
+    if (error) { toast.error(error.message); return; }
+    setLink(`${window.location.origin}/convite/${data.token}`);
+    qc.invalidateQueries({ queryKey: ["convites"] });
+    toast.success("Link de convite gerado!");
+  }
+
+  async function copyLink() {
+    if (!link) return;
+    await navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function revoke(id: string) {
+    const { error } = await supabase
+      .from("convites")
+      .update({ status: "revogado" })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["convites"] });
+    toast.success("Convite revogado");
+  }
+
+  async function removeMember(memberId: string) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const ownerId = session?.user?.id;
+    if (!ownerId) return;
+    const { error } = await supabase
+      .from("workspace_members")
+      .delete()
+      .eq("owner_id", ownerId)
+      .eq("member_id", memberId);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["workspace_members"] });
+    toast.success("ADM removido do workspace");
+  }
+
+  return (
+    <section className="rounded-xl bg-card border border-border p-5 space-y-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Users className="h-4 w-4 text-primary" />
+        <h2 className="font-display font-semibold">Equipe · ADM</h2>
+      </div>
+      <p className="text-xs text-muted-foreground -mt-2">
+        Convide outra pessoa para administrar o seu workspace. O convidado cria a própria conta
+        e alterna para o seu workspace no app.
+      </p>
+
+      {/* Gerar link */}
+      <div className="space-y-2">
+        <Button onClick={generate} disabled={generating} className="w-full">
+          {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Link2 className="h-4 w-4 mr-2" />}
+          {generating ? "Gerando..." : "Gerar link de convite"}
+        </Button>
+        {link && (
+          <div className="rounded-lg bg-muted p-3 space-y-2">
+            <p className="text-xs text-muted-foreground">Envie este link para o ADM (válido por 7 dias):</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 min-w-0 truncate rounded-md bg-card border border-border px-2 py-1.5 text-[11px]">{link}</code>
+              <Button size="sm" variant="outline" onClick={copyLink} className="shrink-0">
+                {copied ? <Check className="h-3.5 w-3.5 mr-1 text-positive" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                {copied ? "Copiado" : "Copiar"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Membros atuais */}
+      {members.data && members.data.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Membros administradores</p>
+          {members.data.map((m) => (
+            <div key={m.member_id} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-7 w-7 rounded-md bg-primary/10 text-primary grid place-items-center shrink-0">
+                  <UserPlus className="h-3.5 w-3.5" />
+                </div>
+                <span className="text-sm truncate">{m.nome}</span>
+              </div>
+              <button
+                onClick={() => removeMember(m.member_id)}
+                className="text-muted-foreground hover:text-negative transition-colors shrink-0"
+                title="Remover ADM"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Convites pendentes */}
+      {invites.data && invites.data.filter((c) => c.status === "pendente").length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Convites pendentes</p>
+          {invites.data.filter((c) => c.status === "pendente").map((c) => (
+            <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-sm truncate">{c.email ?? "Link compartilhado"}</p>
+                <p className="text-[10px] text-muted-foreground">expira em {new Date(c.expira_em).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <button
+                onClick={() => revoke(c.id)}
+                className="text-muted-foreground hover:text-negative transition-colors shrink-0"
+                title="Revogar convite"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

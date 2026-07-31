@@ -13,6 +13,7 @@ import { getProfile } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ChatWidget } from "@/components/ChatWidget";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 
 const NAV = [
   { to: "/app",     label: "Hoje",      icon: Home,         hint: "Resumo do dia" },
@@ -128,6 +129,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* User greeting + Logout */}
         <div className="border-t border-border p-3 space-y-2">
+          <WorkspaceSwitcher />
           <div className="flex items-center gap-2 px-1">
             <GreetingIcon className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="text-xs text-muted-foreground truncate">
@@ -281,6 +283,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="border-t border-border px-4 py-3 space-y-2">
+              <WorkspaceSwitcher />
               <div className="flex items-center gap-2 px-1">
                 <GreetingIcon className="h-3.5 w-3.5 text-primary shrink-0" />
                 <span className="text-xs text-muted-foreground truncate">
