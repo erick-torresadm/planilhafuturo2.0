@@ -60,27 +60,39 @@ type AceitarResult =
 export const aceitarConvite = createServerFn({ method: "POST" })
   .validator((token: string) => token)
   .handler(async ({ data: token }): Promise<AceitarResult> => {
-    const inviteeId = await getSessionUserId();
+    const { data: { session } } = await supabase.auth.getSession();
+    const inviteeId = session?.user?.id ?? null;
     if (!inviteeId) return { ok: false, error: "Você precisa estar logado para aceitar o convite" };
 
     const admin = await getAdminDb();
 
     const { data: convite } = await admin
       .from("convites")
-      .select("id, owner_id, status, expira_em")
+      .select("id, owner_id, status, expira_em, aceito_por, email")
       .eq("token", token)
       .maybeSingle();
 
     if (!convite) return { ok: false, error: "Convite inválido" };
     if (convite.status === "revogado") return { ok: false, error: "Este convite foi revogado" };
-    if (convite.status === "aceito") {
-      // Pode ser um re-acesso do mesmo convidado — verifica abaixo se já é membro
-    }
     if (new Date(convite.expira_em).getTime() < Date.now()) {
       return { ok: false, error: "Este convite expirou" };
     }
     if (convite.owner_id === inviteeId) {
       return { ok: false, error: "Você não pode aceitar o próprio convite" };
+    }
+
+    // Um convite já aceito não pode ser reutilizado por OUTRA conta.
+    // Só o mesmo convidado (aceito_por) pode reacessar via o mesmo link.
+    if (convite.status === "aceito" && convite.aceito_por !== inviteeId) {
+      return { ok: false, error: "Este convite já foi utilizado por outra conta" };
+    }
+
+    // Quando o convite foi criado com um e-mail, só aceita quem tem esse e-mail.
+    if (convite.email) {
+      const inviteeEmail = session.user?.email?.toLowerCase();
+      if (!inviteeEmail || convite.email.toLowerCase() !== inviteeEmail) {
+        return { ok: false, error: "Este convite é para outro e-mail" };
+      }
     }
 
     // Idempotente: se já é membro, apenas garante o convite marcado como aceito
