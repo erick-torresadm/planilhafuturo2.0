@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, string | undefined>) => ({
@@ -108,6 +109,13 @@ function CheckoutPage() {
   const [plano, setPlano] = useState<"anual" | "vitalicio">(planParam);
   const [email, setEmail] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "cartao">("pix");
+
+  // Pré-preenche o email com o usuário logado (ex: vindo de /config)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user?.email) setEmail(data.session.user.email);
+    });
+  }, []);
 
   // Pix state
   const [pixData, setPixData] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);

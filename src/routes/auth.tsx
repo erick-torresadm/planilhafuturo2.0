@@ -40,10 +40,20 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [justSignedUp, setJustSignedUp] = useState(false);
 
-  // If already logged in, redirect
+  // If already logged in, redirect (ativando plano pré-pago, se veio de um checkout)
   useEffect(() => {
-    if (!authLoading && user) nav({ to: "/app" });
-  }, [user, authLoading, nav]);
+    if (!authLoading && user) {
+      if (planEmail) {
+        import("@/lib/assinatura.functions")
+          .then((m) => m.activatePlanPostSignup({ data: { email: planEmail } }))
+          .then((result) => {
+            if (result.ok) toast.success(`Plano ${result.plano} ativado! Bem-vindo!`, { duration: 5000 });
+          })
+          .catch(() => {});
+      }
+      nav({ to: "/app" });
+    }
+  }, [user, authLoading, nav, planEmail]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

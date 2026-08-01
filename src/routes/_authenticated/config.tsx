@@ -1,5 +1,5 @@
 import { MoneyInput } from "@/components/MoneyInput";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getProfile, updateProfile } from "@/lib/db";
 import { useEffect, useState } from "react";
@@ -392,12 +392,8 @@ function EquipeSection() {
 
 /* ─── PLANO SECTION (REDESIGNED) ─── */
 function PlanSection() {
+  const nav = useNavigate();
   const [planoStatus, setPlanoStatus] = useState<{ status: string; plano?: string; diasRestantes?: number } | null>(null);
-  const [pixData, setPixData] = useState<{ txid: string; pixCopiaECola: string; qrcode: string; valor: number } | null>(null);
-  const [planoPix, setPlanoPix] = useState<string>("anual");
-  const [pixLoading, setPixLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     import("@/lib/assinatura.functions").then((m) => {
@@ -409,37 +405,6 @@ function PlanSection() {
   const isTrial = planoStatus?.status === "trial";
   const isInactive = planoStatus?.status === "inativo";
   const planoNome = planoStatus?.plano ?? "";
-
-  async function handleAssinar(plano: string) {
-    setPixLoading(true);
-    setPixData(null);
-    try {
-      const m = await import("@/lib/assinatura.functions");
-      const result = await m.createCheckoutSession({ data: { plano } });
-      if (result.ok) { setPixData(result); setPlanoPix(plano); }
-      else toast.error(result.error);
-    } catch (e: any) { toast.error(e.message ?? "Erro ao gerar Pix"); }
-    finally { setPixLoading(false); }
-  }
-
-  async function handleVerificarPagamento() {
-    if (!pixData) return;
-    setVerifying(true);
-    try {
-      const m = await import("@/lib/assinatura.functions");
-      const result = await m.verifyPayment({ data: { txid: pixData.txid, plano: planoPix } });
-      if (result.paid) {
-        toast.success(`Assinatura ${result.plano} ativada!`);
-        setPixData(null);
-        setPlanoStatus({ status: "ativo", plano: result.plano });
-      } else { toast.error(result.error); }
-    } catch (e: any) { toast.error(e.message ?? "Erro ao verificar"); }
-    finally { setVerifying(false); }
-  }
-
-  function copyPixCode() {
-    if (pixData) { navigator.clipboard.writeText(pixData.pixCopiaECola); setCopied(true); setTimeout(() => setCopied(false), 2000); toast.success("Código Pix copiado!"); }
-  }
 
   const PLANOS = [
     {
@@ -520,27 +485,6 @@ function PlanSection() {
         )}
       </div>
 
-      {/* ── Pix QR ── */}
-      {pixData && (
-        <div className="px-5 pt-4">
-          <div className="space-y-3 rounded-xl bg-muted p-4 text-center">
-            <p className="text-sm font-semibold">Pague via Pix</p>
-            <p className="text-xs text-muted-foreground">R$ {pixData.valor.toFixed(2)} — escaneie o QR Code ou copie o código</p>
-            {pixData.qrcode && <img src={pixData.qrcode} alt="QR Code Pix" className="mx-auto w-48 h-48 rounded-xl" />}
-            <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-3 text-xs font-mono">
-              <span className="flex-1 truncate">{pixData.pixCopiaECola}</span>
-              <button onClick={copyPixCode} className="shrink-0 text-primary hover:text-primary/80">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={() => setPixData(null)} variant="outline" size="sm">Cancelar</Button>
-              <Button onClick={handleVerificarPagamento} disabled={verifying} size="sm">
-                {verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}Já paguei
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Planos disponíveis ── */}
       <div className="px-5 pt-4 pb-5">
         <div className="flex items-center gap-2 mb-3">
@@ -591,8 +535,7 @@ function PlanSection() {
 
                 {!isCurrentPlan && (
                   <Button
-                    onClick={() => handleAssinar(plano.id)}
-                    disabled={pixLoading || !!pixData}
+                    onClick={() => nav({ to: "/checkout", search: { plan: plano.id } })}
                     className="w-full mt-4 h-10 text-sm font-semibold"
                     variant={isActive ? "outline" : "default"}
                   >
@@ -603,11 +546,6 @@ function PlanSection() {
             );
           })}
         </div>
-        {pixLoading && (
-          <div className="flex items-center justify-center py-4 mt-2">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
       </div>
     </section>
   );
