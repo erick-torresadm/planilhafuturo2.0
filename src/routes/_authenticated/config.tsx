@@ -462,7 +462,10 @@ function PlanSection() {
                 <Crown className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-lg font-bold">Teste gratuito</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-display text-lg font-bold">Plano {planoStatus?.plano ?? "Grátis"}</h3>
+                  <span className="chip bg-warning/15 text-warning text-[10px]">Teste de 7 dias</span>
+                </div>
                 <p className="text-sm font-bold text-warning tabular-nums mt-0.5">{planoStatus?.diasRestantes} dias restantes</p>
                 <p className="text-xs text-muted-foreground mt-1">Aproveite todos os recursos. Escolha um plano abaixo para continuar usando após o trial.</p>
               </div>

@@ -115,7 +115,7 @@ export const verifyPayment = createServerFn({ method: "POST" })
 
 type SubscriptionStatus =
   | { status: "ativo"; plano: string }
-  | { status: "trial"; diasRestantes: number }
+  | { status: "trial"; plano: string; diasRestantes: number }
   | { status: "inativo" };
 
 export const getSubscriptionStatus = createServerFn({ method: "GET" })
@@ -147,7 +147,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
         (new Date(profile.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
       );
       if (remaining > 0) {
-        return { status: "trial", diasRestantes: remaining };
+        return { status: "trial", plano: "Grátis", diasRestantes: remaining };
       }
     }
 

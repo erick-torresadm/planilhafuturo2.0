@@ -17,6 +17,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as GuiaRouteImport } from './routes/guia'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PlanilhaRouteImport } from './routes/planilha'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as Pv2RouteImport } from './routes/pv2'
 import { Route as TermosRouteImport } from './routes/termos'
@@ -70,6 +71,11 @@ const GuiaRoute = GuiaRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanilhaRoute = PlanilhaRouteImport.update({
+  id: '/planilha',
+  path: '/planilha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
+  '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
   '/termos': typeof TermosRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
+  '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
   '/termos': typeof TermosRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
   '/onboarding': typeof OnboardingRoute
+  '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
   '/termos': typeof TermosRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/guia'
     | '/onboarding'
+    | '/planilha'
     | '/privacidade'
     | '/pv2'
     | '/termos'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/guia'
     | '/onboarding'
+    | '/planilha'
     | '/privacidade'
     | '/pv2'
     | '/termos'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/guia'
     | '/onboarding'
+    | '/planilha'
     | '/privacidade'
     | '/pv2'
     | '/termos'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   GuiaRoute: typeof GuiaRoute
   OnboardingRoute: typeof OnboardingRoute
+  PlanilhaRoute: typeof PlanilhaRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   Pv2Route: typeof Pv2Route
   TermosRoute: typeof TermosRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planilha': {
+      id: '/planilha'
+      path: '/planilha'
+      fullPath: '/planilha'
+      preLoaderRoute: typeof PlanilhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -529,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   GuiaRoute: GuiaRoute,
   OnboardingRoute: OnboardingRoute,
+  PlanilhaRoute: PlanilhaRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   Pv2Route: Pv2Route,
   TermosRoute: TermosRoute,

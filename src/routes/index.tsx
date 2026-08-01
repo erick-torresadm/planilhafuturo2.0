@@ -45,6 +45,7 @@ function Landing() {
       <Features />
       <Steps />
       <Pricing />
+      <PlanilhaErick />
       <Faq />
       <Cta />
       <Footer />
@@ -434,6 +435,60 @@ function Faq() {
               <p className="pb-5 text-sm text-muted-foreground max-w-xl">{it.a}</p>
             </details>
           ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ============ PLANILHA DO ERICK ============ */
+function PlanilhaErick() {
+  return (
+    <Section className="py-24">
+      <div className="rounded-3xl border border-border bg-card overflow-hidden">
+        <div className="grid md:grid-cols-2 items-stretch">
+          <div className="p-8 sm:p-12 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground w-fit">
+              <FileSpreadsheet className="h-3.5 w-3.5 text-primary" />
+              Planilha oficial do Erick
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl mt-4 leading-tight">
+              Prefere planilha?<br />
+              <span className="italic text-primary">Leve a do Erick por R$ 70.</span>
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-md">
+              A mesma planilha que o Erick usa, em Excel (.xlsx), sem marca d'água e sem assinatura.
+              Pague uma vez e é sua pra sempre.
+            </p>
+            <ul className="mt-5 space-y-2 text-sm">
+              {["Mesma planilha que o Erick usa", "Sem marca d'água, sem assinatura", "Formato .xlsx — abre em qualquer lugar"].map((b) => (
+                <li key={b} className="flex items-start gap-2">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-positive-soft text-positive">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <Link to="/planilha" className="inline-flex items-center justify-center gap-2 rounded-full mint-gradient px-6 py-3 text-sm font-semibold hover:brightness-110 transition tap-target">
+                Quero a planilha <ArrowRight className="h-4 w-4" />
+              </Link>
+              <div className="text-sm text-muted-foreground">R$ 70 <span className="text-xs">· pagamento único</span></div>
+            </div>
+          </div>
+          <div className="relative bg-muted/40 p-8 sm:p-12 grid place-items-center">
+            <div className="w-full max-w-xs rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+              <FileSpreadsheet className="h-10 w-10 text-primary mx-auto" />
+              <div className="mt-3 font-display font-bold">Planilha_do_Erick.xlsx</div>
+              <div className="mt-1 text-xs text-muted-foreground">Excel · pronto pra preencher</div>
+              <div className="mt-4 text-3xl font-bold tabular-nums">R$ 70</div>
+              <div className="text-xs text-muted-foreground">pra sempre seu</div>
+              <div className="mt-4 rounded-lg bg-positive-soft text-positive text-xs font-semibold py-2">
+                Entrega automática após o Pix
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Section>
