@@ -41,7 +41,7 @@ function Section({ children, className = "", id }: { children: React.ReactNode; 
 
 function CtaButton({ children = "Quero minha vida financeira organizada", tone = "primary" }: { children?: React.ReactNode; tone?: "primary" | "outline" }) {
   const cls = tone === "primary"
-    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:brightness-110"
+    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:brightness-[1.03]"
     : "bg-card text-foreground border-2 border-foreground/80 hover:bg-foreground hover:text-background";
   return (
     <Link
@@ -147,7 +147,7 @@ function TopBar() {
             <a key={a.href} href={a.href} className="hover:text-foreground transition">{a.label}</a>
           ))}
         </nav>
-        <a href="#oferta" className="rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold px-4 py-2 hover:brightness-110">
+        <a href="#oferta" className="rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold px-4 py-2 shadow-card transition-shadow hover:shadow-elevated">
           Ver oferta
         </a>
       </div>
@@ -875,7 +875,7 @@ function PriceStack() {
             <span className="font-display text-3xl font-black num-lg">R$ 70</span>
             <span className="text-xs text-muted-foreground">único</span>
           </div>
-          <Link to="/auth" className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-bold hover:brightness-110 transition">
+          <Link to="/auth" className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-bold shadow-card transition-[box-shadow,transform] hover:shadow-elevated hover:-translate-y-px active:scale-[0.98]">
             Quero a planilha <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -979,7 +979,7 @@ function FinalCta() {
         <button
           type="submit"
           disabled={status === "loading" || status === "ok"}
-          className="rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold hover:brightness-110 transition disabled:opacity-60"
+          className="rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold shadow-card transition-[box-shadow,transform] hover:shadow-elevated hover:-translate-y-px active:scale-[0.98] disabled:opacity-60"
         >
           {status === "ok" ? "Você entrou ✓" : status === "loading" ? "Enviando…" : "Entrar no beta"}
         </button>

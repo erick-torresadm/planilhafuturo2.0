@@ -523,6 +523,51 @@
   background: linear-gradient(135deg, var(--color-primary), #34d399);
   color: var(--color-primary-foreground);
 }
+
+/* CTA pill primário — elevação suave no hover (em vez de brightness) */
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--color-primary), #34d399);
+  color: var(--color-primary-foreground);
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
+}
+.cta-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elevated);
+}
+.cta-pill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* CTA pill secundário (outline) */
+.cta-pill-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-foreground);
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.cta-pill-outline:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elevated);
+  background: var(--color-accent);
+  border-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
+}
+.cta-pill-outline:active {
+  transform: translateY(0) scale(0.98);
+}
 :root {
   --shadow-hero: 0 20px 60px -20px rgba(0,0,0,0.08), 0 4px 20px -8px rgba(0,0,0,0.06);
 }

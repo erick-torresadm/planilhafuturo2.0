@@ -178,7 +178,7 @@ function Guia() {
           <p className="text-xs text-muted-foreground mt-1">7 dias grátis, sem cartão.</p>
           <Link
             to="/auth"
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 transition"
+            className="cta-pill mt-4 px-6 py-2.5 text-sm"
           >
             Criar minha conta
           </Link>

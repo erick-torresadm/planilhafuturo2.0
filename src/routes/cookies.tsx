@@ -72,7 +72,7 @@ function Cookies() {
                 location.reload();
               }
             }}
-            className="rounded-full bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:brightness-110"
+            className="cta-pill px-5 py-2.5 text-sm"
           >
             Redefinir minhas preferências
           </button>

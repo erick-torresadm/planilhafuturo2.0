@@ -68,7 +68,7 @@ function Nav() {
           <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-2">
             Entrar
           </Link>
-          <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-full mint-gradient px-4 py-2 text-sm font-semibold hover:brightness-110 transition">
+          <Link to="/auth" className="cta-pill px-4 py-2 text-sm">
             Começar grátis <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -98,10 +98,10 @@ function Hero() {
             Um app simples que mostra o que vai sobrar (ou faltar) todo mês. Sem fórmula, sem aba escondida, sem cara de Excel.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full mint-gradient px-6 py-3 text-sm font-semibold hover:brightness-110 transition tap-target">
+            <Link to="/auth" className="cta-pill w-full sm:w-auto px-6 py-3 text-sm tap-target">
               Começar de graça <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="#features" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold hover:bg-accent transition tap-target">
+            <a href="#features" className="cta-pill-outline w-full sm:w-auto px-6 py-3 text-sm tap-target">
               Ver como funciona
             </a>
           </div>
@@ -376,7 +376,7 @@ function Pricing() {
                   </>
                 )}
               </div>
-              <Link to={p.linkTo} search={p.linkSearch} className={`mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${isPro ? "mint-gradient hover:brightness-110" : "border border-border hover:bg-accent"}`}>
+              <Link to={p.linkTo} search={p.linkSearch} className={`mt-5 w-full px-4 py-2.5 text-sm tap-target ${isPro ? "cta-pill" : "cta-pill-outline"}`}>
                 {p.cta} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <ul className="mt-5 space-y-2 text-sm flex-1">
@@ -471,7 +471,7 @@ function PlanilhaErick() {
               ))}
             </ul>
             <div className="mt-7 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Link to="/planilha" className="inline-flex items-center justify-center gap-2 rounded-full mint-gradient px-6 py-3 text-sm font-semibold hover:brightness-110 transition tap-target">
+              <Link to="/planilha" className="cta-pill px-6 py-3 text-sm tap-target">
                 Quero a planilha <ArrowRight className="h-4 w-4" />
               </Link>
               <div className="text-sm text-muted-foreground">R$ 70 <span className="text-xs">· pagamento único</span></div>
@@ -505,10 +505,10 @@ function Cta() {
           <h2 className="font-display text-4xl sm:text-5xl max-w-2xl mx-auto">Pare de rezar pra planilha não quebrar.</h2>
           <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Experimente 7 dias grátis com tudo liberado. Sem cartão, sem compromisso.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full mint-gradient px-7 py-3 text-sm font-semibold hover:brightness-110 transition tap-target">
+            <Link to="/auth" className="cta-pill w-full sm:w-auto px-7 py-3 text-sm tap-target">
               Começar grátis <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="#pricing" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-7 py-3 text-sm font-semibold hover:bg-accent transition tap-target">
+            <a href="#pricing" className="cta-pill-outline w-full sm:w-auto px-7 py-3 text-sm tap-target">
               Ver preços
             </a>
           </div>

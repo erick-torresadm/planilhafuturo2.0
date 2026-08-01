@@ -117,7 +117,7 @@ function PlanilhaPage() {
             <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-2">
               Entrar
             </Link>
-            <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-full mint-gradient px-4 py-2 text-sm font-semibold hover:brightness-110 transition">
+            <Link to="/auth" className="cta-pill px-4 py-2 text-sm">
               Começar grátis <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -206,7 +206,7 @@ function PlanilhaPage() {
                     {loadingCompra ? "Gerando Pix..." : "Comprar por R$ 70"}
                   </Button>
                 ) : (
-                  <Link to="/auth" className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground h-11 text-sm font-semibold hover:brightness-110 transition">
+                  <Link to="/auth" className="inline-flex w-full h-11 items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-card transition-[box-shadow,transform] hover:shadow-elevated hover:-translate-y-px active:scale-[0.98]">
                     <Lock className="h-4 w-4" /> Entrar para comprar
                   </Link>
                 )}
