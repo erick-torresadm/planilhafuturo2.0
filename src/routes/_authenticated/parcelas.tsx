@@ -140,26 +140,26 @@ function ParcelasPage() {
               <div className="rounded-xl bg-card border border-border p-8 text-center text-sm text-muted-foreground">Nenhuma parcela.</div>
             ) : (
               <div className="rounded-xl bg-card border border-border overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full min-w-max text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-muted">
-                      <th className="eyebrow text-left px-4 py-3">Data</th>
-                      <th className="eyebrow text-left px-4 py-3">Descrição</th>
+                      <th className="eyebrow text-left px-4 py-3 sticky left-0 bg-muted z-20 w-40">Data</th>
+                      <th className="eyebrow text-left px-4 py-3 sticky left-40 bg-muted z-20 min-w-48">Descrição</th>
                       <th className="eyebrow text-right px-4 py-3">Total</th>
                       <th className="eyebrow text-center px-4 py-3">Qtd</th>
                       <th className="eyebrow text-center px-4 py-3">Iníc</th>
                       <th className="eyebrow text-right px-4 py-3">Parcela</th>
                       <th className="eyebrow text-left px-4 py-3">Cartão</th>
                       <th className="eyebrow text-left px-4 py-3">Categ.</th>
-                      {meses12.map((mm) => <th key={`${mm.y}-${mm.m}`} className="eyebrow text-right px-2 py-3">{MESES_ABREV[mm.m]}</th>)}
+                      {meses12.map((mm) => <th key={`${mm.y}-${mm.m}`} className="eyebrow text-right px-1.5 py-3">{MESES_ABREV[mm.m]}</th>)}
                       <th className="w-10 px-4 py-3"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map((r, i) => (
                       <tr key={r.id} className="border-t border-border/60 hover:bg-primary/[0.02]">
-                        <td className="px-4 py-2.5"><Input type="date" defaultValue={r.data} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
-                        <td className="px-4 py-2.5"><Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
+                        <td className="px-4 py-2.5 sticky left-0 bg-card z-10"><Input type="date" defaultValue={r.data} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0 w-32" /></td>
+                        <td className="px-4 py-2.5 sticky left-40 bg-card z-10"><Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
                         <td className="px-4 py-2.5 text-right"><MoneyInput value={Number(r.valor_total) || 0} onCommit={(v) => v !== Number(r.valor_total) && upd.mutate({ id: r.id, patch: { valor_total: v } })} size="sm" align="right" className="w-full" /></td>
                         <td className="px-4 py-2.5 text-center"><Input type="number" min={1} defaultValue={r.qtd_parcelas} onBlur={(e) => Number(e.target.value) !== r.qtd_parcelas && upd.mutate({ id: r.id, patch: { qtd_parcelas: Number(e.target.value) } })} className="h-7 w-14 mx-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-center" /></td>
                         <td className="px-4 py-2.5 text-center"><Input type="number" min={1} defaultValue={r.parcela_inicial} onBlur={(e) => Number(e.target.value) !== r.parcela_inicial && upd.mutate({ id: r.id, patch: { parcela_inicial: Number(e.target.value) } })} className="h-7 w-14 mx-auto border-0 bg-transparent shadow-none focus-visible:ring-1 text-center" /></td>
@@ -168,7 +168,7 @@ function ParcelasPage() {
                         <td className="px-4 py-2.5"><select value={r.categoria ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { categoria: e.target.value } })} className="bg-transparent outline-none text-sm">{CATEGORIAS.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
                         {meses12.map((mm) => {
                           const v = valorParcelaNoMes(r, mm.y, mm.m);
-                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-2 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
+                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-1.5 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
                         })}
                         <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
                       </tr>
@@ -176,8 +176,9 @@ function ParcelasPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-muted font-bold border-t border-border">
-                      <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={8}>Total por mês</td>
-                      {totalPorMes.map((t, i) => <td key={i} className="px-2 py-3 text-right text-negative"><Money value={t} signed={false} /></td>)}
+                      <td className="px-4 py-3 text-xs uppercase tracking-wider sticky left-0 bg-muted z-10" colSpan={2}>Total por mês</td>
+                      <td colSpan={6}></td>
+                      {totalPorMes.map((t, i) => <td key={i} className="px-1.5 py-3 text-right text-negative"><Money value={t} signed={false} /></td>)}
                       <td></td>
                     </tr>
                   </tfoot>
