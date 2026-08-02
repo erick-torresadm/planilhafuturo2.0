@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
   Sparkles, Wallet, ListChecks, Zap, TrendingUp, History,
-  Settings, LogOut, Sun, Moon, SunDim,
+  Settings, LogOut, Sun, Moon, SunDim, Eye, EyeOff,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -13,6 +13,7 @@ import { getProfile } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { PrivacyProvider, usePrivacy } from "@/lib/privacy";
 
 const NAV = [
   { to: "/app",     label: "Hoje",      icon: Home,         hint: "Resumo do dia" },
@@ -42,9 +43,18 @@ const BOTTOM_NAV = [
 const REMAINING = ALL.filter((n) => !BOTTOM_NAV.some((b) => b.to === n.to));
 
 export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <PrivacyProvider>
+      <ShellInner>{children}</ShellInner>
+    </PrivacyProvider>
+  );
+}
+
+function ShellInner({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const nav = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
+  const { hidden, toggle } = usePrivacy();
   const { logout } = useAuth();
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile(), retry: false });
 
@@ -170,6 +180,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             {/* Right */}
             <div className="flex items-center gap-2 ml-auto">
+              <button
+                onClick={toggle}
+                aria-label={hidden ? "Mostrar valores" : "Ocultar valores"}
+                title={hidden ? "Mostrar valores" : "Ocultar valores"}
+                className={cn(
+                  "h-8 w-8 rounded-lg bg-muted grid place-items-center transition-colors shrink-0",
+                  hidden ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
+                )}
+              >
+                {hidden ? <EyeOff className="h-4 w-4" strokeWidth={2} /> : <Eye className="h-4 w-4" strokeWidth={2} />}
+              </button>
               <Link
                 to="/config"
                 className="h-8 w-8 rounded-lg bg-muted grid place-items-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors shrink-0"

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
+import { useBrl } from "@/lib/privacy";
 import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/desejos")({
@@ -33,6 +34,7 @@ const CAIXA_ICONS: Record<string, LucideIcon> = {
 function DesejosPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
+  const f = useBrl();
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const desejos = useQuery({ queryKey: ["desejos"], queryFn: () => selectAll("desejos") });
@@ -241,13 +243,13 @@ function DesejosPage() {
                   bestReason = "Você tem saldo disponível agora!";
                 } else if (cabeParcelado) {
                   bestOption = "parcelado";
-                  bestReason = `Cabe no orçamento: ${parcelaValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`;
+                  bestReason = `Cabe no orçamento: ${f(parcelaValor)}/mês`;
                 } else if (parcelado && !cabeParcelado && sobra > 0) {
                   // Maybe more parcels would help
                   const neededParc = Math.ceil(valor / sobra);
                   if (neededParc <= 24) {
                     bestOption = "nenhum";
-                    bestReason = `Precisa de ${neededParc}x de ${(valor / neededParc).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`;
+                    bestReason = `Precisa de ${neededParc}x de ${f(valor / neededParc)}`;
                   }
                 }
 
@@ -341,7 +343,7 @@ function DesejosPage() {
                           <div className="text-xs">
                             <span className="text-muted-foreground">{d.qtd_parcelas || 1}x de </span>
                             <span className="font-bold tabular-nums">
-                              {(valor / (d.qtd_parcelas || 1)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                              {f(valor / (d.qtd_parcelas || 1))}
                             </span>
                           </div>
                           <div className="h-4 w-px bg-border" />
@@ -384,13 +386,14 @@ function DesejosPage() {
 
 function StatusBadge({ valor, sobra, parcelado, qtdParcelas }: { valor: number; sobra: number; parcelado: boolean; qtdParcelas?: number }) {
   const parcelaValor = parcelado && qtdParcelas ? valor / qtdParcelas : 0;
+  const f = useBrl();
 
   if (parcelado) {
     if (sobra <= 0) {
       return <Badge icon={X} text="Sem margem no orçamento" tone="negative" />;
     }
     if (sobra >= parcelaValor) {
-      return <Badge icon={Check} text={`Pode comprar · ${parcelaValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}/mês`} tone="positive" />;
+      return <Badge icon={Check} text={`Pode comprar · ${f(parcelaValor)}/mês`} tone="positive" />;
     }
     return <Badge icon={AlertCircle} text="Parcela muito alta" tone="negative" />;
   }

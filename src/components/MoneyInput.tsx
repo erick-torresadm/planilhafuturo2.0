@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePrivacy, DOTS } from "@/lib/privacy";
 
 function fmt(n: number): string {
   if (!isFinite(n) || n === 0) return "";
@@ -46,6 +47,7 @@ export function MoneyInput({
   // Último valor que enviamos ao parent mas que ainda não foi confirmado
   // (a rede pode levar alguns ms). Evita o "pulo" de voltar ao valor antigo.
   const lastSent = useRef<number | null>(null);
+  const { hidden } = usePrivacy();
 
   useEffect(() => {
     if (focused) return;
@@ -91,7 +93,7 @@ export function MoneyInput({
         inputMode="decimal"
         autoFocus={autoFocus}
         disabled={disabled}
-        value={txt}
+        value={hidden && !focused ? DOTS : txt}
         placeholder={placeholder}
         onFocus={(e) => {
           setFocused(true);

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { brl, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { usePrivacy, DOTS } from "@/lib/privacy";
 
 type Props = {
   value: number;
@@ -17,6 +18,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
   const ref = useRef<HTMLInputElement>(null);
   const cancelled = useRef(false);
   const committed = useRef(false);
+  const { hidden } = usePrivacy();
 
   function open() {
     cancelled.current = false;
@@ -47,7 +49,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
   if (readOnly) {
     return (
       <div className={cn("px-2 py-1 h-full flex items-center text-sm tabular-nums", align === "right" && "justify-end", className)}>
-        {value ? brl(value) : <span className="text-muted-foreground/50">—</span>}
+        {hidden ? DOTS : value ? brl(value) : <span className="text-muted-foreground/50">—</span>}
       </div>
     );
   }
@@ -64,7 +66,7 @@ export function SheetCell({ value, onCommit, className, readOnly, align = "right
           className,
         )}
       >
-        {value ? brl(value) : <span className="text-muted-foreground/40">{placeholder || "—"}</span>}
+        {hidden ? DOTS : value ? brl(value) : <span className="text-muted-foreground/40">{placeholder || "—"}</span>}
       </button>
     );
   }

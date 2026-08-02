@@ -1,5 +1,6 @@
 import { brl } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { usePrivacy, MASK } from "@/lib/privacy";
 
 type Props = {
   value: number | string | null | undefined;
@@ -13,6 +14,10 @@ type Props = {
 };
 
 export function Money({ value, className, signed = true, showSign, muted, compact }: Props) {
+  const { hidden } = usePrivacy();
+  if (hidden) {
+    return <span className={cn("num tabular-nums", className)}>{MASK}</span>;
+  }
   const n = typeof value === "string" ? Number(value) : (value ?? 0);
   const cls = muted
     ? "text-muted-foreground"

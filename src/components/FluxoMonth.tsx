@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
-import { MESES_ABREV, isoDate, brl, num } from "@/lib/format";
+import { MESES_ABREV, isoDate, num } from "@/lib/format";
 import { SheetCell } from "@/components/SheetCell";
 import { cn } from "@/lib/utils";
+import { usePrivacy, useBrl, DOTS } from "@/lib/privacy";
 import type { DiaFluxo } from "@/lib/finance";
 
 export type MesData = { y: number; m: number; dias: DiaFluxo[] };
@@ -25,6 +26,7 @@ export function MonthScroller({
   canGoBack: boolean;
   today: Date;
 }) {
+  const f = useBrl();
   return (
     <div className="flex items-center gap-2">
       <button
@@ -75,7 +77,7 @@ export function MonthScroller({
                 )}
               </div>
               <div className={cn("font-mono font-bold text-xs tabular-nums truncate", labelCls)}>
-                {brl(saldoFim)}
+                {f(saldoFim)}
               </div>
             </button>
           );
@@ -153,6 +155,7 @@ function DayFocus({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit:
   const isCurrentMonth = mm.y === today.getFullYear() && mm.m === today.getMonth();
   const [sel, setSel] = useState<number>(isCurrentMonth ? today.getDate() : 1);
   const listRef = useRef<HTMLDivElement>(null);
+  const f = useBrl();
 
   useEffect(() => {
     setSel(isCurrentMonth ? today.getDate() : 1);
@@ -237,7 +240,7 @@ function DayFocus({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit:
 
               {/* Balance */}
               <div className={cn("w-20 text-right font-bold tabular-nums text-sm shrink-0", d.saldo < 0 ? "text-negative" : "text-positive")}>
-                {brl(d.saldo)}
+                {f(d.saldo)}
               </div>
             </div>
           );
@@ -246,9 +249,9 @@ function DayFocus({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit:
 
       {/* Month summary */}
       <div className="grid grid-cols-3 gap-2">
-        <MiniStat icon={TrendingUp} label="Fim do mês" value={brl(saldoFim)} tone={saldoFim < 0 ? "neg" : "pos"} />
+        <MiniStat icon={TrendingUp} label="Fim do mês" value={f(saldoFim)} tone={saldoFim < 0 ? "neg" : "pos"} />
         <MiniStat icon={TrendingDown} label="Dias neg." value={String(diasNeg)} tone={diasNeg > 0 ? "neg" : "pos"} />
-        <MiniStat icon={DollarSign} label="Pior dia" value={brl(Math.min(...mm.dias.map((d: any) => d.saldo)))} tone="neg" />
+        <MiniStat icon={DollarSign} label="Pior dia" value={f(Math.min(...mm.dias.map((d: any) => d.saldo)))} tone="neg" />
       </div>
     </div>
   );
@@ -260,6 +263,7 @@ function CellSm({ value, onCommit, tone }: { value: number; onCommit: (v: number
   const [draft, setDraft] = useState("");
   const ref = useRef<HTMLInputElement>(null);
   const committed = useRef(false);
+  const { hidden } = usePrivacy();
 
   function open(e: React.MouseEvent) {
     e.stopPropagation();
@@ -315,7 +319,7 @@ function CellSm({ value, onCommit, tone }: { value: number; onCommit: (v: number
         value === 0 ? "opacity-40" : "",
       )}
     >
-      {value ? (
+      {hidden ? DOTS : value ? (
         value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
       ) : (
         <span className="text-muted-foreground/30">—</span>
@@ -342,6 +346,7 @@ function MiniStat({ icon: Icon, label, value, tone }: { icon: any; label: string
 function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit: CommitFn }) {
   const todayRef = useRef<HTMLTableRowElement>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const f = useBrl();
 
   if (!mm?.dias) return null;
 
@@ -409,7 +414,7 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
                   </div>
                 </td>
                 <td className={cn("px-4 py-2.5 text-right font-bold tabular-nums", d.saldo < 0 ? "text-negative" : "text-positive")}>
-                  {brl(d.saldo)}
+                  {f(d.saldo)}
                 </td>
                 <td className="px-2 py-2.5 text-center">
                   <button
@@ -426,11 +431,11 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
         <tfoot>
           <tr className="bg-muted font-bold">
             <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
-            <td className="px-4 py-3 text-right tabular-nums text-positive">{brl(totalEF)}</td>
-            <td className="px-4 py-3 text-right tabular-nums text-positive">{brl(totalED)}</td>
-            <td className="px-4 py-3 text-right tabular-nums text-negative">{brl(totalSF)}</td>
-            <td className="px-4 py-3 text-right tabular-nums text-negative">{brl(totalSD)}</td>
-            <td className={cn("px-4 py-3 text-right tabular-nums", saldoFim < 0 ? "text-negative" : "text-positive")}>{brl(saldoFim)}</td>
+            <td className="px-4 py-3 text-right tabular-nums text-positive">{f(totalEF)}</td>
+            <td className="px-4 py-3 text-right tabular-nums text-positive">{f(totalED)}</td>
+            <td className="px-4 py-3 text-right tabular-nums text-negative">{f(totalSF)}</td>
+            <td className="px-4 py-3 text-right tabular-nums text-negative">{f(totalSD)}</td>
+            <td className={cn("px-4 py-3 text-right tabular-nums", saldoFim < 0 ? "text-negative" : "text-positive")}>{f(saldoFim)}</td>
             <td></td>
           </tr>
         </tfoot>

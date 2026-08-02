@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { selectAll, getProfile } from "@/lib/db";
-import { brl } from "@/lib/format";
 import { computaMes, type GastoFixo, type Parcela } from "@/lib/finance";
 import { useMemo, useState } from "react";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { MonthScroller, FluxoMonthView } from "@/components/FluxoMonth";
 import { PageHeader } from "@/components/PageHeader";
+import { useBrl } from "@/lib/privacy";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   head: () => ({ meta: [{ title: "Histórico — planilhafuturo" }] }),
@@ -59,6 +59,7 @@ function HistoricoPage() {
 
   const loading = profile.isPending || gastos.isPending || parcelas.isPending;
   const mm = mesesData[monthOffset];
+  const f = useBrl();
   const canGoBack = anchor.y > start.y || (anchor.y === start.y && anchor.m > start.m);
 
   return (
@@ -78,7 +79,7 @@ function HistoricoPage() {
       />
       <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
       <div className="text-xs text-muted-foreground text-center pt-2">
-        Saldo base: <span className="font-semibold text-foreground">{brl(saldoInicial)}</span> · ajuste em Configurações
+        Saldo base: <span className="font-semibold text-foreground">{f(saldoInicial)}</span> · ajuste em Configurações
       </div>
     </div>
   );
