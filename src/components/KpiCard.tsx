@@ -22,13 +22,19 @@ const TONE = {
 
 export function KpiCard({ label, value, icon: Icon, hint, delta, tone = "default", className }: Props) {
   const t = TONE[tone];
+  // Valores com tone "positive"/"negative" devem seguir a cor do tone, não o
+  // sinal — senão uma despesa (número positivo) pintaria de verde (positivo).
+  const forcedColor =
+    tone === "positive" ? "text-positive"
+    : tone === "negative" ? "text-negative"
+    : undefined;
   return (
     <div className={cn("card-strong p-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="eyebrow">{label}</div>
           <div className="mt-2 num-lg text-2xl lg:text-[26px] leading-tight text-foreground">
-            <Money value={value} />
+            <Money value={value} className={forcedColor} signed={forcedColor ? false : undefined} />
           </div>
           {(hint || delta) && (
             <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">

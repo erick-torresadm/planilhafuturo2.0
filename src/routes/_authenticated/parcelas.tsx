@@ -34,6 +34,7 @@ function ParcelasPage() {
   const [anchor] = useState({ y: new Date().getFullYear(), m: new Date().getMonth() });
   const [openNew, setOpenNew] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [focusedIdx, setFocusedIdx] = useState(0); // 0 = mês atual
 
   const q = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const rows: Parcela[] = (q.data ?? []) as any;
@@ -74,7 +75,12 @@ function ParcelasPage() {
 
       <div className="grid grid-cols-2 gap-3">
         <KpiCard label="Compromisso total" value={totalGeral} icon={CreditCard} tone="primary" />
-        <KpiCard label="Este mês" value={totalPorMes[0]} tone="negative" hint="em parcelas" />
+        <KpiCard
+          label={focusedIdx === 0 ? "Este mês" : `${MESES_ABREV[meses12[focusedIdx].m]}/${String(meses12[focusedIdx].y).slice(2)}`}
+          value={totalPorMes[focusedIdx]}
+          tone="negative"
+          hint="em parcelas"
+        />
       </div>
 
       {loading ? (
@@ -151,7 +157,24 @@ function ParcelasPage() {
                       <th className="eyebrow text-right px-4 py-3">Parcela</th>
                       <th className="eyebrow text-left px-4 py-3">Cartão</th>
                       <th className="eyebrow text-left px-4 py-3">Categ.</th>
-                      {meses12.map((mm) => <th key={`${mm.y}-${mm.m}`} className="eyebrow text-right px-1.5 py-3">{MESES_ABREV[mm.m]}</th>)}
+                      {meses12.map((mm, i) => (
+                        <th key={`${mm.y}-${mm.m}`} className="px-1.5 py-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setFocusedIdx(i)}
+                            title={`${MESES_ABREV[mm.m]}/${mm.y}`}
+                            className={cn(
+                              "flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 text-xs transition-colors w-full",
+                              focusedIdx === i
+                                ? "border border-primary bg-primary/5 text-primary font-bold"
+                                : "border border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+                            )}
+                          >
+                            <span className="uppercase tracking-wider">{MESES_ABREV[mm.m]}</span>
+                            {i === 0 && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary/70 leading-none">agora</span>}
+                          </button>
+                        </th>
+                      ))}
                       <th className="w-10 px-4 py-3"></th>
                     </tr>
                   </thead>
@@ -166,9 +189,9 @@ function ParcelasPage() {
                         <td className="px-4 py-2.5 text-right font-semibold text-primary"><Money value={Number(r.valor_total) / Math.max(1, r.qtd_parcelas)} /></td>
                         <td className="px-4 py-2.5"><select value={r.cartao ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { cartao: e.target.value } })} className="bg-transparent outline-none text-sm">{CARTOES.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
                         <td className="px-4 py-2.5"><select value={r.categoria ?? ""} onChange={(e) => upd.mutate({ id: r.id, patch: { categoria: e.target.value } })} className="bg-transparent outline-none text-sm">{CATEGORIAS.map((c) => <option key={c} className="bg-card">{c}</option>)}</select></td>
-                        {meses12.map((mm) => {
+                        {meses12.map((mm, i) => {
                           const v = valorParcelaNoMes(r, mm.y, mm.m);
-                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-1.5 py-2.5 text-right text-sm", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
+                          return <td key={`${mm.y}-${mm.m}`} className={cn("px-1.5 py-2.5 text-right text-sm", focusedIdx === i && "bg-primary/[0.04]", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
                         })}
                         <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
                       </tr>
@@ -178,7 +201,7 @@ function ParcelasPage() {
                     <tr className="bg-muted font-bold border-t border-border">
                       <td className="px-4 py-3 text-xs uppercase tracking-wider sticky left-0 bg-muted z-10" colSpan={2}>Total por mês</td>
                       <td colSpan={6}></td>
-                      {totalPorMes.map((t, i) => <td key={i} className="px-1.5 py-3 text-right text-negative"><Money value={t} signed={false} /></td>)}
+                      {totalPorMes.map((t, i) => <td key={i} className={cn("px-1.5 py-3 text-right text-negative", focusedIdx === i && "bg-primary/[0.04]")}><Money value={t} signed={false} /></td>)}
                       <td></td>
                     </tr>
                   </tfoot>
