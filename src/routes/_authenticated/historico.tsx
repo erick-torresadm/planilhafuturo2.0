@@ -7,16 +7,24 @@ import { useMemo, useState } from "react";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { MonthScroller, FluxoMonthView } from "@/components/FluxoMonth";
+import { PageHeader } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/_authenticated/fluxo")({
-  head: () => ({ meta: [{ title: "Fluxo Diário — planilhafuturo" }] }),
-  component: FluxoPage,
+export const Route = createFileRoute("/_authenticated/historico")({
+  head: () => ({ meta: [{ title: "Histórico — planilhafuturo" }] }),
+  component: HistoricoPage,
 });
 
-function FluxoPage() {
+// Quantos meses para trás o histórico começa a mostrar.
+const BACK = 24;
+
+function HistoricoPage() {
   const { playSound } = useSounds();
   const today = new Date();
-  const [anchor, setAnchor] = useState({ y: today.getFullYear(), m: today.getMonth() });
+  const [start] = useState(() => {
+    const d = new Date(today.getFullYear(), today.getMonth() - BACK, 1);
+    return { y: d.getFullYear(), m: d.getMonth() };
+  });
+  const [anchor, setAnchor] = useState(start);
   const [monthOffset, setMonthOffset] = useState(0);
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
@@ -51,18 +59,21 @@ function FluxoPage() {
 
   const loading = profile.isPending || gastos.isPending || parcelas.isPending;
   const mm = mesesData[monthOffset];
-  // A partir do mês atual para a frente — sem voltar para meses passados (ver Histórico).
-  const atCurrent = anchor.y === today.getFullYear() && anchor.m === today.getMonth();
+  const canGoBack = anchor.y > start.y || (anchor.y === start.y && anchor.m > start.m);
 
   return (
     <div className="page-container space-y-3 animate-in">
+      <PageHeader
+        title="Histórico"
+        subtitle="Todos os meses, incluindo os passados"
+      />
       <MonthScroller
         mesesData={mesesData}
         offset={monthOffset}
         onSelect={setMonthOffset}
         onPrev={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
         onNext={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
-        canGoBack={!atCurrent}
+        canGoBack={canGoBack}
         today={today}
       />
       <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />

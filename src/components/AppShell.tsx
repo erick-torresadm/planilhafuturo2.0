@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
-  Sparkles, Wallet, ListChecks, Zap, TrendingUp,
+  Sparkles, Wallet, ListChecks, Zap, TrendingUp, History,
   Settings, LogOut, Sun, Moon, SunDim,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -24,6 +24,7 @@ const NAV = [
 const MORE = [
   { to: "/investimentos", label: "Investimentos", icon: Wallet,      hint: "Sua carteira" },
   { to: "/mercado",       label: "Mercado",       icon: TrendingUp,  hint: "Indicadores" },
+  { to: "/historico",     label: "Histórico",     icon: History,     hint: "Meses passados" },
   { to: "/desejos",       label: "Desejos",       icon: Sparkles,    hint: "Metas & sonhos" },
   { to: "/tarefas",       label: "Tarefas",       icon: ListChecks,  hint: "Lembretes" },
   { to: "/produtividade", label: "Foco & Notas",  icon: Zap,         hint: "Pomodoro, notas & hábitos" },

@@ -26,6 +26,7 @@ import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
 import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
 import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
 import { Route as AuthenticatedMercadoRouteImport } from './routes/_authenticated/mercado'
 import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
@@ -118,6 +119,11 @@ const AuthenticatedGastosRoute = AuthenticatedGastosRouteImport.update({
   path: '/gastos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInvestimentosRoute =
   AuthenticatedInvestimentosRouteImport.update({
     id: '/investimentos',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
   '/gastos': typeof AuthenticatedGastosRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
   '/gastos': typeof AuthenticatedGastosRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/_authenticated/desejos': typeof AuthenticatedDesejosRoute
   '/_authenticated/fluxo': typeof AuthenticatedFluxoRoute
   '/_authenticated/gastos': typeof AuthenticatedGastosRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/investimentos': typeof AuthenticatedInvestimentosRoute
   '/_authenticated/mercado': typeof AuthenticatedMercadoRoute
   '/_authenticated/parcelas': typeof AuthenticatedParcelasRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/desejos'
     | '/fluxo'
     | '/gastos'
+    | '/historico'
     | '/investimentos'
     | '/mercado'
     | '/parcelas'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/desejos'
     | '/fluxo'
     | '/gastos'
+    | '/historico'
     | '/investimentos'
     | '/mercado'
     | '/parcelas'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/desejos'
     | '/_authenticated/fluxo'
     | '/_authenticated/gastos'
+    | '/_authenticated/historico'
     | '/_authenticated/investimentos'
     | '/_authenticated/mercado'
     | '/_authenticated/parcelas'
@@ -449,6 +461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGastosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/investimentos': {
       id: '/_authenticated/investimentos'
       path: '/investimentos'
@@ -507,6 +526,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDesejosRoute: typeof AuthenticatedDesejosRoute
   AuthenticatedFluxoRoute: typeof AuthenticatedFluxoRoute
   AuthenticatedGastosRoute: typeof AuthenticatedGastosRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedInvestimentosRoute: typeof AuthenticatedInvestimentosRoute
   AuthenticatedMercadoRoute: typeof AuthenticatedMercadoRoute
   AuthenticatedParcelasRoute: typeof AuthenticatedParcelasRoute
@@ -520,6 +540,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDesejosRoute: AuthenticatedDesejosRoute,
   AuthenticatedFluxoRoute: AuthenticatedFluxoRoute,
   AuthenticatedGastosRoute: AuthenticatedGastosRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedInvestimentosRoute: AuthenticatedInvestimentosRoute,
   AuthenticatedMercadoRoute: AuthenticatedMercadoRoute,
   AuthenticatedParcelasRoute: AuthenticatedParcelasRoute,
