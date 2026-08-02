@@ -204,9 +204,7 @@ export async function createPixCharge(
 
   if (!res.ok) {
     const err = await res.text();
-    // Diagnóstico temporário: expõe a chave usada (Pix keys são públicas).
-    const chave = process.env.EFI_PIX_KEY ?? "";
-    throw new Error(`Efí Pix error (${res.status}): ${err.slice(0, 300)} [chave="${chave}"]`);
+    throw new Error(`Efí Pix error (${res.status}): ${err.slice(0, 300)}`);
   }
 
   const data = await res.json();
