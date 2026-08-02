@@ -7,16 +7,11 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthedUser } from "./server-session";
 
 async function getAdminDb() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
-}
-
-async function getSessionUserId(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
 }
 
 type ConviteStatus =
@@ -60,8 +55,8 @@ type AceitarResult =
 export const aceitarConvite = createServerFn({ method: "POST" })
   .validator((token: string) => token)
   .handler(async ({ data: token }): Promise<AceitarResult> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const inviteeId = session?.user?.id ?? null;
+    const invitee = await getAuthedUser();
+    const inviteeId = invitee?.id ?? null;
     if (!inviteeId) return { ok: false, error: "Você precisa estar logado para aceitar o convite" };
 
     const admin = await getAdminDb();
@@ -89,7 +84,7 @@ export const aceitarConvite = createServerFn({ method: "POST" })
 
     // Quando o convite foi criado com um e-mail, só aceita quem tem esse e-mail.
     if (convite.email) {
-      const inviteeEmail = session.user?.email?.toLowerCase();
+      const inviteeEmail = invitee?.email?.toLowerCase();
       if (!inviteeEmail || convite.email.toLowerCase() !== inviteeEmail) {
         return { ok: false, error: "Este convite é para outro e-mail" };
       }

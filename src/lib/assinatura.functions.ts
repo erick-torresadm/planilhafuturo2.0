@@ -5,7 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { createPixCharge, checkPixStatus, createCreditCardCharge } from "./efi-service";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthedUser } from "./server-session";
 
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
   anual: { nome: "PRO Anual", valor: 250, dias: 365 },
@@ -15,8 +15,8 @@ const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
 // ─── Helpers ───────────────────────────────────────────────
 
 async function getUserId(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
+  const user = await getAuthedUser();
+  return user?.id ?? null;
 }
 
 async function getAdminDb() {
@@ -123,10 +123,13 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
     const userId = await getUserId();
     if (!userId) return { status: "inativo" };
 
+    // Service role com user_id explícito — o client supabase não tem sessão no servidor.
+    const admin = await getAdminDb();
+
     // Check for active subscription
-    const { data: assinatura } = await supabase
+    const { data: assinatura } = await admin
       .from("assinaturas")
-      .select("*")
+      .select("plano")
       .eq("user_id", userId)
       .eq("status", "ativo")
       .maybeSingle();
@@ -136,7 +139,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
     }
 
     // Check trial
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("trial_ends_at, plano")
       .eq("id", userId)

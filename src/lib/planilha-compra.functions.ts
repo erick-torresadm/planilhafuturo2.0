@@ -4,16 +4,17 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { createPixCharge, checkPixStatus } from "./efi-service";
-import { supabase } from "@/integrations/supabase/client";
-import { readFile } from "fs";
-import { join } from "path";
-import { fileURLToPath } from "url";
-import { promisify } from "util";
-
-const readFileAsync = promisify(readFile);
+import { getAuthedUser } from "./server-session";
 
 const VALOR_PLANILHA = 70;
 const ITEM_PLANILHA = "planilha_erick";
+const NOME_ARQUIVO = "Planilha_do_Erick.xlsx";
+const TIPO_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+async function getAdminDb() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
 
 type CompraResult =
   | { ok: true; txid: string; pixCopiaECola: string; qrcode: string; valor: number }
@@ -24,18 +25,16 @@ type CompraResult =
  */
 export const criarCompraPlanilha = createServerFn({ method: "POST" })
   .handler(async (): Promise<CompraResult> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { ok: false, error: "Faça login primeiro" };
+    const user = await getAuthedUser();
+    if (!user) return { ok: false, error: "Faça login primeiro" };
 
     try {
-      const pix = await createPixCharge(
-        VALOR_PLANILHA,
-        "Planilha do Erick - planilhafuturo",
-      );
+      const pix = await createPixCharge(VALOR_PLANILHA, "Planilha do Erick - planilhafuturo");
 
-      // Registra a compra pendente
-      await supabase.from("compras_avulsas").insert({
-        user_id: session.user.id,
+      // Registra a compra pendente (service role, com user_id explícito)
+      const admin = await getAdminDb();
+      await admin.from("compras_avulsas").insert({
+        user_id: user.id,
         item: ITEM_PLANILHA,
         valor: VALOR_PLANILHA,
         status: "pendente",
@@ -59,13 +58,13 @@ type VerificacaoResult =
   | { ok: false; error: string };
 
 /**
- * Verifica pagamento da planilha e retorna o arquivo para download.
+ * Verifica pagamento da planilha.
  */
 export const verificarCompraPlanilha = createServerFn({ method: "POST" })
   .validator((data: { txid: string }) => data)
   .handler(async ({ data }): Promise<VerificacaoResult> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { ok: false, error: "Faça login primeiro" };
+    const user = await getAuthedUser();
+    if (!user) return { ok: false, error: "Faça login primeiro" };
 
     try {
       const status = await checkPixStatus(data.txid);
@@ -74,11 +73,12 @@ export const verificarCompraPlanilha = createServerFn({ method: "POST" })
       }
 
       // Marca como pago
-      await supabase
+      const admin = await getAdminDb();
+      await admin
         .from("compras_avulsas")
         .update({ status: "pago", updated_at: new Date().toISOString() })
         .eq("txid", data.txid)
-        .eq("user_id", session.user.id);
+        .eq("user_id", user.id);
 
       return { ok: true, mensagem: "Pagamento confirmado!" };
     } catch (err: any) {
@@ -95,14 +95,15 @@ type DownloadResult =
  */
 export const baixarPlanilha = createServerFn({ method: "POST" })
   .handler(async (): Promise<DownloadResult> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { ok: false, error: "Faça login primeiro" };
+    const user = await getAuthedUser();
+    if (!user) return { ok: false, error: "Faça login primeiro" };
 
     // Verifica se o usuário pagou
-    const { data: compra } = await supabase
+    const admin = await getAdminDb();
+    const { data: compra } = await admin
       .from("compras_avulsas")
-      .select("*")
-      .eq("user_id", session.user.id)
+      .select("id")
+      .eq("user_id", user.id)
       .eq("item", ITEM_PLANILHA)
       .eq("status", "pago")
       .maybeSingle();
@@ -110,29 +111,16 @@ export const baixarPlanilha = createServerFn({ method: "POST" })
     if (!compra) return { ok: false, error: "Pagamento não confirmado." };
 
     try {
-      // Tenta ler do sistema de arquivos (desenvolvimento)
-      const __dirname = fileURLToPath(new URL(".", import.meta.url));
-      const filePath = join(__dirname, "..", "..", "server-assets", "Planilha_do_Erick.xlsx");
-      const data = await readFileAsync(filePath);
+      // Importa o asset embutido no bundle (gerado por scripts/gen-assets.mjs).
+      // Import dinâmico para NÃO mandar os ~460KB de base64 para o cliente.
+      const { PLANILHA_ERICK_XLSX_B64 } = await import("@/generated/planilha-asset");
       return {
         ok: true,
-        base64: data.toString("base64"),
-        nome: "Planilha_do_Erick.xlsx",
-        tipo: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        base64: PLANILHA_ERICK_XLSX_B64,
+        nome: NOME_ARQUIVO,
+        tipo: TIPO_XLSX,
       };
     } catch {
-      // Fallback: tenta path relativo ao projeto
-      try {
-        const filePath2 = join(process.cwd(), "server-assets", "Planilha_do_Erick.xlsx");
-        const data = await readFileAsync(filePath2);
-        return {
-          ok: true,
-          base64: data.toString("base64"),
-          nome: "Planilha_do_Erick.xlsx",
-          tipo: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        };
-      } catch (e2: any) {
-        return { ok: false, error: "Arquivo não encontrado no servidor." };
-      }
+      return { ok: false, error: "Arquivo não encontrado no servidor." };
     }
   });

@@ -48,12 +48,14 @@ export function useExternalData() {
     } catch {}
 
     try {
-      // Selic from Brasil API (free)
-      const selicRes = await fetch("https://brasilapi.com.br/api/taxas/selic");
+      // Selic from Brasil API (free) — endpoint v1/selic (o antigo /api/taxas/selic foi descontinuado)
+      const selicRes = await fetch("https://brasilapi.com.br/api/taxas/v1/selic");
       if (selicRes.ok) {
         const selicData = await selicRes.json();
-        if (selicData.length > 0) {
-          result.selic = parseFloat(selicData[0].valor);
+        // Retorno: { nome: "SELIC", valor: 14.25 } (objeto, não array)
+        const valor = Array.isArray(selicData) ? selicData[0]?.valor : selicData?.valor;
+        if (typeof valor === "number" && valor > 0) {
+          result.selic = valor;
         }
       }
     } catch {}
