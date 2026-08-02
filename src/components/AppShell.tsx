@@ -12,7 +12,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChatWidget } from "@/components/ChatWidget";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 
 const NAV = [
@@ -185,9 +184,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="flex-1 min-w-0 pb-[72px] lg:pb-4">
           {children}
         </main>
-
-        {/* AI Chat - available on all authenticated pages */}
-        <ChatWidget />
       </div>
 
       {/* ─── Mobile Bottom Tab Bar ─── */}

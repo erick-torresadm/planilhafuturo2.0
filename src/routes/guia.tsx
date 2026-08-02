@@ -5,7 +5,7 @@ export const Route = createFileRoute("/guia")({
   head: () => ({
     meta: [
       { title: "Guia — Como funciona o planilhafuturo" },
-      { name: "description", content: "Aprenda a usar o planilhafuturo: Hoje, Fluxo, Gastos, Parcelas, Investimentos, Desejos, Produtividade e o Assistente IA." },
+      { name: "description", content: "Aprenda a usar o planilhafuturo: Hoje, Fluxo, Gastos, Parcelas, Investimentos, Desejos e Produtividade." },
       { property: "og:title", content: "Guia — Como funciona o planilhafuturo" },
       { property: "og:description", content: "Tutorial completo de como usar o planilhafuturo para enxergar seus próximos 12 meses." },
       { property: "og:url", content: "https://planilhafuturo.com.br/guia" },
@@ -44,7 +44,6 @@ function Guia() {
               ["investimentos", "Investimentos"],
               ["desejos", "Desejos e metas"],
               ["produtividade", "Produtividade, foco e notas"],
-              ["ia", "Assistente IA"],
               ["planos", "Planos e pagamento"],
               ["dicas", "Dicas rápidas"],
             ].map(([id, label], i) => (
@@ -138,19 +137,7 @@ function Guia() {
           </p>
         </Section>
 
-        <Section id="ia" title="9. Assistente IA">
-          <p>
-            O botão de chat (canto da tela) abre o <strong>Assistente</strong>. Com uma chave gratuita do Google
-            Gemini (instruções em <em>Configurações → Assistente IA</em>), você pode:
-          </p>
-          <ul>
-            <li>Registrar gastos falando: <em>"anota R$ 20 de lanche hoje"</em>.</li>
-            <li>Perguntar sobre seu fluxo: <em>"quanto posso gastar esse mês?"</em>.</li>
-            <li>Pedir análises simples dos seus números.</li>
-          </ul>
-        </Section>
-
-        <Section id="planos" title="10. Planos e pagamento">
+        <Section id="planos" title="9. Planos e pagamento">
           <ul>
             <li><strong>Grátis</strong> — teste de 7 dias com todos os recursos.</li>
             <li><strong>PRO Anual</strong> — R$ 250/ano (R$ 21/mês), com parcelamento no cartão em até 12x.</li>
@@ -163,12 +150,11 @@ function Guia() {
           </p>
         </Section>
 
-        <Section id="dicas" title="11. Dicas rápidas">
+        <Section id="dicas" title="10. Dicas rápidas">
           <ul>
             <li>Comece preenchendo saldo inicial e renda — a projeção só é boa se a base for real.</li>
             <li>Cadastre gastos fixos <strong>antes</strong> de lançar compras avulsas.</li>
             <li>Olhe o fluxo dos próximos meses antes de assumir qualquer parcelamento.</li>
-            <li>Use a IA para registrar rápido e manter o hábito.</li>
             <li>Seus dados ficam no seu login, com segurança de banco (RLS). Ninguém mais enxerga sua planilha.</li>
           </ul>
         </Section>

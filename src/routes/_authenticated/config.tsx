@@ -9,10 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
-import { getApiKey, setApiKey, hasApiKey } from "@/lib/ai-service";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Volume2, Sparkles, Bot, KeyRound, Check, X, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2 } from "lucide-react";
+import { User, Volume2, Sparkles, Check, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Money } from "@/components/Money";
 import { cn } from "@/lib/utils";
@@ -34,19 +33,6 @@ function ConfigPage() {
 
   const [sound, setSound] = useState(getSoundSettings());
   useEffect(() => { saveSoundSettings(sound); }, [sound]);
-
-  const [aiKey, setAiKey] = useState(getApiKey());
-  const [aiKeyInput, setAiKeyInput] = useState(getApiKey());
-  const [aiSaved, setAiSaved] = useState(false);
-
-  function saveAiKey() {
-    setApiKey(aiKeyInput.trim());
-    setAiKey(aiKeyInput.trim());
-    setAiSaved(true);
-    setTimeout(() => setAiSaved(false), 2000);
-    if (aiKeyInput.trim()) toast.success("API key salva");
-    else toast.success("API key removida");
-  }
 
   const p = profile.data ?? ({} as any);
 
@@ -133,30 +119,6 @@ function ConfigPage() {
         </section>
       )}
 
-      {/* ─── IA ─── */}
-      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Bot className="h-4 w-4 text-primary" />
-          <h2 className="font-display font-semibold">Assistente IA</h2>
-        </div>
-        <p className="text-xs text-muted-foreground -mt-2">
-          Use o Gemini (gratuito) para registrar gastos por conversa e analisar suas finanças.
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline ml-1">Criar API key</a>
-        </p>
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={aiKeyInput} onChange={(e) => setAiKeyInput(e.target.value)} placeholder="Cole sua chave Gemini aqui..." className="pl-9 font-mono text-xs" type="password" />
-          </div>
-          <Button onClick={saveAiKey} size="sm" className="shrink-0">
-            {aiSaved ? <><Check className="h-3.5 w-3.5 mr-1" />Salva</> : "Salvar"}
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          {aiKey ? (<span className="chip chip-positive flex items-center gap-1"><Check className="h-3 w-3" /> Key configurada</span>) : (<span className="chip chip-warning flex items-center gap-1"><X className="h-3 w-3" /> Sem key</span>)}
-          <span className="text-muted-foreground">· 60 requisições/minuto grátis</span>
-        </div>
-      </section>
 
       {/* ─── Sons ─── */}
       <section className="rounded-xl bg-card border border-border p-5 space-y-4">

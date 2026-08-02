@@ -329,7 +329,6 @@ function Pricing() {
       features: [
         "12 meses de projeção diária",
         "Todas as funcionalidades",
-        "Assistente IA completo",
         "Suporte prioritário",
         "Exportação de dados",
       ],

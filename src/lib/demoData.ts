@@ -40,7 +40,7 @@ export const DEMO_GASTOS: DemoGasto[] = [
   { id: "g6", categoria: "Lazer",      descricao: "Streaming",       valor: 60,     pilar: "L", frequencia: "mensal", dia: 16, forma: "Cartão", ativo: true },
   { id: "g7", categoria: "Lazer",      descricao: "Streaming música", valor: 17,    pilar: "L", frequencia: "mensal", dia: 7,  forma: "Cartão", ativo: true },
   { id: "g8", categoria: "Lazer",      descricao: "Nuvem",           valor: 66.9,   pilar: "L", frequencia: "mensal", dia: 29, forma: "Cartão", ativo: true },
-  { id: "g9", categoria: "Lazer",      descricao: "Assistente IA",   valor: 114.34, pilar: "L", frequencia: "anual",  dia: 31, mes_anual: 1, forma: "Cartão", ativo: true },
+  { id: "g9", categoria: "Lazer",      descricao: "Curso online",    valor: 114.34, pilar: "L", frequencia: "anual",  dia: 31, mes_anual: 1, forma: "Cartão", ativo: true },
   { id: "g10", categoria: "Transporte", descricao: "Carro",          valor: 1800,   pilar: "S", frequencia: "mensal", dia: 1,  forma: "Débito", ativo: true },
   { id: "g11", categoria: "Imposto",    descricao: "IPTU",           valor: 188.17, pilar: "S", frequencia: "anual",  dia: 8, mes_anual: 3, forma: "Boleto", ativo: true },
 ];
