@@ -203,6 +203,14 @@
   *:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: 4px; }
 }
 
+/* Rolagem horizontal de tabelas largas (ex.: parcelas): barrinha visível e
+   arrastável — mostra que dá para rolar e facilita o arraste no desktop. */
+.table-scroll { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--color-muted-fg) 40%, transparent) transparent; }
+.table-scroll::-webkit-scrollbar { height: 12px; }
+.table-scroll::-webkit-scrollbar-track { background: color-mix(in oklab, var(--color-muted-fg) 8%, transparent); border-radius: 8px; }
+.table-scroll::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--color-muted-fg) 35%, transparent); border-radius: 8px; }
+.table-scroll::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--color-muted-fg) 55%, transparent); }
+
 /* iOS/Safari: input com fonte < 16px dispara zoom automático no foco.
    Com user-scalable=no no viewport o zoom já é bloqueado; este é o reforço. */
 @media (max-width: 640px) {

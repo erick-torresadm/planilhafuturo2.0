@@ -16,9 +16,6 @@ export function DataView({
       ? (typeof window !== "undefined" ? localStorage.getItem(storageKey) : null)
       : null;
     if (saved === "cards" || saved === "table") return saved;
-    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-      return "table";
-    }
     return "cards";
   });
 

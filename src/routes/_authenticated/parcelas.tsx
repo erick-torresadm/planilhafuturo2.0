@@ -145,7 +145,7 @@ function ParcelasPage() {
             rows.length === 0 ? (
               <div className="rounded-xl bg-card border border-border p-8 text-center text-sm text-muted-foreground">Nenhuma parcela.</div>
             ) : (
-              <div className="rounded-xl bg-card border border-border overflow-x-auto">
+              <div className="rounded-xl bg-card border border-border overflow-x-auto table-scroll">
                 <table className="w-full min-w-max text-sm whitespace-nowrap">
                   <thead>
                     <tr className="bg-muted">
