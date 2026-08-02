@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Volume2, Sparkles, Check, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2 } from "lucide-react";
+import { User, Volume2, Sparkles, Check, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2, KeyRound } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Money } from "@/components/Money";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,25 @@ function ConfigPage() {
 
   const [sound, setSound] = useState(getSoundSettings());
   useEffect(() => { saveSoundSettings(sound); }, [sound]);
+
+  // ─── Troca de senha ────────
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [trocandoSenha, setTrocandoSenha] = useState(false);
+
+  async function trocarSenha() {
+    if (novaSenha.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres"); return; }
+    if (novaSenha !== confirmarSenha) { toast.error("As senhas não conferem"); return; }
+    setTrocandoSenha(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: novaSenha });
+      if (error) { toast.error(error.message); return; }
+      toast.success("Senha atualizada!");
+      setNovaSenha("");
+      setConfirmarSenha("");
+    } catch (e: any) { toast.error(e.message ?? "Erro ao trocar a senha"); }
+    finally { setTrocandoSenha(false); }
+  }
 
   const p = profile.data ?? ({} as any);
 
@@ -81,6 +100,25 @@ function ConfigPage() {
         <Field label="Saldo inicial (base do Fluxo Diário)"><MoneyInput value={Number(p.saldo_inicial) || 0} onCommit={(v) => save.mutate({ saldo_inicial: v })} align="left" size="md" /></Field>
         <Field label="Meta renda fixa (por mês)"><MoneyInput value={Number(p.meta_renda_fixa) || 0} onCommit={(v) => save.mutate({ meta_renda_fixa: v })} align="left" size="md" /></Field>
         <Field label="Meses de reserva de emergência"><Input type="number" defaultValue={p.meses_reserva_emergencia ?? 6} onBlur={(e) => save.mutate({ meses_reserva_emergencia: Number(e.target.value) })} /></Field>
+      </section>
+
+      {/* ─── SEGURANÇA / TROCA DE SENHA ─── */}
+      <section className="rounded-xl bg-card border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound className="h-4 w-4 text-primary" />
+          <h2 className="font-display font-semibold">Segurança</h2>
+        </div>
+        <Field label="Nova senha">
+          <Input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo de 6 caracteres" autoComplete="new-password" />
+        </Field>
+        <Field label="Confirmar nova senha">
+          <Input type="password" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} placeholder="Repita a nova senha" autoComplete="new-password" />
+        </Field>
+        <Button onClick={trocarSenha} disabled={trocandoSenha || !novaSenha} className="w-full">
+          {trocandoSenha ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <KeyRound className="h-4 w-4 mr-2" />}
+          {trocandoSenha ? "Salvando..." : "Trocar senha"}
+        </Button>
+        <p className="text-xs text-muted-foreground -mt-2">Depois de trocar, use a nova senha para entrar na próxima vez.</p>
       </section>
 
       {hasLocal && !migrationDone && (
