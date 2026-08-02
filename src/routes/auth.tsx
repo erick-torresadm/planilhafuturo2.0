@@ -28,7 +28,6 @@ function AuthPage() {
   const nav = useNavigate();
   const { user, loading: authLoading, signIn, signUp, signInWithGoogle } = useAuth();
   const { email: planEmail, plan: planName } = Route.useSearch();
-  const emailLocked = !!planEmail;
 
   const [tab, setTab] = useState<Tab>(planEmail ? "criar" : "entrar");
   const [email, setEmail] = useState(planEmail ?? "");
@@ -66,6 +65,12 @@ function AuthPage() {
     if (tab === "criar" && password !== confirmPassword) { setError("Senhas não conferem"); return; }
 
     setSubmitting(true);
+
+    // Guarda o email do pagamento para ativar o plano mesmo que a conta
+    // seja criada com outro email (e mesmo com confirmação de email pendente).
+    if (planEmail) {
+      sessionStorage.setItem("planilhafuturo_pending_plan_email", planEmail);
+    }
 
     if (tab === "criar") {
       const { error: err, needsConfirmation } = await signUp(email.trim(), password, nome.trim());
@@ -144,15 +149,24 @@ function AuthPage() {
         </div>
 
         {/* Plan activation notice */}
-        {planEmail && planName && (
+        {planEmail && (
           <div className="rounded-xl bg-positive-soft border border-positive/20 px-4 py-3 space-y-1">
             <div className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-positive shrink-0" />
               <p className="font-semibold text-sm text-positive">Pagamento confirmado!</p>
             </div>
             <p className="text-xs text-muted-foreground">
-              Você pagou pelo <strong>PRO {planName === "vitalicio" ? "Vitalício" : "Anual"}</strong>!
-              Crie sua conta com o email <strong>{planEmail}</strong> para ativar seu plano.
+              {planName === "planilha" ? (
+                <>
+                  Você comprou a <strong>Planilha do Erick</strong> com o email <strong>{planEmail}</strong>.
+                  Crie sua conta para baixá-la.
+                </>
+              ) : (
+                <>
+                  Você pagou pelo <strong>PRO {planName === "vitalicio" ? "Vitalício" : "Anual"}</strong> com o email <strong>{planEmail}</strong>.
+                  Crie sua conta para ativar seu plano.
+                </>
+              )}
             </p>
           </div>
         )}
@@ -218,13 +232,18 @@ function AuthPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => { if (!emailLocked) setEmail(e.target.value); }}
-                readOnly={emailLocked}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className={`w-full h-11 pl-10 pr-4 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${emailLocked ? "bg-muted text-muted-foreground cursor-not-allowed border-muted" : "bg-card border-border"}`}
+                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                 autoComplete="email"
               />
             </div>
+            {planEmail && (
+              <p className="text-[11px] text-muted-foreground/80 leading-snug">
+                Você pagou com <strong className="text-foreground/80">{planEmail}</strong>. Pode criar a conta com outro email —
+                o plano fica vinculado ao email do pagamento e é ativado na hora.
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Senha</label>

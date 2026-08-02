@@ -10,6 +10,7 @@ import { getAuthedUser } from "./server-session";
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
   anual: { nome: "PRO Anual", valor: 250, dias: 365 },
   vitalicio: { nome: "Vitalício", valor: 450, dias: 365 * 100 },
+  planilha: { nome: "Planilha do Erick", valor: 70, dias: 0 },
 };
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -52,6 +53,28 @@ async function upsertAssinatura(userId: string, planoNome: string) {
     .from("profiles")
     .update({ plano: planoNome, trial_ends_at: null })
     .eq("id", userId);
+}
+
+/**
+ * Marca a Planilha do Erick como paga para o usuário (compra avulsa,
+ * NÃO cria assinatura nem libera o app — é produto separado).
+ */
+async function upsertCompraPlanilha(userId: string) {
+  const admin = await getAdminDb();
+  const existing = await admin
+    .from("compras_avulsas")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("item", "planilha_erick")
+    .eq("status", "pago")
+    .maybeSingle();
+  if (existing) return;
+  await admin.from("compras_avulsas").insert({
+    user_id: userId,
+    item: "planilha_erick",
+    valor: 70,
+    status: "pago",
+  });
 }
 
 // ─── Authenticated checkout (post-signup, via Config page) ──
@@ -312,7 +335,11 @@ export const activatePlanPostSignup = createServerFn({ method: "POST" })
 
     if (!pre) return { ok: false, error: "Nenhum pagamento pendente encontrado para este email" };
 
-    await upsertAssinatura(userId, pre.plano);
+    if (pre.plano === "Planilha do Erick") {
+      await upsertCompraPlanilha(userId);
+    } else {
+      await upsertAssinatura(userId, pre.plano);
+    }
 
     // Mark pre_pagamento as activated
     await admin

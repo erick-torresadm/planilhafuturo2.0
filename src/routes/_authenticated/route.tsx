@@ -1,7 +1,9 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { Paywall } from "@/components/Paywall";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   hasLocalData, getLocalStats, migrateLocalDataToSupabase,
   clearLocalData, getLocalTotalCount,
@@ -31,18 +33,35 @@ function RouteComponent() {
   const [showBanner, setShowBanner] = useState(false);
   const [migrating, setMigrating] = useState(false);
 
+  // Gate de assinatura: teste grátis expirado sem pagamento → tudo travado.
+  const sub = useQuery({
+    queryKey: ["subscription"],
+    queryFn: async () => {
+      const m = await import("@/lib/assinatura.functions");
+      return m.getSubscriptionStatus();
+    },
+    staleTime: 60_000,
+  });
+
   useEffect(() => {
     if (hasLocalData()) setShowBanner(true);
   }, []);
 
-  // Catch-all: try to activate any pre-paid plans for this user's email
+  // Catch-all: try to activate any pre-paid plans for this user's email.
+  // Se veio de um checkout e pagou com outro email, usa o email do pagamento
+  // (guardado em sessionStorage) — assim o plano ativa mesmo com conta diferente.
   useEffect(() => {
     if (!user.email) return;
     const tryActivate = async () => {
       try {
+        const pending =
+          typeof window !== "undefined"
+            ? sessionStorage.getItem("planilhafuturo_pending_plan_email")
+            : null;
         const m = await import("@/lib/assinatura.functions");
-        const result = await m.activatePlanPostSignup({ data: { email: user.email } });
+        const result = await m.activatePlanPostSignup({ data: { email: pending ?? user.email } });
         if (result.ok) {
+          if (pending) sessionStorage.removeItem("planilhafuturo_pending_plan_email");
           toast.success(`Plano ${result.plano} ativado!`, { duration: 5000 });
         }
       } catch {
@@ -74,6 +93,29 @@ function RouteComponent() {
     } finally {
       setMigrating(false);
     }
+  }
+
+  // Teste grátis expirado e sem pagamento → tudo travado, libera só após pagar.
+  if (sub.isPending) {
+    return (
+      <div className="min-h-[100dvh] w-full bg-background flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (sub.data?.status === "inativo") {
+    return (
+      <Paywall
+        onRefresh={async () => {
+          // Re-tenta ativar pagamento pré-cadastro (cliente pagou e criou conta)
+          try {
+            const m = await import("@/lib/assinatura.functions");
+            await m.activatePlanPostSignup({ data: { email: user.email } });
+          } catch {}
+          sub.refetch();
+        }}
+      />
+    );
   }
 
   return (

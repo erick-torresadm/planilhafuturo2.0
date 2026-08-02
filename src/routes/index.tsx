@@ -97,6 +97,9 @@ function Hero() {
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto">
             Um app simples que mostra o que vai sobrar (ou faltar) todo mês. Sem fórmula, sem aba escondida, sem cara de Excel.
           </p>
+          <p className="mt-5 font-display text-lg sm:text-xl italic text-primary">
+            Não corte o cafézinho — <span className="not-italic text-foreground">tome o cafézinho em casa.</span>
+          </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/auth" className="cta-pill w-full sm:w-auto px-6 py-3 text-sm tap-target">
               Começar de graça <ArrowRight className="h-4 w-4" />
@@ -395,7 +398,7 @@ function Pricing() {
           <span>Ou leve a <strong className="text-foreground">Planilha do Erick</strong> em Excel — <strong className="text-foreground text-base">R$ 70</strong></span>
         </div>
         <p className="text-xs text-muted-foreground mt-1">Única parcela, sua pra sempre. Mesma planilha que o Erick usa, sem assinatura.</p>
-        <Link to="/auth" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+        <Link to="/checkout" search={{ plan: "planilha" }} className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
           Comprar planilha <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -470,7 +473,7 @@ function PlanilhaErick() {
               ))}
             </ul>
             <div className="mt-7 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Link to="/planilha" className="cta-pill px-6 py-3 text-sm tap-target">
+              <Link to="/checkout" search={{ plan: "planilha" }} className="cta-pill px-6 py-3 text-sm tap-target">
                 Quero a planilha <ArrowRight className="h-4 w-4" />
               </Link>
               <div className="text-sm text-muted-foreground">R$ 70 <span className="text-xs">· pagamento único</span></div>

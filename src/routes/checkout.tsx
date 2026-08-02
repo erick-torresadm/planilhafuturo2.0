@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "@/components/Logo";
 import {
   Check, Copy, Crown, Loader2, ArrowRight, CreditCard, QrCode, ChevronLeft, ArrowLeft,
-  ShieldCheck, Sparkles, RefreshCcw, Mail, BadgeCheck, ShoppingBag, ChevronRight,
+  ShieldCheck, Sparkles, RefreshCcw, Mail, BadgeCheck, ShoppingBag, ChevronRight, FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, string | undefined>) => ({
-    plan: (search.plan as "anual" | "vitalicio" | undefined) ?? "anual",
+    plan: (search.plan as "anual" | "vitalicio" | "planilha" | undefined) ?? "anual",
   }),
   head: () => ({
     meta: [
@@ -34,6 +34,10 @@ const PLANOS = {
   vitalicio: {
     nome: "Vitalício", valor: 450, detalhe: "Única parcela · pra sempre", badge: "Melhor custo-benefício",
     beneficios: ["Acesso pra sempre + atualizações", "Call de 30 min com o Erick para analisar seu projeto"],
+  },
+  planilha: {
+    nome: "Planilha do Erick", valor: 70, detalhe: "Pagamento único · .xlsx", badge: "Sem assinatura",
+    beneficios: ["Mesma planilha que o Erick usa", "Entrega automática após o pagamento"],
   },
 } as const;
 
@@ -106,7 +110,7 @@ function CheckoutPage() {
   const nav = useNavigate();
 
   const [phase, setPhase] = useState<Phase>("plano");
-  const [plano, setPlano] = useState<"anual" | "vitalicio">(planParam);
+  const [plano, setPlano] = useState<"anual" | "vitalicio" | "planilha">(planParam);
   const [email, setEmail] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "cartao">("pix");
 
@@ -409,9 +413,22 @@ function CheckoutPage() {
             </div>
             <div>
               <h2 className="font-display text-2xl font-bold">Pagamento confirmado!</h2>
-              <p className="text-sm text-muted-foreground mt-2">
-                Agora crie sua conta com o email <strong className="text-foreground">{email}</strong> para ativar o plano <strong className="text-foreground">{planInfo.nome}</strong>.
-              </p>
+              {plano === "planilha" ? (
+                <>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Agora crie sua conta com o email <strong className="text-foreground">{email}</strong> para baixar a <strong className="text-foreground">Planilha do Erick</strong>.
+                    Usou outro email na conta? Tudo bem — ela fica disponível pra quem pagou.
+                  </p>
+                  <p className="text-xs text-muted-foreground/80 mt-1">
+                    Depois de criar a conta, a planilha aparece em <span className="font-medium text-foreground/80">planilhafuturo.com.br/planilha</span> pronta pra baixar.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Agora crie sua conta com o email <strong className="text-foreground">{email}</strong> para ativar o plano <strong className="text-foreground">{planInfo.nome}</strong>.
+                  Usou outro email na conta? Tudo bem — o plano fica vinculado ao email do pagamento.
+                </p>
+              )}
             </div>
             <Button onClick={handleDone} className="w-full h-12 rounded-xl font-semibold text-base">
               Criar conta <ArrowRight className="h-4 w-4 ml-2" />
@@ -446,9 +463,10 @@ function CheckoutPage() {
 
                       {/* Plan cards */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(["anual", "vitalicio"] as const).map((p) => {
+                        {(["anual", "vitalicio", "planilha"] as const).map((p) => {
                           const info = PLANOS[p];
                           const active = plano === p;
+                          const isPlanilha = p === "planilha";
                           return (
                             <motion.button
                               key={p}
@@ -460,6 +478,7 @@ function CheckoutPage() {
                                 active
                                   ? "border-primary bg-primary/[0.04] shadow-sm"
                                   : "border-border bg-card hover:border-primary/40",
+                                isPlanilha && "border-dashed",
                               )}
                             >
                               {info.badge && (
@@ -484,7 +503,10 @@ function CheckoutPage() {
                               <div className="mt-2 space-y-1">
                                 {info.beneficios.map((b) => (
                                   <p key={b} className="text-xs text-foreground/70 flex items-center gap-1">
-                                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" /> {b}
+                                    {isPlanilha
+                                      ? <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
+                                      : <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
+                                    {b}
                                   </p>
                                 ))}
                               </div>

@@ -86,6 +86,28 @@ export const verificarCompraPlanilha = createServerFn({ method: "POST" })
     }
   });
 
+type TemPlanilhaResult = { tem: boolean };
+
+/**
+ * Checa se o usuário já comprou a Planilha do Erick (paga).
+ */
+export const temPlanilha = createServerFn({ method: "GET" })
+  .handler(async (): Promise<TemPlanilhaResult> => {
+    const user = await getAuthedUser();
+    if (!user) return { tem: false };
+
+    const admin = await getAdminDb();
+    const { data: compra } = await admin
+      .from("compras_avulsas")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("item", ITEM_PLANILHA)
+      .eq("status", "pago")
+      .maybeSingle();
+
+    return { tem: !!compra };
+  });
+
 type DownloadResult =
   | { ok: true; base64: string; nome: string; tipo: string }
   | { ok: false; error: string };

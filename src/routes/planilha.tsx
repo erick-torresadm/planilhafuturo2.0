@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight, Check, Copy, Download, FileSpreadsheet, Loader2, ShieldCheck, Infinity as InfinityIcon, Lock,
 } from "lucide-react";
@@ -40,6 +40,15 @@ function PlanilhaPage() {
   const [paga, setPaga] = useState(false);
   const [baixando, setBaixando] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Se já comprou (via checkout pré-cadastro ou fluxo antigo), já libera o download
+  useEffect(() => {
+    if (!user) return;
+    import("@/lib/planilha-compra.functions")
+      .then((m) => m.temPlanilha())
+      .then((r) => { if (r.tem) setPaga(true); })
+      .catch(() => {});
+  }, [user]);
 
   async function comprar() {
     setLoadingCompra(true);
