@@ -55,6 +55,13 @@ function GastosPage() {
 
   const upd = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: any }) => updateRow("gastos_fixos", id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["gastos_fixos"] });
+      const prev = qc.getQueryData(["gastos_fixos"]) as any;
+      qc.setQueryData(["gastos_fixos"], (old: any[]) => (old ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["gastos_fixos"], ctx.prev); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gastos_fixos"] }),
   });
   const add = useMutation({

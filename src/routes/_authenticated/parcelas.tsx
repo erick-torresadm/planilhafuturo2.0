@@ -41,6 +41,13 @@ function ParcelasPage() {
 
   const upd = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: any }) => updateRow("parcelas", id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["parcelas"] });
+      const prev = qc.getQueryData(["parcelas"]) as any;
+      qc.setQueryData(["parcelas"], (old: any[]) => (old ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["parcelas"], ctx.prev); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["parcelas"] }),
   });
   const add = useMutation({

@@ -43,9 +43,20 @@ export function MoneyInput({
   const [txt, setTxt] = useState<string>(fmt(Number(value) || 0));
   const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
+  // Último valor que enviamos ao parent mas que ainda não foi confirmado
+  // (a rede pode levar alguns ms). Evita o "pulo" de voltar ao valor antigo.
+  const lastSent = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!focused) setTxt(fmt(Number(value) || 0));
+    if (focused) return;
+    // O parent confirmou o que enviamos → limpa o pendente.
+    if (lastSent.current !== null && Number(value || 0) === lastSent.current) {
+      lastSent.current = null;
+    }
+    // Só re-sincroniza do prop quando não há commit pendente.
+    if (lastSent.current === null) {
+      setTxt(fmt(Number(value) || 0));
+    }
   }, [value, focused]);
 
   const showPrefix = alwaysShowPrefix || txt.length > 0 || focused;
@@ -94,7 +105,10 @@ export function MoneyInput({
           setFocused(false);
           const n = parse(txt);
           setTxt(fmt(n));
-          if (n !== Number(value)) onCommit(n);
+          if (n !== Number(value)) {
+            lastSent.current = n;
+            onCommit(n);
+          }
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();

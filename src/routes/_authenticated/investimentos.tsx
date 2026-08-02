@@ -44,6 +44,13 @@ function InvestPage() {
   });
   const upd = useMutation({
     mutationFn: ({ id, patch }: any) => updateRow("investimentos", id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["investimentos"] });
+      const prev = qc.getQueryData(["investimentos"]) as any;
+      qc.setQueryData(["investimentos"], (old: any[]) => (old ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["investimentos"], ctx.prev); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["investimentos"] }),
   });
   const del = useMutation({

@@ -55,6 +55,13 @@ function DesejosPage() {
   });
   const updDesejo = useMutation({
     mutationFn: ({ id, patch }: any) => updateRow("desejos", id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["desejos"] });
+      const prev = qc.getQueryData(["desejos"]) as any;
+      qc.setQueryData(["desejos"], (old: any[]) => (old ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["desejos"], ctx.prev); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["desejos"] }),
   });
   const delDesejo = useMutation({
@@ -68,6 +75,13 @@ function DesejosPage() {
   });
   const updCaix = useMutation({
     mutationFn: ({ id, patch }: any) => updateRow("caixinhas", id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: ["caixinhas"] });
+      const prev = qc.getQueryData(["caixinhas"]) as any;
+      qc.setQueryData(["caixinhas"], (old: any[]) => (old ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["caixinhas"], ctx.prev); },
     onSuccess: (_d: any, v: any) => {
       qc.invalidateQueries({ queryKey: ["caixinhas"] });
       if (v.patch.atual !== undefined) playSound("moeda");

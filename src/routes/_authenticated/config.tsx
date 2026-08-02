@@ -27,7 +27,14 @@ function ConfigPage() {
   const { playSound } = useSounds();
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const save = useMutation({
-    mutationFn: async (patch: any) => { updateProfile(patch); },
+    mutationFn: async (patch: any) => { await updateProfile(patch); },
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: ["profile"] });
+      const prev = qc.getQueryData(["profile"]);
+      qc.setQueryData(["profile"], (old: any) => (old ? { ...old, ...patch } : old));
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["profile"], ctx.prev); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Salvo"); },
   });
 
