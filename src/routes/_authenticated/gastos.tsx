@@ -104,19 +104,20 @@ function GastosPage() {
           value={totalAtivo}
           icon={TrendingDown}
           hint={`${qtdAtivos} de ${allRows.length} contas`}
-          tone="primary"
+          tone="negative"
         />
         <KpiCard
           label="Média por conta"
           value={qtdAtivos ? totalAtivo / qtdAtivos : 0}
           hint="Ticket médio mensal"
+          tone="negative"
         />
         <div className="metric-card col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <span className="eyebrow">Maior gasto</span>
             <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground/50" />
           </div>
-          <div className="font-display text-xl font-bold mt-1 tabular-nums truncate text-primary">
+          <div className="font-display text-xl font-bold mt-1 tabular-nums truncate text-negative">
             {maiorGasto ? <Money value={Number(maiorGasto.valor)} /> : "—"}
           </div>
           <div className="text-xs text-muted-foreground mt-1 truncate">{maiorGasto?.descricao ?? "—"}</div>
@@ -198,7 +199,7 @@ function GastosPage() {
                           onCommit={(v) => v !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: v } })}
                           size="md"
                           align="left"
-                          inputClassName="text-lg font-bold text-primary"
+                          inputClassName="text-lg font-bold text-negative"
                         />
                         <button onClick={() => setDelId(r.id)}
                           className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors">
@@ -252,7 +253,7 @@ function GastosPage() {
                             <MoneyInput
                               value={Number(r.valor) || 0}
                               onCommit={(v) => v !== Number(r.valor) && upd.mutate({ id: r.id, patch: { valor: v } })}
-                              size="sm" align="right" inputClassName="font-semibold" className="w-full"
+                              size="sm" align="right" inputClassName="font-semibold text-negative" className="w-full"
                             />
                           </td>
                           <td className="px-4 py-2.5">
@@ -297,7 +298,7 @@ function GastosPage() {
                   <tfoot>
                     <tr className="bg-muted font-bold border-t border-border">
                       <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={2}>Total mensal ({rows.filter((r) => r.ativo).length} ativos)</td>
-                      <td className="px-4 py-3 text-right text-primary"><Money value={rows.filter((r) => r.ativo).reduce((a, r) => a + Number(r.valor), 0)} /></td>
+                      <td className="px-4 py-3 text-right text-negative"><Money value={rows.filter((r) => r.ativo).reduce((a, r) => a + Number(r.valor), 0)} /></td>
                       <td className="px-4 py-3" colSpan={6}></td>
                     </tr>
                   </tfoot>
