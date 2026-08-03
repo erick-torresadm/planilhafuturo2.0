@@ -11,6 +11,7 @@ const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
   anual: { nome: "PRO Anual", valor: 250, dias: 365 },
   vitalicio: { nome: "Vitalício", valor: 450, dias: 365 * 100 },
   planilha: { nome: "Planilha do Erick", valor: 70, dias: 0 },
+  mentoria: { nome: "Mentoria com Erick", valor: 497, dias: 0 },
 };
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -77,6 +78,28 @@ async function upsertCompraPlanilha(userId: string) {
   });
 }
 
+/**
+ * Marca a Mentoria do Erick como paga para o usuário (compra avulsa,
+ * NÃO cria assinatura nem libera o app — é produto separado).
+ */
+async function upsertCompraMentoria(userId: string) {
+  const admin = await getAdminDb();
+  const existing = await admin
+    .from("compras_avulsas")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("item", "mentoria")
+    .eq("status", "pago")
+    .maybeSingle();
+  if (existing) return;
+  await admin.from("compras_avulsas").insert({
+    user_id: userId,
+    item: "mentoria",
+    valor: 497,
+    status: "pago",
+  });
+}
+
 // ─── Authenticated checkout (post-signup, via Config page) ──
 
 type CheckoutResult =
@@ -138,11 +161,83 @@ export const verifyPayment = createServerFn({ method: "POST" })
 
 type SubscriptionStatus =
   | { status: "ativo"; plano: string }
-  | { status: "trial"; plano: string; diasRestantes: number }
+  | { status: "gratis"; plano: string }
+  | { status: "graca"; plano: string; diasRestantes: number }
   | { status: "inativo" };
+
+/** Constantes do gate "grátis no vermelho". */
+const SOBRA_MIN_POSITIVO = 250; // sobra do mês (entradas − saídas) a partir da qual fica "positivo"
+const INVESTIDO_MIN_POSITIVO = 3000; // patrimônio investido a partir do qual fica "positivo"
+const DIAS_GRACA = 7; // prazo para pagar após ficar positivo (segue mesmo se cair no vermelho)
+
+/**
+ * Calcula a "sobra do mês" corrente com movimentações REAIS (server-side).
+ *
+ * NÃO usa profiles.saldo_inicial — o usuário pode editar a própria linha
+ * (RLS user_owns) e inflar o saldo inicial para escapar do gate. Sobra =
+ * entradas reais − saídas reais do mês corrente.
+ */
+async function computaSobraMes(
+  admin: any,
+  userId: string,
+): Promise<{ sobra: number; investido: number }> {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m0 = now.getMonth();
+  const first = `${y}-${String(m0 + 1).padStart(2, "0")}-01`;
+  const lastDay = new Date(y, m0 + 1, 0).getDate();
+  const last = `${y}-${String(m0 + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+  const [{ data: lancamentos }, { data: gastos }, { data: parcelas }, { data: invest }] = await Promise.all([
+    admin.from("lancamentos").select("tipo, valor").eq("user_id", userId).gte("data", first).lte("data", last),
+    admin.from("gastos_fixos").select("valor, frequencia, mes_anual, ativo, dia").eq("user_id", userId),
+    admin.from("parcelas").select("data, valor_total, qtd_parcelas, parcela_inicial").eq("user_id", userId),
+    admin.from("investimentos").select("posicao_atual").eq("user_id", userId),
+  ]);
+
+  let entradas = 0;
+  let saidasDiarias = 0;
+  for (const l of lancamentos ?? []) {
+    const v = Number(l.valor) || 0;
+    if (l.tipo === "entrada_fixa" || l.tipo === "entrada_diaria") entradas += v;
+    else if (l.tipo === "saida_diaria") saidasDiarias += v;
+  }
+
+  let saidasFixas = 0;
+  for (const g of gastos ?? []) {
+    if (!g.ativo) continue;
+    if (g.frequencia === "anual") {
+      if (g.mes_anual == null || g.mes_anual - 1 !== m0) continue;
+    }
+    saidasFixas += Number(g.valor) || 0;
+  }
+
+  for (const p of parcelas ?? []) {
+    const dt = new Date(p.data + "T00:00:00");
+    const monthsAhead = (y - dt.getFullYear()) * 12 + (m0 - dt.getMonth());
+    if (monthsAhead < 0) continue;
+    const restantes = (p.qtd_parcelas ?? 0) - ((p.parcela_inicial ?? 1) - 1);
+    if (monthsAhead >= restantes) continue;
+    saidasFixas += Math.round((Number(p.valor_total) / Math.max(p.qtd_parcelas, 1)) * 100) / 100;
+  }
+
+  const investido = (invest ?? []).reduce((a: number, r: any) => a + Number(r.posicao_atual) || 0, 0);
+  return { sobra: entradas - saidasDiarias - saidasFixas, investido };
+}
 
 /**
  * Status de assinatura com consciência de workspace.
+ *
+ * Modelo "grátis no vermelho" (substitui o trial fixo):
+ * - `gratis`: tudo liberado enquanto não ficou positivo.
+ * - `graca`: ficou positivo (sobra ≥ R$250 OU investido ≥ R$3.000) e está
+ *   dentro do prazo de 7 dias para pagar — ainda liberado.
+ * - `inativo`: ficou positivo e passaram os 7 dias sem pagar → paywall.
+ * - `ativo`: pagou. Depois de pagar, NÃO volta ao grátis mesmo se ficar no vermelho.
+ *
+ * O prazo de 7 dias começa quando o usuário fica positivo pela primeira vez
+ * (`profiles.positivo_em`, gravado via service role) e segue mesmo que o mês
+ * seguinte feche negativo — não dá pra fugir deixando o saldo no vermelho.
  *
  * - Sem `forOwner`: status do próprio usuário logado (sua conta).
  * - Com `forOwner` (workspace ativo): status do DONO do workspace — o ADM
@@ -185,25 +280,39 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (assinatura) {
+      // Pagou → nunca volta ao grátis, mesmo se o saldo cair no vermelho.
       return { status: "ativo", plano: assinatura.plano ?? "Mensal" };
     }
 
-    // Trial calculado a partir do created_at do auth.users (não editável pelo
-    // usuário). NÃO confiar em profiles.trial_ends_at/plano: a RLS "own profile"
-    // permite o usuário alterar a própria linha e furar o paywall. Também evita
-    // travar contas legadas com trial_ends_at NULL.
-    const DIAS_TRIAL = 15;
-    const { data: authUser } = await admin.auth.admin.getUserById(targetId);
-    const created = authUser?.user?.created_at;
-    if (created) {
-      const endsAt = new Date(created).getTime() + DIAS_TRIAL * 24 * 60 * 60 * 1000;
-      const remaining = Math.ceil((endsAt - Date.now()) / (1000 * 60 * 60 * 24));
-      if (remaining > 0) {
-        return { status: "trial", plano: "Grátis", diasRestantes: remaining };
-      }
-    } else {
-      // Sem created_at (caso improvável) → não trava ninguém por engano.
-      return { status: "trial", plano: "Grátis", diasRestantes: DIAS_TRIAL };
+    // Gate por saldo (só para quem ainda não pagou).
+    const { sobra, investido } = await computaSobraMes(admin, targetId);
+    const positivo = sobra >= SOBRA_MIN_POSITIVO || investido >= INVESTIDO_MIN_POSITIVO;
+
+    const { data: prof } = await admin
+      .from("profiles")
+      .select("positivo_em")
+      .eq("id", targetId)
+      .maybeSingle();
+
+    let positivoEm = prof?.positivo_em ? new Date(prof.positivo_em).getTime() : null;
+
+    // Primeira vez positivo → marca o início do prazo de 7 dias (idempotente).
+    if (positivo && !positivoEm) {
+      const nowIso = new Date().toISOString();
+      positivoEm = Date.now();
+      await admin.from("profiles").update({ positivo_em: nowIso }).eq("id", targetId);
+    }
+
+    // Sem positivo_em e sem assinatura → grátis indefinido (barreira de entrada).
+    if (!positivoEm) {
+      return { status: "gratis", plano: "Grátis" };
+    }
+
+    // Já ficou positivo: o prazo de 7 dias vale mesmo se hoje o saldo estiver negativo.
+    const gracaAte = positivoEm + DIAS_GRACA * 24 * 60 * 60 * 1000;
+    const restante = Math.ceil((gracaAte - Date.now()) / (1000 * 60 * 60 * 24));
+    if (restante > 0) {
+      return { status: "graca", plano: "Grátis", diasRestantes: restante };
     }
 
     return { status: "inativo" };
@@ -430,6 +539,8 @@ export const activatePlanPostSignup = createServerFn({ method: "POST" })
 
     if (pre.plano === "Planilha do Erick") {
       await upsertCompraPlanilha(userId);
+    } else if (pre.plano === "Mentoria com Erick") {
+      await upsertCompraMentoria(userId);
     } else {
       await upsertAssinatura(userId, pre.plano);
     }

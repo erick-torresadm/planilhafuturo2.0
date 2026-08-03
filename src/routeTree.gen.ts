@@ -16,6 +16,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as GuiaRouteImport } from './routes/guia'
+import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlanilhaRouteImport } from './routes/planilha'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -69,6 +70,11 @@ const DocsRoute = DocsRouteImport.update({
 const GuiaRoute = GuiaRouteImport.update({
   id: '/guia',
   path: '/guia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObrigadoRoute = ObrigadoRouteImport.update({
+  id: '/obrigado',
+  path: '/obrigado',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
+  '/obrigado': typeof ObrigadoRoute
   '/onboarding': typeof OnboardingRoute
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
+  '/obrigado': typeof ObrigadoRoute
   '/onboarding': typeof OnboardingRoute
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/docs': typeof DocsRoute
   '/guia': typeof GuiaRoute
+  '/obrigado': typeof ObrigadoRoute
   '/onboarding': typeof OnboardingRoute
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/docs'
     | '/guia'
+    | '/obrigado'
     | '/onboarding'
     | '/planilha'
     | '/privacidade'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/docs'
     | '/guia'
+    | '/obrigado'
     | '/onboarding'
     | '/planilha'
     | '/privacidade'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/docs'
     | '/guia'
+    | '/obrigado'
     | '/onboarding'
     | '/planilha'
     | '/privacidade'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   DocsRoute: typeof DocsRoute
   GuiaRoute: typeof GuiaRoute
+  ObrigadoRoute: typeof ObrigadoRoute
   OnboardingRoute: typeof OnboardingRoute
   PlanilhaRoute: typeof PlanilhaRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -414,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/guia'
       fullPath: '/guia'
       preLoaderRoute: typeof GuiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/obrigado': {
+      id: '/obrigado'
+      path: '/obrigado'
+      fullPath: '/obrigado'
+      preLoaderRoute: typeof ObrigadoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   DocsRoute: DocsRoute,
   GuiaRoute: GuiaRoute,
+  ObrigadoRoute: ObrigadoRoute,
   OnboardingRoute: OnboardingRoute,
   PlanilhaRoute: PlanilhaRoute,
   PrivacidadeRoute: PrivacidadeRoute,

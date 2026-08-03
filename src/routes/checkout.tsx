@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "@/components/Logo";
 import {
-  Check, Copy, Crown, Loader2, ArrowRight, CreditCard, QrCode, ChevronLeft, ArrowLeft,
+  Check, Copy, Crown, Loader2, CreditCard, QrCode, ChevronLeft, ArrowLeft,
   ShieldCheck, Sparkles, RefreshCcw, Mail, BadgeCheck, ShoppingBag, ChevronRight, FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, string | undefined>) => ({
-    plan: (search.plan as "anual" | "vitalicio" | "planilha" | undefined) ?? "anual",
+    plan: (search.plan as "anual" | "vitalicio" | "planilha" | "mentoria" | undefined) ?? "anual",
   }),
   head: () => ({
     meta: [
@@ -39,9 +39,13 @@ const PLANOS = {
     nome: "Planilha do Erick", valor: 70, detalhe: "Pagamento único · .xlsx", badge: "Sem assinatura",
     beneficios: ["Mesma planilha que o Erick usa", "Entrega automática após o pagamento"],
   },
+  mentoria: {
+    nome: "Mentoria com Erick", valor: 497, detalhe: "Pagamento único · 1h de mentoria", badge: "Atenção especial",
+    beneficios: ["1 hora de mentoria com o Erick", "Análise do seu momento financeiro", "Plano para os próximos 12 meses"],
+  },
 } as const;
 
-type Phase = "plano" | "pagamento" | "pix_qr" | "card_result" | "done";
+type Phase = "plano" | "pagamento" | "pix_qr" | "card_result";
 
 /**
  * Ambiente do tokenizador do cartão. Precisa bater com o ambiente da API Efí:
@@ -63,7 +67,6 @@ function phaseStep(phase: Phase): number {
     case "pagamento": return 2;
     case "pix_qr": return 2;
     case "card_result": return 2;
-    case "done": return 3;
   }
 }
 
@@ -110,7 +113,7 @@ function CheckoutPage() {
   const nav = useNavigate();
 
   const [phase, setPhase] = useState<Phase>("plano");
-  const [plano, setPlano] = useState<"anual" | "vitalicio" | "planilha">(planParam);
+  const [plano, setPlano] = useState<"anual" | "vitalicio" | "planilha" | "mentoria">(planParam);
   const [email, setEmail] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "cartao">("pix");
 
@@ -265,8 +268,8 @@ function CheckoutPage() {
       const m = await import("@/lib/assinatura.functions");
       const result = await m.verifyPreSignupPayment({ data: { email: email.trim(), txid: pixData.txid } });
       if (result.paid) {
-        setPhase("done");
         toast.success("Pagamento confirmado!");
+        nav({ to: "/obrigado", search: { plan: plano, email: email.trim() } });
       } else {
         toast.error(result.error || "Pagamento não confirmado. Tente novamente.");
       }
@@ -334,8 +337,8 @@ function CheckoutPage() {
 
       if (result.ok && result.metodo === "cartao") {
         if (result.paid) {
-          setPhase("done");
           toast.success("Pagamento aprovado!");
+          nav({ to: "/obrigado", search: { plan: plano, email: email.trim() } });
         } else {
           setCardMsg(result.message || "");
           setPhase("card_result");
@@ -363,10 +366,6 @@ function CheckoutPage() {
     }
   }
 
-  function handleDone() {
-    nav({ to: "/auth", search: { email: email.trim(), plan: plano } });
-  }
-
   const inputCls =
     "w-full h-12 px-4 rounded-xl border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all";
 
@@ -379,7 +378,7 @@ function CheckoutPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="h-14 flex items-center px-4 border-b border-border shrink-0">
-        {phase !== "plano" && phase !== "done" ? (
+        {phase !== "plano" ? (
           <button onClick={goBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Voltar
           </button>
@@ -400,45 +399,7 @@ function CheckoutPage() {
           <Stepper current={phaseStep(phase)} />
         </div>
 
-        {/* Done: tela cheia de sucesso */}
-        {phase === "done" ? (
-          <motion.div
-            key="done"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md mx-auto text-center space-y-4"
-          >
-            <div className="h-16 w-16 rounded-full bg-positive/10 grid place-items-center mx-auto">
-              <Check className="h-8 w-8 text-positive" strokeWidth={3} />
-            </div>
-            <div>
-              <h2 className="font-display text-2xl font-bold">Pagamento confirmado!</h2>
-              {plano === "planilha" ? (
-                <>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Agora crie sua conta com o email <strong className="text-foreground">{email}</strong> para baixar a <strong className="text-foreground">Planilha do Erick</strong>.
-                    Usou outro email na conta? Tudo bem — ela fica disponível pra quem pagou.
-                  </p>
-                  <p className="text-xs text-muted-foreground/80 mt-1">
-                    Depois de criar a conta, a planilha aparece em <span className="font-medium text-foreground/80">planilhafuturo.com.br/planilha</span> pronta pra baixar.
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Agora crie sua conta com o email <strong className="text-foreground">{email}</strong> para ativar o plano <strong className="text-foreground">{planInfo.nome}</strong>.
-                  Usou outro email na conta? Tudo bem — o plano fica vinculado ao email do pagamento.
-                </p>
-              )}
-            </div>
-            <Button onClick={handleDone} className="w-full h-12 rounded-xl font-semibold text-base">
-              Criar conta <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Já tem conta? <Link to="/auth" className="text-primary font-semibold hover:underline">Fazer login</Link>
-            </p>
-          </motion.div>
-        ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
             {/* ── Coluna principal ── */}
             <div className="min-w-0">
               <AnimatePresence mode="wait">
@@ -463,10 +424,11 @@ function CheckoutPage() {
 
                       {/* Plan cards */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(["anual", "vitalicio", "planilha"] as const).map((p) => {
+                        {(["anual", "vitalicio", "planilha", "mentoria"] as const).map((p) => {
                           const info = PLANOS[p];
                           const active = plano === p;
                           const isPlanilha = p === "planilha";
+                          const isMentoria = p === "mentoria";
                           return (
                             <motion.button
                               key={p}
@@ -479,6 +441,7 @@ function CheckoutPage() {
                                   ? "border-primary bg-primary/[0.04] shadow-sm"
                                   : "border-border bg-card hover:border-primary/40",
                                 isPlanilha && "border-dashed",
+                                isMentoria && !active && "border-primary/30",
                               )}
                             >
                               {info.badge && (
@@ -505,7 +468,9 @@ function CheckoutPage() {
                                   <p key={b} className="text-xs text-foreground/70 flex items-center gap-1">
                                     {isPlanilha
                                       ? <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
-                                      : <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
+                                      : isMentoria
+                                        ? <Crown className="h-3.5 w-3.5 text-primary shrink-0" />
+                                        : <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
                                     {b}
                                   </p>
                                 ))}
@@ -781,8 +746,7 @@ function CheckoutPage() {
                 Pagamento seguro processado pela Efí Pagamentos.
               </div>
             </aside>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

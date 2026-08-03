@@ -48,9 +48,10 @@ export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
         </div>
 
         <div className="space-y-1.5">
-          <h1 className="font-display text-2xl font-bold">Seu teste grátis acabou</h1>
+          <h1 className="font-display text-2xl font-bold">Acesso travado</h1>
           <p className="text-sm text-muted-foreground">
-            Seus dados continuam salvos. Assine o PRO para voltar a usar tudo na hora.
+            Seu mês ficou positivo e o prazo de 7 dias para apoiar o projeto terminou sem pagamento.
+            Seus dados continuam salvos — assine o PRO para voltar a usar tudo na hora.
           </p>
         </div>
 

@@ -402,9 +402,11 @@ function PlanSection() {
   }, []);
 
   const isActive = planoStatus?.status === "ativo";
-  const isTrial = planoStatus?.status === "trial";
+  const isGratis = planoStatus?.status === "gratis";
+  const isGraca = planoStatus?.status === "graca";
   const isInactive = planoStatus?.status === "inativo";
   const planoNome = planoStatus?.plano ?? "";
+  const diasRestantes = planoStatus?.diasRestantes ?? 0;
 
   const PLANOS = [
     {
@@ -455,7 +457,27 @@ function PlanSection() {
           </div>
         )}
 
-        {isTrial && (
+        {isGratis && (
+          <div className="rounded-xl bg-gradient-to-br from-primary-soft to-primary-soft/30 border border-primary/20 p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-primary/15 text-primary grid place-items-center shrink-0">
+                <Crown className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-display text-lg font-bold">Grátis no vermelho</h3>
+                  <span className="chip bg-primary/15 text-primary text-[10px]">Plano Grátis</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tudo liberado enquanto seu mês estiver no vermelho. Quando ficar positivo, você
+                  ganha 7 dias para apoiar o projeto e continuar usando tudo.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isGraca && (
           <div className="rounded-xl bg-gradient-to-br from-warning-soft to-warning-soft/30 border border-warning/20 p-5">
             <div className="flex items-start gap-3">
               <div className="h-12 w-12 rounded-2xl bg-warning/15 text-warning grid place-items-center shrink-0">
@@ -463,11 +485,16 @@ function PlanSection() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-display text-lg font-bold">Plano {planoStatus?.plano ?? "Grátis"}</h3>
-                  <span className="chip bg-warning/15 text-warning text-[10px]">Teste de 7 dias</span>
+                  <h3 className="font-display text-lg font-bold">Você ficou positivo!</h3>
+                  <span className="chip bg-warning/15 text-warning text-[10px]">Prazo para apoiar</span>
                 </div>
-                <p className="text-sm font-bold text-warning tabular-nums mt-0.5">{planoStatus?.diasRestantes} dias restantes</p>
-                <p className="text-xs text-muted-foreground mt-1">Aproveite todos os recursos. Escolha um plano abaixo para continuar usando após o trial.</p>
+                <p className="text-sm font-bold text-warning tabular-nums mt-0.5">
+                  {diasRestantes} {diasRestantes === 1 ? "dia restante" : "dias restantes"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Seu mês fechou positivo — hora de apoiar o projeto. Escolha um plano abaixo para
+                  continuar com tudo liberado, mesmo se o mês seguinte cair no vermelho.
+                </p>
               </div>
             </div>
           </div>
@@ -480,8 +507,11 @@ function PlanSection() {
                 <Crown className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-lg font-bold">Nenhum plano ativo</h3>
-                <p className="text-xs text-muted-foreground mt-1">Escolha um plano abaixo para desbloquear todos os recursos.</p>
+                <h3 className="font-display text-lg font-bold">Acesso travado</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Você ficou positivo e o prazo de 7 dias terminou sem pagamento. Seus dados continuam
+                  salvos — escolha um plano abaixo para voltar a usar tudo na hora.
+                </p>
               </div>
             </div>
           </div>

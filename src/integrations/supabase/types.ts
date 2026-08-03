@@ -555,6 +555,7 @@ export type Database = {
           nome: string | null
           onboarding_completed: boolean | null
           plano: string | null
+          positivo_em: string | null
           renda_mensal: number | null
           saldo_inicial: number | null
           trial_ends_at: string | null
@@ -571,6 +572,7 @@ export type Database = {
           nome?: string | null
           onboarding_completed?: boolean | null
           plano?: string | null
+          positivo_em?: string | null
           renda_mensal?: number | null
           saldo_inicial?: number | null
           trial_ends_at?: string | null
@@ -587,6 +589,7 @@ export type Database = {
           nome?: string | null
           onboarding_completed?: boolean | null
           plano?: string | null
+          positivo_em?: string | null
           renda_mensal?: number | null
           saldo_inicial?: number | null
           trial_ends_at?: string | null

@@ -47,12 +47,14 @@ function AuthPage() {
           .then((m) => m.activatePlanPostSignup({ data: { email: planEmail } }))
           .then((result) => {
             if (result.ok) toast.success(`Plano ${result.plano} ativado! Bem-vindo!`, { duration: 5000 });
+            nav({ to: "/obrigado", search: { plan: planName ?? "", email: planEmail } });
           })
-          .catch(() => {});
+          .catch(() => nav({ to: "/obrigado", search: { plan: planName ?? "", email: planEmail } }));
+        return;
       }
       nav({ to: "/app" });
     }
-  }, [user, authLoading, nav, planEmail]);
+  }, [user, authLoading, nav, planEmail, planName]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -160,6 +162,11 @@ function AuthPage() {
                 <>
                   Você comprou a <strong>Planilha do Erick</strong> com o email <strong>{planEmail}</strong>.
                   Crie sua conta para baixá-la.
+                </>
+              ) : planName === "mentoria" ? (
+                <>
+                  Você pagou pela <strong>Mentoria com Erick</strong> com o email <strong>{planEmail}</strong>.
+                  Crie sua conta para confirmar sua mentoria.
                 </>
               ) : (
                 <>

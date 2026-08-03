@@ -89,7 +89,7 @@ function Hero() {
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-8">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            7 dias grátis · sem cartão
+            Grátis enquanto estiver no vermelho · sem cartão
           </div>
           <h1 className="font-display text-[2.5rem] leading-[1.05] sm:text-6xl md:text-7xl tracking-tight">
             Seu dinheiro nos<br />
@@ -308,14 +308,14 @@ function Steps() {
 function Pricing() {
   const plans = [
     {
-      name: "Trial Grátis",
+      name: "Grátis no vermelho",
       price: 0,
-      periodo: "7 dias",
+      periodo: "enquanto estiver no vermelho",
       badge: "",
       linkTo: "/auth",
       linkSearch: {} as Record<string, string>,
       features: [
-        "Tudo liberado por 7 dias",
+        "Tudo liberado enquanto no vermelho",
         "Fluxo diário completo",
         "Gastos fixos e parcelas",
         "Desejos, caixinhas, investimentos",
@@ -359,8 +359,8 @@ function Pricing() {
     <Section id="pricing" className="py-24">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="text-xs uppercase tracking-widest text-primary mb-3">Preços</div>
-        <h2 className="font-display text-4xl sm:text-5xl">Teste 7 dias grátis.<br /><span className="italic text-primary">Depois escolhe.</span></h2>
-        <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Sem compromisso. Sem frescura. Cancela quando quiser.</p>
+        <h2 className="font-display text-4xl sm:text-5xl">Grátis enquanto estiver no vermelho.<br /><span className="italic text-primary">Depois escolhe.</span></h2>
+        <p className="mt-4 text-muted-foreground max-w-lg mx-auto">A gente não cobra de quem tá no vermelho. Quando seu mês ficar positivo, é hora de apoiar o projeto.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
         {plans.map((p) => {
@@ -392,6 +392,43 @@ function Pricing() {
         })}
       </div>
 
+      {/* ─── Como funciona o grátis (transparência) ─── */}
+      <div className="mt-12 max-w-3xl mx-auto">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={fadeUp}
+          className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full bg-positive-soft border border-positive/20 px-3 py-1 text-xs font-medium text-positive">
+            <TrendingUp className="h-3.5 w-3.5" /> Como funciona o grátis
+          </div>
+          <h3 className="font-display text-2xl sm:text-3xl mt-4 leading-tight">
+            Fica grátis até seu mês <span className="italic text-primary">ficar positivo.</span>
+          </h3>
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Você usa tudo de graça enquanto sua sobra do mês for abaixo de R$ 250 ou o patrimônio
+            investido estiver abaixo de R$ 3.000. Quando seu mês fecha positivo, você ganha{" "}
+            <strong className="text-foreground">7 dias</strong> pra escolher o plano.
+          </p>
+          <div className="mt-5 grid sm:grid-cols-2 gap-3 text-left max-w-lg mx-auto">
+            <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+              <div className="text-xs text-muted-foreground">Sobra do mês</div>
+              <div className="mt-0.5 text-sm font-semibold">R$ 250 pra cima → hora de apoiar</div>
+            </div>
+            <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+              <div className="text-xs text-muted-foreground">Patrimônio investido</div>
+              <div className="mt-0.5 text-sm font-semibold">R$ 3.000 pra cima → hora de apoiar</div>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground/80 max-w-lg mx-auto">
+            Sem pegadinha: depois de pagar, o plano é seu pra valer — mesmo que o mês seguinte
+            feche no vermelho, você não volta pro grátis. É só a barreira de entrada que é leve.
+          </p>
+        </motion.div>
+      </div>
+
       {/* ─── Planilha avulsa ─── */}
       <div className="mt-8 max-w-lg mx-auto rounded-2xl border border-dashed border-border bg-card/50 p-5 text-center">
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -414,8 +451,9 @@ function Faq() {
     { q: "Preciso conectar meu banco?", a: "Não. Você digita — é rápido, e você fica no controle. Integração com Open Finance está no nosso roadmap." },
     { q: "É igual a uma planilha comum?", a: "A lógica é a mesma (fluxo diário, gastos fixos, parcelas, desejos). A diferença é que aqui você não quebra nada." },
     { q: "Funciona no celular?", a: "Foi desenhado pra celular primeiro. Você mexe pelo celular sem perder nada do que veria no computador." },
-    { q: "Como funciona o teste grátis?", a: "São 7 dias com tudo liberado. Sem cartão de crédito. Se não assinar, o acesso expira — mas seus dados ficam salvos." },
-    { q: "Quanto custa depois do teste?", a: "PRO Anual é R$ 250/ano (R$ 21/mês). Vitalício é R$ 450 — pagamento único, seu pra sempre. Os dois com todas as funções." },
+    { q: "Como funciona o grátis?", a: "Você usa tudo de graça enquanto seu mês estiver no vermelho. Quando a sobra do mês passar de R$ 250 ou o patrimônio investido passar de R$ 3.000, você ganha 7 dias pra escolher o plano. Sem cartão de crédito." },
+    { q: "Se eu pagar e depois cair no vermelho, perco o plano?", a: "Não. Depois de pagar, o plano é seu pra valer — mesmo que o mês seguinte feche no vermelho, você continua com tudo liberado. O grátis é só a barreira de entrada." },
+    { q: "Quanto custa?", a: "PRO Anual é R$ 250/ano (R$ 21/mês). Vitalício é R$ 450 — pagamento único, seu pra sempre. Os dois com todas as funções." },
     { q: "Posso comprar a planilha original?", a: "Sim. A Planilha do Erick em Excel (.xlsx) custa R$ 70 — única parcela, sua pra sempre. Disponível nas Configurações do app." },
     { q: "Posso cancelar quando quiser?", a: "Pode. Sem multa, sem enrolação. Seus dados ficam disponíveis pra exportar por 30 dias." },
     { q: "Suporte se eu travar?", a: "Sim, humano de verdade. Responde em até 24h por e-mail." },
@@ -506,7 +544,7 @@ function Cta() {
         <div aria-hidden className="absolute inset-0 grid-bg opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="relative">
           <h2 className="font-display text-4xl sm:text-5xl max-w-2xl mx-auto">Pare de rezar pra planilha não quebrar.</h2>
-          <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Experimente 7 dias grátis com tudo liberado. Sem cartão, sem compromisso.</p>
+          <p className="mt-4 text-muted-foreground max-w-lg mx-auto">Comece grátis, com tudo liberado, enquanto seu mês estiver no vermelho. Sem cartão, sem compromisso.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/auth" className="cta-pill w-full sm:w-auto px-7 py-3 text-sm tap-target">
               Começar grátis <ArrowRight className="h-4 w-4" />
@@ -516,7 +554,7 @@ function Cta() {
             </a>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            7 dias grátis · sem cartão · Pix ou cartão com parcelamento em até 12x
+            Grátis no vermelho · sem cartão · Pix ou cartão com parcelamento em até 12x
           </p>
         </div>
       </div>
