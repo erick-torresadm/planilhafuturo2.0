@@ -4,9 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, CreditCard } from "lucide-react";
+import { Plus, Trash2, CreditCard, Pencil } from "lucide-react";
 import { MESES_ABREV } from "@/lib/format";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
 import { PageHeader } from "@/components/PageHeader";
@@ -34,10 +34,12 @@ function ParcelasPage() {
   const [anchor] = useState({ y: new Date().getFullYear(), m: new Date().getMonth() });
   const [openNew, setOpenNew] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [focusedIdx, setFocusedIdx] = useState(0); // 0 = mês atual
 
   const q = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const rows: Parcela[] = (q.data ?? []) as any;
+  const editing = editId ? rows.find((r) => r.id === editId) ?? null : null;
 
   const upd = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: any }) => updateRow("parcelas", id, patch),
@@ -119,9 +121,14 @@ function ParcelasPage() {
                             <span>{r.cartao}</span><span>·</span><span>{r.categoria}</span>
                           </div>
                         </div>
-                        <button onClick={() => setDelId(r.id)} className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => setEditId(r.id)} title="Editar parcela" className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => setDelId(r.id)} title="Excluir parcela" className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                       <div className="mt-3 flex items-baseline justify-between">
                         <div>
@@ -200,7 +207,12 @@ function ParcelasPage() {
                           const v = valorParcelaNoMes(r, mm.y, mm.m);
                           return <td key={`${mm.y}-${mm.m}`} className={cn("px-1.5 py-2.5 text-right text-sm", focusedIdx === i && "bg-primary/[0.04]", v > 0 ? "text-negative" : "text-muted-foreground/40")}>{v > 0 ? <Money value={v} signed={false} /> : "—"}</td>;
                         })}
-                        <td className="px-2 py-2.5 text-center"><button onClick={() => setDelId(r.id)} className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button></td>
+                        <td className="px-2 py-2.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button onClick={() => setEditId(r.id)} title="Editar parcela" className="text-muted-foreground/70 hover:text-primary transition-colors"><Pencil className="h-4 w-4" /></button>
+                            <button onClick={() => setDelId(r.id)} title="Excluir parcela" className="text-negative/70 hover:text-negative"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -220,6 +232,13 @@ function ParcelasPage() {
       )}
 
       <NewParcelaDialog open={openNew} onOpenChange={setOpenNew} onSave={(data) => add.mutate(data)} saving={add.isPending} />
+      <EditParcelaDialog
+        parcela={editing}
+        open={!!editId}
+        onOpenChange={(o) => { if (!o) setEditId(null); }}
+        onSave={(patch) => { if (editId) { upd.mutate({ id: editId, patch }); setEditId(null); } }}
+        saving={upd.isPending}
+      />
       <ConfirmDialog
         open={!!delId}
         onOpenChange={(o) => { if (!o) setDelId(null); }}
@@ -312,6 +331,108 @@ function NewParcelaDialog({ open, onOpenChange, onSave, saving }: { open: boolea
           <DialogFooter className="gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={saving}>{saving ? "Salvando…" : "Adicionar"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditParcelaDialog({ parcela, open, onOpenChange, onSave, saving }: {
+  parcela: Parcela | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  onSave: (patch: any) => void;
+  saving: boolean;
+}) {
+  const [form, setForm] = useState({
+    descricao: "", data: "",
+    valor_total: "", qtd_parcelas: 1, parcela_inicial: 1,
+    cartao: "Cartão 1", categoria: "Outros",
+  });
+
+  // Preenche o formulário sempre que o diálogo abre com uma parcela.
+  useEffect(() => {
+    if (open && parcela) {
+      setForm({
+        descricao: parcela.descricao,
+        data: parcela.data,
+        valor_total: String(Number(parcela.valor_total) || 0).replace(".", ","),
+        qtd_parcelas: Number(parcela.qtd_parcelas) || 1,
+        parcela_inicial: Number(parcela.parcela_inicial) || 1,
+        cartao: parcela.cartao ?? "Outro",
+        categoria: parcela.categoria ?? "Outros",
+      });
+    }
+  }, [open, parcela]);
+
+  const valorParcela = (Number(String(form.valor_total).replace(",", ".")) || 0) / Math.max(1, Number(form.qtd_parcelas));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar parcela</DialogTitle>
+          <DialogDescription>Ajuste os dados da compra parcelada — os meses do fluxo são recalculados automaticamente.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (!form.descricao.trim()) return;
+          onSave({
+            descricao: form.descricao.trim(), data: form.data,
+            valor_total: Number(String(form.valor_total).replace(",", ".")) || 0,
+            qtd_parcelas: Number(form.qtd_parcelas) || 1,
+            parcela_inicial: Number(form.parcela_inicial) || 1,
+            cartao: form.cartao, categoria: form.categoria,
+          });
+        }} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="pe-desc">Descrição</Label>
+            <Input id="pe-desc" autoFocus value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Ex: Notebook, Sofá…" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="pe-data">Data da compra</Label>
+              <Input id="pe-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pe-total">Valor total (R$)</Label>
+              <Input id="pe-total" inputMode="decimal" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: e.target.value })} placeholder="0,00" required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Qtd. parcelas</Label>
+              <Input type="number" min={1} value={form.qtd_parcelas} onChange={(e) => setForm({ ...form, qtd_parcelas: Number(e.target.value) })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Parcela inicial</Label>
+              <Input type="number" min={1} value={form.parcela_inicial} onChange={(e) => setForm({ ...form, parcela_inicial: Number(e.target.value) })} required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Cartão</Label>
+              <select value={form.cartao} onChange={(e) => setForm({ ...form, cartao: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CARTOES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Categoria</Label>
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          {valorParcela > 0 && (
+            <div className="rounded-md bg-primary/10 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Cada parcela: </span>
+              <b className="text-negative tabular-nums"><Money value={valorParcela} signed={false} /></b>
+            </div>
+          )}
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Salvando…" : "Salvar"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
