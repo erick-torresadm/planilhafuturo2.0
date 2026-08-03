@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, string | undefined>) => ({
-    email: search.email as string | undefined,
-    plan: search.plan as string | undefined,
+  validateSearch: (search: Record<string, string | undefined>): { email?: string; plan?: string } => ({
+    email: search.email,
+    plan: search.plan,
   }),
   head: () => ({
     meta: [

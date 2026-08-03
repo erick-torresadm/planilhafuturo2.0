@@ -243,10 +243,10 @@ function CheckoutPage() {
     try {
       const m = await import("@/lib/assinatura.functions");
       const result = await m.createPreSignupCheckout({ data: { email: email.trim(), plano, metodo: "pix" } });
-      if (result.ok) {
+      if (result.ok && result.metodo === "pix") {
         setPixData(result);
         setPhase("pix_qr");
-      } else {
+      } else if (!result.ok) {
         setError(result.error);
         toast.error(result.error);
       }
@@ -332,7 +332,7 @@ function CheckoutPage() {
         },
       });
 
-      if (result.ok) {
+      if (result.ok && result.metodo === "cartao") {
         if (result.paid) {
           setPhase("done");
           toast.success("Pagamento aprovado!");
@@ -341,7 +341,7 @@ function CheckoutPage() {
           setPhase("card_result");
           toast.error(result.message || "Pagamento não aprovado. Tente outro cartão.");
         }
-      } else {
+      } else if (!result.ok) {
         setError(result.error);
         toast.error(result.error);
       }

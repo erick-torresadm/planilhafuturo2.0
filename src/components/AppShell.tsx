@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Home, CalendarDays, Receipt, CreditCard,
   Sparkles, Wallet, ListChecks, Zap, TrendingUp, History,
-  Settings, LogOut, Sun, Moon, SunDim, Eye, EyeOff,
+  Settings, LogOut, Sun, Moon, SunDim, Eye, EyeOff, Info,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -29,6 +29,7 @@ const MORE = [
   { to: "/desejos",       label: "Desejos",       icon: Sparkles,    hint: "Metas & sonhos" },
   { to: "/tarefas",       label: "Tarefas",       icon: ListChecks,  hint: "Lembretes" },
   { to: "/produtividade", label: "Foco & Notas",  icon: Zap,         hint: "Pomodoro, notas & hábitos" },
+  { to: "/sobre",         label: "Sobre",         icon: Info,        hint: "Instalar no celular" },
   { to: "/config",        label: "Configurações", icon: Settings,    hint: "Perfil e preferências" },
 ] as const;
 

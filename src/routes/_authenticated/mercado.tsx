@@ -117,7 +117,7 @@ function MercadoPage() {
                   <div className="font-display text-xl font-bold tabular-nums mt-0.5">
                     {ind.value !== null ? ind.format(ind.value) : "—"}
                   </div>
-                  {"change" in ind && ind.change !== null && (
+                  {typeof ind.change === "number" && (
                     <div className={cn(
                       "text-xs font-semibold flex items-center gap-0.5 mt-0.5",
                       ind.change >= 0 ? "text-positive" : "text-negative",

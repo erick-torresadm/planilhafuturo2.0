@@ -113,6 +113,45 @@ export type Database = {
         }
         Relationships: []
       }
+      convites: {
+        Row: {
+          aceito_em: string | null
+          aceito_por: string | null
+          criado_em: string
+          email: string | null
+          expira_em: string
+          id: string
+          owner_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          aceito_em?: string | null
+          aceito_por?: string | null
+          criado_em?: string
+          email?: string | null
+          expira_em?: string
+          id?: string
+          owner_id: string
+          role?: string
+          status?: string
+          token: string
+        }
+        Update: {
+          aceito_em?: string | null
+          aceito_por?: string | null
+          criado_em?: string
+          email?: string | null
+          expira_em?: string
+          id?: string
+          owner_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
       desejos: {
         Row: {
           created_at: string | null
@@ -463,6 +502,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pre_pagamentos: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          email: string
+          id: string
+          pagamento_metodo: string | null
+          paid_at: string | null
+          plano: string
+          status: string
+          txid: string | null
+          user_id: string | null
+          valor: number
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          pagamento_metodo?: string | null
+          paid_at?: string | null
+          plano: string
+          status?: string
+          txid?: string | null
+          user_id?: string | null
+          valor?: number
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          pagamento_metodo?: string | null
+          paid_at?: string | null
+          plano?: string
+          status?: string
+          txid?: string | null
+          user_id?: string | null
+          valor?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -470,6 +551,7 @@ export type Database = {
           id: string
           meses_reserva_emergencia: number | null
           meta_renda_fixa: number | null
+          migration_completed_at: string | null
           nome: string | null
           onboarding_completed: boolean | null
           plano: string | null
@@ -485,6 +567,7 @@ export type Database = {
           id: string
           meses_reserva_emergencia?: number | null
           meta_renda_fixa?: number | null
+          migration_completed_at?: string | null
           nome?: string | null
           onboarding_completed?: boolean | null
           plano?: string | null
@@ -500,6 +583,7 @@ export type Database = {
           id?: string
           meses_reserva_emergencia?: number | null
           meta_renda_fixa?: number | null
+          migration_completed_at?: string | null
           nome?: string | null
           onboarding_completed?: boolean | null
           plano?: string | null
@@ -516,34 +600,43 @@ export type Database = {
           created_at: string | null
           data: string | null
           descricao: string
+          frequencia: string | null
+          hora: string | null
           id: string
           status: string | null
           tipo: string | null
           updated_at: string | null
           user_id: string
           valor: number | null
+          vezes: number | null
         }
         Insert: {
           created_at?: string | null
           data?: string | null
           descricao: string
+          frequencia?: string | null
+          hora?: string | null
           id?: string
           status?: string | null
           tipo?: string | null
           updated_at?: string | null
           user_id: string
           valor?: number | null
+          vezes?: number | null
         }
         Update: {
           created_at?: string | null
           data?: string | null
           descricao?: string
+          frequencia?: string | null
+          hora?: string | null
           id?: string
           status?: string | null
           tipo?: string | null
           updated_at?: string | null
           user_id?: string
           valor?: number | null
+          vezes?: number | null
         }
         Relationships: []
       }
@@ -565,6 +658,27 @@ export type Database = {
           email?: string
           id?: string
           source?: string | null
+        }
+        Relationships: []
+      }
+      workspace_members: {
+        Row: {
+          criado_em: string
+          member_id: string
+          owner_id: string
+          role: string
+        }
+        Insert: {
+          criado_em?: string
+          member_id: string
+          owner_id: string
+          role?: string
+        }
+        Update: {
+          criado_em?: string
+          member_id?: string
+          owner_id?: string
+          role?: string
         }
         Relationships: []
       }

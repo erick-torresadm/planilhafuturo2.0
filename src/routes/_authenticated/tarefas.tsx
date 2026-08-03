@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { selectAll, insertRow, updateRow, deleteRow } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Check, Bell, Clock, AlertTriangle, ListTodo, CreditCard, TrendingUp, PiggyBank, Phone, Search, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Check, Bell, Clock, AlertTriangle, ListTodo, CreditCard, TrendingUp, PiggyBank, Phone, Search, CalendarDays, Repeat, type LucideIcon } from "lucide-react";
 import { useSounds } from "@/hooks/useSounds";
 import { useState, useMemo } from "react";
 import { Money } from "@/components/Money";
@@ -28,17 +28,40 @@ const TIPO_ICON: Record<string, LucideIcon> = {
   Verificar: Search,
 };
 
+const FREQUENCIAS = [
+  { value: "uma_vez", label: "Uma vez" },
+  { value: "diaria", label: "Todo dia" },
+  { value: "semanal", label: "Toda semana" },
+  { value: "mensal", label: "Todo mês" },
+] as const;
+
+const freqLabel = (v?: string | null) =>
+  FREQUENCIAS.find((f) => f.value === v)?.label ?? "Uma vez";
+
+function labelData(data: string | null): string {
+  if (!data) return "Sem data";
+  const now = new Date();
+  const hoje0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const d0 = new Date(data + "T00:00:00").getTime();
+  const diff = Math.round((d0 - hoje0) / 86400000);
+  if (diff === 0) return "Hoje";
+  if (diff === 1) return "Amanhã";
+  if (diff === -1) return "Ontem";
+  return new Date(data + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+}
+
 function TarefasPage() {
   const qc = useQueryClient();
   const { playSound } = useSounds();
   const [filter, setFilter] = useState<"todos" | "pendente" | "feito" | "atrasado">("todos");
+  const [view, setView] = useState<"lista" | "agenda">("lista");
   const [delId, setDelId] = useState<string | null>(null);
 
   const q = useQuery({ queryKey: ["tarefas"], queryFn: () => selectAll("tarefas") });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
 
   const add = useMutation({
-    mutationFn: () => insertRow("tarefas", { data: new Date().toISOString().slice(0, 10), descricao: "Nova tarefa", tipo: "Pagamento", status: "pendente" }),
+    mutationFn: () => insertRow("tarefas", { data: new Date().toISOString().slice(0, 10), descricao: "Nova tarefa", tipo: "Pagamento", status: "pendente", frequencia: "uma_vez" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tarefas"] }),
   });
   const upd = useMutation({
@@ -79,12 +102,33 @@ function TarefasPage() {
     return list.sort((a, b) => a.data.localeCompare(b.data));
   }, [gastos.data]);
 
+  // Agenda: tarefas pendentes ordenadas por data + hora
+  const agenda = useMemo(() => {
+    const pendentes = rows.filter((r) => r.status !== "feito");
+    const sorted = [...pendentes].sort((a, b) => {
+      if (!a.data && !b.data) return 0;
+      if (!a.data) return 1;
+      if (!b.data) return -1;
+      const c = a.data.localeCompare(b.data);
+      if (c !== 0) return c;
+      return (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99");
+    });
+    const grupos: { label: string; itens: any[] }[] = [];
+    for (const r of sorted) {
+      const label = labelData(r.data);
+      const g = grupos[grupos.length - 1];
+      if (g && g.label === label) g.itens.push(r);
+      else grupos.push({ label, itens: [r] });
+    }
+    return grupos;
+  }, [rows]);
+
   return (
     <div className="page-container space-y-4 animate-in">
       <PageHeader
         eyebrow="Tarefas"
         title="Tarefas"
-        subtitle="Pagamentos e lembretes financeiros"
+        subtitle="Lembretes financeiros e agenda"
         actions={
           <Button onClick={() => add.mutate()}>
             <Plus className="h-4 w-4" /><span className="hidden sm:inline ml-1">Nova</span>
@@ -92,21 +136,37 @@ function TarefasPage() {
         }
       />
 
-      {/* Filter chips */}
-      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
-        {(["todos", "pendente", "atrasado", "feito"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={cn("shrink-0 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all",
-              filter === f ? "bg-primary text-primary-foreground" : "rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground")}>
-            {f} <span className="opacity-70">({counts[f]})</span>
+      {/* Lista / Agenda toggle */}
+      <div className="flex gap-1 p-1 rounded-xl bg-muted w-fit">
+        {(["lista", "agenda"] as const).map((v) => (
+          <button key={v} onClick={() => setView(v)}
+            className={cn("px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5",
+              view === v ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+            {v === "lista" ? <ListTodo className="h-3.5 w-3.5" /> : <CalendarDays className="h-3.5 w-3.5" />}
+            {v === "lista" ? "Lista" : "Agenda"}
           </button>
         ))}
       </div>
+
+      {/* Filter chips (apenas na Lista) */}
+      {view === "lista" && (
+        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
+          {(["todos", "pendente", "atrasado", "feito"] as const).map((f) => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={cn("shrink-0 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all",
+                filter === f ? "bg-primary text-primary-foreground" : "rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground")}>
+              {f} <span className="opacity-70">({counts[f]})</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => <div key={i} className="skeleton h-32 w-full rounded-xl" />)}
         </div>
+      ) : view === "agenda" ? (
+        <AgendaView grupos={agenda} onToggle={(id, feito) => upd.mutate({ id, patch: { status: feito ? "pendente" : "feito" } })} onDelete={(id) => setDelId(id)} onRename={(id, descricao) => upd.mutate({ id, patch: { descricao } })} />
       ) : (
         <>
           {/* Kanban columns (lg+) */}
@@ -137,9 +197,26 @@ function TarefasPage() {
                               <Input defaultValue={r.descricao}
                                 onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })}
                                 className={cn("h-6 border-0 bg-transparent shadow-none focus-visible:ring-1 text-sm font-semibold px-0", col === "feito" && "line-through opacity-60")} />
-                              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
                                 <Icon className="h-3 w-3" /> <span>{r.tipo}</span>
                                 {r.data && <span>· {new Date(r.data + "T00:00:00").toLocaleDateString("pt-BR")}</span>}
+                                {r.hora && <span className="tabular-nums">· {r.hora}</span>}
+                              </div>
+                              {/* Hora + frequência + vezes (edição inline) */}
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                <input type="time" defaultValue={r.hora ?? ""}
+                                  onBlur={(e) => e.target.value !== (r.hora ?? "") && upd.mutate({ id: r.id, patch: { hora: e.target.value || null } })}
+                                  className="bg-muted rounded-md px-1.5 py-0.5 text-[11px] text-foreground outline-none" />
+                                <select value={r.frequencia ?? "uma_vez"}
+                                  onChange={(e) => upd.mutate({ id: r.id, patch: { frequencia: e.target.value } })}
+                                  className="bg-muted rounded-md px-1.5 py-0.5 text-[11px] text-foreground outline-none">
+                                  {FREQUENCIAS.map((f) => <option key={f.value} value={f.value} className="bg-card">{f.label}</option>)}
+                                </select>
+                                {r.frequencia && r.frequencia !== "uma_vez" && (
+                                  <input type="number" min={1} defaultValue={r.vezes ?? ""} placeholder="∞"
+                                    onBlur={(e) => Number(e.target.value) !== Number(r.vezes) && upd.mutate({ id: r.id, patch: { vezes: e.target.value ? Number(e.target.value) : null } })}
+                                    className="bg-muted rounded-md px-1.5 py-0.5 text-[11px] text-foreground outline-none w-12" title="Quantas vezes" />
+                                )}
                               </div>
                             </div>
                             {r.valor > 0 && (
@@ -197,8 +274,23 @@ function TarefasPage() {
                         {TIPOS.map((t) => <option key={t} className="bg-card">{t}</option>)}
                       </select>
                       <span>·</span>
-                      <input type="date" defaultValue={r.data ?? ""} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })}
+                      <input type="date" defaultValue={r.data ?? ""} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value || null } })}
                         className="bg-transparent outline-none text-muted-foreground text-xs" />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <input type="time" defaultValue={r.hora ?? ""}
+                        onBlur={(e) => e.target.value !== (r.hora ?? "") && upd.mutate({ id: r.id, patch: { hora: e.target.value || null } })}
+                        className="bg-transparent outline-none text-xs" />
+                      <select value={r.frequencia ?? "uma_vez"}
+                        onChange={(e) => upd.mutate({ id: r.id, patch: { frequencia: e.target.value } })}
+                        className="bg-transparent outline-none text-xs">
+                        {FREQUENCIAS.map((f) => <option key={f.value} value={f.value} className="bg-card">{f.label}</option>)}
+                      </select>
+                      {r.frequencia && r.frequencia !== "uma_vez" && (
+                        <input type="number" min={1} defaultValue={r.vezes ?? ""} placeholder="∞" title="Quantas vezes"
+                          onBlur={(e) => Number(e.target.value) !== Number(r.vezes) && upd.mutate({ id: r.id, patch: { vezes: e.target.value ? Number(e.target.value) : null } })}
+                          className="bg-transparent outline-none text-xs w-10" />
+                      )}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
@@ -214,33 +306,33 @@ function TarefasPage() {
               <EmptyState icon={ListTodo} title="Nenhuma tarefa" description="Crie sua primeira tarefa financeira." action={<Button onClick={() => add.mutate()}><Plus className="h-4 w-4 mr-1" />Nova tarefa</Button>} />
             )}
           </div>
-
-          {/* Lembretes */}
-          <section>
-            <h2 className="font-display text-lg font-semibold flex items-center gap-2 mb-3">
-              <Bell className="h-4 w-4 text-primary" /> Próximos vencimentos
-            </h2>
-            {lembretes.length === 0 ? (
-              <div className="rounded-xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">Nada nos próximos 3 dias — tudo em dia!</div>
-            ) : (
-              <div className="space-y-2">
-                {lembretes.map((l, i) => (
-                  <div key={i} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3 transition-all hover:shadow-sm">
-                    <div className="h-9 w-9 rounded-lg bg-warning-soft text-warning grid place-items-center shrink-0">
-                      <Bell className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm truncate">{l.texto}</div>
-                      <div className="text-xs text-muted-foreground">{l.data}</div>
-                    </div>
-                    <Money value={l.valor} className="font-bold text-primary tabular-nums" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
         </>
       )}
+
+      {/* Lembretes */}
+      <section>
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2 mb-3">
+          <Bell className="h-4 w-4 text-primary" /> Próximos vencimentos
+        </h2>
+        {lembretes.length === 0 ? (
+          <div className="rounded-xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">Nada nos próximos 3 dias — tudo em dia!</div>
+        ) : (
+          <div className="space-y-2">
+            {lembretes.map((l, i) => (
+              <div key={i} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3 transition-all hover:shadow-sm">
+                <div className="h-9 w-9 rounded-lg bg-warning-soft text-warning grid place-items-center shrink-0">
+                  <Bell className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm truncate">{l.texto}</div>
+                  <div className="text-xs text-muted-foreground">{l.data}</div>
+                </div>
+                <Money value={l.valor} className="font-bold text-primary tabular-nums" />
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <ConfirmDialog
         open={!!delId}
@@ -251,6 +343,70 @@ function TarefasPage() {
         confirmLabel="Excluir"
         variant="destructive"
       />
+    </div>
+  );
+}
+
+/* Vista Agenda: tarefas agrupadas por dia, com hora */
+function AgendaView({ grupos, onToggle, onDelete, onRename }: {
+  grupos: { label: string; itens: any[] }[];
+  onToggle: (id: string, feito: boolean) => void;
+  onDelete: (id: string) => void;
+  onRename: (id: string, descricao: string) => void;
+}) {
+  if (grupos.length === 0) {
+    return (
+      <EmptyState icon={CalendarDays} title="Agenda vazia" description="Suas tarefas pendentes aparecem aqui, em ordem de data e hora." />
+    );
+  }
+  return (
+    <div className="space-y-4">
+      {grupos.map((g) => (
+        <section key={g.label}>
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <h3 className={cn(
+              "font-display text-sm font-semibold capitalize",
+              g.label === "Hoje" ? "text-primary" : "text-foreground",
+              g.label === "Ontem" && "text-negative",
+            )}>{g.label}</h3>
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{g.itens.length}</span>
+          </div>
+          <div className="space-y-2">
+            {g.itens.map((r) => {
+              const isLate = r.status === "atrasado";
+              return (
+                <div key={r.id} className={cn("rounded-xl bg-card border border-border p-3 flex items-center gap-3 transition-all", isLate && "ring-1 ring-negative/40")}>
+                  <button onClick={() => onToggle(r.id, r.status === "feito")}
+                    className="h-9 w-9 shrink-0 rounded-lg grid place-items-center bg-muted text-muted-foreground hover:bg-muted/80">
+                    <Check className="h-4 w-4" />
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && onRename(r.id, e.target.value)}
+                      className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold text-sm px-0" />
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      {r.hora && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md tabular-nums">
+                          <Clock className="h-3 w-3" /> {r.hora}
+                        </span>
+                      )}
+                      {r.frequencia && r.frequencia !== "uma_vez" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
+                          <Repeat className="h-3 w-3" /> {freqLabel(r.frequencia)}{r.vezes ? ` · ${r.vezes}×` : ""}
+                        </span>
+                      )}
+                      {r.tipo && <span className="text-[10px] text-muted-foreground">{r.tipo}</span>}
+                    </div>
+                  </div>
+                  {Number(r.valor ?? 0) > 0 && (
+                    <Money value={Number(r.valor)} className="font-bold text-primary tabular-nums text-sm shrink-0" />
+                  )}
+                  <button onClick={() => onDelete(r.id)} className="text-negative/70 hover:text-negative shrink-0"><Trash2 className="h-4 w-4" /></button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

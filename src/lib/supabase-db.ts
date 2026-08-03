@@ -39,8 +39,7 @@ function isIdentityTable(table: string): boolean {
 export async function selectAll<T = any>(table: string): Promise<T[]> {
   const userId = await getUserId();
   const column = isIdentityTable(table) ? "id" : "user_id";
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await (supabase as any).from(table)
     .select("*")
     .eq(column, userId);
 
@@ -57,8 +56,8 @@ export async function insertRow<T extends Record<string, any> = any>(
   // Garantir a data caso seja a tabela de lancamentos e o campo data esteja faltando
   const rowToInsert = { ...row };
   console.log("DEBUG: Tentando inserir:", table, rowToInsert);
-  if (table === "lancamentos" && !rowToInsert.data) {
-    rowToInsert.data = new Date().toISOString().slice(0, 10);
+  if (table === "lancamentos" && !(rowToInsert as any).data) {
+    (rowToInsert as any).data = new Date().toISOString().slice(0, 10);
   }
 
   const newRow = {
@@ -79,8 +78,7 @@ export async function insertRow<T extends Record<string, any> = any>(
 
   console.log("Tentando salvar no Supabase:", table, newRow);
 
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await (supabase as any).from(table)
     .insert(newRow)
     .select()
     .single();
@@ -100,8 +98,7 @@ export async function updateRow<T = any>(
   const userId = await getUserId();
   const column = isIdentityTable(table) ? "id" : "user_id";
 
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await (supabase as any).from(table)
     .update(patch)
     .eq("id", id)
     .eq(column, userId) // extra safety: ensure user owns the row
@@ -119,8 +116,7 @@ export async function deleteRow(table: string, id: string): Promise<boolean> {
   const userId = await getUserId();
   const column = isIdentityTable(table) ? "id" : "user_id";
 
-  const { error, count } = await supabase
-    .from(table)
+  const { error, count } = await (supabase as any).from(table)
     .delete({ count: "exact" })
     .eq("id", id)
     .eq(column, userId);
@@ -152,7 +148,7 @@ export async function getProfile(): Promise<Record<string, any>> {
 /** Update the authenticated user's profile (sempre a própria sessão, nunca o owner ativo) */
 export async function updateProfile(patch: Record<string, any>) {
   const userId = await getSessionUserId();
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("profiles")
     .update(patch)
     .eq("id", userId)

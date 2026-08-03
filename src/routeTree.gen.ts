@@ -32,6 +32,7 @@ import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authen
 import { Route as AuthenticatedMercadoRouteImport } from './routes/_authenticated/mercado'
 import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
 import { Route as AuthenticatedProdutividadeRouteImport } from './routes/_authenticated/produtividade'
+import { Route as AuthenticatedSobreRouteImport } from './routes/_authenticated/sobre'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
@@ -152,6 +153,11 @@ const AuthenticatedProdutividadeRoute =
     path: '/produtividade',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSobreRoute = AuthenticatedSobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   id: '/tarefas',
   path: '/tarefas',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
+  '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
+  '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/mercado': typeof AuthenticatedMercadoRoute
   '/_authenticated/parcelas': typeof AuthenticatedParcelasRoute
   '/_authenticated/produtividade': typeof AuthenticatedProdutividadeRoute
+  '/_authenticated/sobre': typeof AuthenticatedSobreRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/mercado'
     | '/parcelas'
     | '/produtividade'
+    | '/sobre'
     | '/tarefas'
     | '/auth/callback'
     | '/convite/$token'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/mercado'
     | '/parcelas'
     | '/produtividade'
+    | '/sobre'
     | '/tarefas'
     | '/auth/callback'
     | '/convite/$token'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mercado'
     | '/_authenticated/parcelas'
     | '/_authenticated/produtividade'
+    | '/_authenticated/sobre'
     | '/_authenticated/tarefas'
     | '/auth/callback'
     | '/convite/$token'
@@ -516,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProdutividadeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sobre': {
+      id: '/_authenticated/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof AuthenticatedSobreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tarefas': {
       id: '/_authenticated/tarefas'
       path: '/tarefas'
@@ -551,6 +570,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMercadoRoute: typeof AuthenticatedMercadoRoute
   AuthenticatedParcelasRoute: typeof AuthenticatedParcelasRoute
   AuthenticatedProdutividadeRoute: typeof AuthenticatedProdutividadeRoute
+  AuthenticatedSobreRoute: typeof AuthenticatedSobreRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
 }
 
@@ -565,6 +585,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMercadoRoute: AuthenticatedMercadoRoute,
   AuthenticatedParcelasRoute: AuthenticatedParcelasRoute,
   AuthenticatedProdutividadeRoute: AuthenticatedProdutividadeRoute,
+  AuthenticatedSobreRoute: AuthenticatedSobreRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
 }
 

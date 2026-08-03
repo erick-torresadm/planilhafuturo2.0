@@ -19,7 +19,7 @@ export const Route = createFileRoute("/suporte")({
 // NÚMERO DO WHATSAPP — substitua pelo número real no formato
 // internacional: DDI + DDD + número (ex.: "5511999999999").
 // ─────────────────────────────────────────────────────────────
-const WHATSAPP_NUMERO = "5511999999999";
+const WHATSAPP_NUMERO = "5511948333534";
 const EMAIL = "contato@planilhafuturo.com.br";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Olá! Preciso de ajuda com a planilhafuturo.")}`;
 

@@ -20,6 +20,11 @@ export const Route = createFileRoute("/_authenticated/investimentos")({
   component: InvestPage,
 });
 
+/** Texto extra exibido no card de cripto (ex.: variação informada pelo usuário). */
+function rendaExtra(renda?: string): string {
+  return (renda ?? "").trim();
+}
+
 const TIPOS = [
   { value: "CDB", label: "CDB", icon: Landmark },
   { value: "Fundo", label: "Fundo", icon: TrendingUp },

@@ -63,9 +63,7 @@ function ConvitePage() {
     );
   }
 
-  const invalid =
-    !data ||
-    (data.status !== "pendente" && data.status !== "aceito");
+  const invalid = !data || data.status !== "pendente";
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">

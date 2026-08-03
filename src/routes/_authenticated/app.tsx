@@ -10,6 +10,8 @@ import { useExternalData } from "@/hooks/useExternalData";
 import { Plus, TrendingUp, DollarSign, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardMercury } from "@/components/dashboards";
+import { FinanceCoach } from "@/components/FinanceCoach";
+import { gerarInsights, type AppDataForAI } from "@/lib/insights";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Hoje — planilhafuturo" }] }),
   component: HojePage,
@@ -27,6 +29,7 @@ function HojePage() {
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const invest = useQuery({ queryKey: ["investimentos"], queryFn: () => selectAll("investimentos") });
+  const desejosQ = useQuery({ queryKey: ["desejos"], queryFn: () => selectAll("desejos") });
   const { list: lanc, upsert } = useLancamentosLocal();
 
   const { data: extData } = useExternalData();
@@ -95,14 +98,31 @@ function HojePage() {
   const fixos = totalGastoFixoMensal(((gastos.data ?? []) as GastoFixo[]));
   const parcMes = parcelasNoMes(((parcelas.data ?? []) as unknown as Parcela[]), y, m0);
 
+  const folgaHoje = diaHoje ? (diaHoje.entradaFixa + diaHoje.entradaDiaria - diaHoje.saidaFixa - diaHoje.saidaDiaria) : 0;
+  const desejos = ((desejosQ.data ?? []) as any[]).filter((d) => Number(d.valor ?? 0) > 0);
+  const maiorDesejo = desejos.length
+    ? desejos.reduce((a, b) => (Number(b.valor ?? 0) > Number(a.valor ?? 0) ? b : a))
+    : null;
+
   const appData: AppDataForAI = {
-    saldoHoje, saldoInicial, saldoFimMes, totalInvestido,
+    nome,
+    saldoHoje,
+    saldoInicial,
+    saldoFimMes,
+    totalInvestido,
     totalEntradas: totalEntradasMes,
     totalSaidas: totalSaidasMes,
     gastosFixos: fixos,
     parcelasMes: parcMes,
     rendaMensal: renda,
+    folgaHoje,
+    mesesReserva: Number((profile.data as any)?.meses_reserva_emergencia ?? 6),
+    primeiroNegativo: primeiroNegativo
+      ? { label: `${MESES_ABREV[primeiroNegativo.m]}/${String(primeiroNegativo.y).slice(2)}`, saldo: primeiroNegativo.saldoFim }
+      : null,
+    maiorDesejo: maiorDesejo ? { item: maiorDesejo.item, valor: Number(maiorDesejo.valor ?? 0) } : null,
   };
+  const insights = gerarInsights(appData);
 
   const dashboardProps = {
     saldoHoje, saldoFimMes, saldoInicial,
@@ -129,6 +149,9 @@ function HojePage() {
   return (
     <div className="page-container space-y-4 animate-in">
       <DashboardMercury {...dashboardProps} />
+
+      {/* Conselheiro financeiro — insights da planilha do usuário */}
+      <FinanceCoach nome={nome} insights={insights} />
 
       {/* External economic data */}
       {(extData.usd || extData.selic) && (

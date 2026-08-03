@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { getSoundSettings, saveSoundSettings, useSounds } from "@/hooks/useSounds";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Volume2, Sparkles, Check, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, Infinity, ChevronRight, Users, Link2, UserPlus, Trash2, KeyRound, X } from "lucide-react";
+import { User, Volume2, Sparkles, Check, Crown, Loader2, Copy, Download, Database, FileSpreadsheet, ShieldCheck, Zap, ChevronRight, Users, Link2, UserPlus, Trash2, KeyRound, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Money } from "@/components/Money";
 import { cn } from "@/lib/utils";
@@ -243,7 +243,7 @@ function EquipeSection() {
         .from("convites")
         .select("id, email, status, token, criado_em, expira_em")
         .order("criado_em", { ascending: false });
-      return data ?? [];
+      return (data ?? []) as ConviteRow[];
     },
     enabled: !!sessionId.data,
     retry: false,

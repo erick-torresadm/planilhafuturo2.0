@@ -94,8 +94,7 @@ export async function migrateLocalDataToSupabase(userId: string): Promise<Migrat
       try {
         // Check if this row already exists (by id)
         if (row.id) {
-          const { data: existing } = await supabase
-            .from(table)
+          const { data: existing } = await (supabase as any).from(table)
             .select("id")
             .eq("id", row.id)
             .maybeSingle();
@@ -115,7 +114,7 @@ export async function migrateLocalDataToSupabase(userId: string): Promise<Migrat
         if (insertRow.created_at) delete insertRow.created_at;
         if (insertRow.updated_at) delete insertRow.updated_at;
 
-        const { error } = await supabase.from(table).insert(insertRow);
+        const { error } = await (supabase as any).from(table).insert(insertRow);
         if (error) {
           // Skip duplicate key errors (row already exists)
           if (error.code === "23505") {
