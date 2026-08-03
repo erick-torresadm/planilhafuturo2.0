@@ -41,7 +41,13 @@ function ConvitePage() {
     setAccepting(true);
     try {
       const m = await import("@/lib/convite.functions");
-      const result = await m.aceitarConvite({ data: token });
+      let result = await m.aceitarConvite({ data: token });
+      // Conta recém-criada pode disparar o RPC antes da sessão estar pronta.
+      // Retry único (a server fn é idempotente) cobre essa corrida de auth.
+      if (!result.ok && /logado|sess|session/i.test(result.error)) {
+        await new Promise((r) => setTimeout(r, 1200));
+        result = await m.aceitarConvite({ data: token });
+      }
       if (result.ok) {
         setActiveWorkspace(result.ownerId);
         window.location.href = "/app";
