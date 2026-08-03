@@ -430,6 +430,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notificacoes: {
+        Row: {
+          corpo: string
+          created_at: string | null
+          dedupe_key: string | null
+          id: string
+          ref_email: string | null
+          ref_plano: string | null
+          ref_user_id: string | null
+          ref_valor: number | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          corpo: string
+          created_at?: string | null
+          dedupe_key?: string | null
+          id?: string
+          ref_email?: string | null
+          ref_plano?: string | null
+          ref_user_id?: string | null
+          ref_valor?: number | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          corpo?: string
+          created_at?: string | null
+          dedupe_key?: string | null
+          id?: string
+          ref_email?: string | null
+          ref_plano?: string | null
+          ref_user_id?: string | null
+          ref_valor?: number | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       parcelas: {
         Row: {
           cartao: string | null
@@ -595,6 +634,33 @@ export type Database = {
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          p256dh: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          p256dh: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          p256dh?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

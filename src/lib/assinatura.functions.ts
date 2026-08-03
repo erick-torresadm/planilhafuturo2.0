@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createPixCharge, checkPixStatus, createCreditCardCharge } from "./efi-service";
 import { getAuthedUser } from "./server-session";
+import { registrarEvento } from "./push.functions";
 
 const PLANOS: Record<string, { nome: string; valor: number; dias: number }> = {
   anual: { nome: "PRO Anual", valor: 250, dias: 365 },
@@ -153,6 +154,18 @@ export const verifyPayment = createServerFn({ method: "POST" })
 
       await upsertAssinatura(userId, plano.nome);
 
+      const me = await getAuthedUser();
+      await registrarEvento({
+        tipo: "pagamento",
+        titulo: "Plano ativado",
+        corpo: `${plano.nome} ativado — ${me?.email ?? "usuário"}`,
+        refUserId: userId,
+        refEmail: me?.email ?? null,
+        refPlano: plano.nome,
+        refValor: plano.valor,
+        dedupeKey: `ativado:${userId}:${plano.nome}`,
+      });
+
       return { paid: true, plano: plano.nome, dias: plano.dias };
     } catch (err: any) {
       return { paid: false, error: err.message ?? "Erro ao verificar" };
@@ -290,7 +303,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
 
     const { data: prof } = await admin
       .from("profiles")
-      .select("positivo_em")
+      .select("positivo_em, email")
       .eq("id", targetId)
       .maybeSingle();
 
@@ -301,6 +314,15 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
       const nowIso = new Date().toISOString();
       positivoEm = Date.now();
       await admin.from("profiles").update({ positivo_em: nowIso }).eq("id", targetId);
+
+      await registrarEvento({
+        tipo: "positivo",
+        titulo: "Ficou positivo",
+        corpo: `${prof?.email ?? "Usuário"} ficou positivo — 7 dias para pagar`,
+        refUserId: targetId,
+        refEmail: prof?.email ?? null,
+        dedupeKey: `positivo:${targetId}`,
+      });
     }
 
     // Sem positivo_em e sem assinatura → grátis indefinido (barreira de entrada).
@@ -470,6 +492,18 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
           paid_at: paid ? new Date().toISOString() : null,
         });
 
+        if (paid) {
+          await registrarEvento({
+            tipo: "pagamento",
+            titulo: "Cartão aprovado",
+            corpo: `${plano.nome} (R$ ${plano.valor.toFixed(2)}) — ${data.email}`,
+            refEmail: data.email,
+            refPlano: plano.nome,
+            refValor: plano.valor,
+            dedupeKey: `pagamento:cartao:${data.email}:${plano.nome}:${cardResult.charge_id || 0}`,
+          });
+        }
+
         return {
           ok: true,
           metodo: "cartao",
@@ -502,6 +536,23 @@ export const verifyPreSignupPayment = createServerFn({ method: "POST" })
         .update({ status: "pago", paid_at: new Date().toISOString() })
         .eq("txid", data.txid)
         .eq("email", data.email);
+
+      const { data: pre } = await admin
+        .from("pre_pagamentos")
+        .select("plano, valor")
+        .eq("txid", data.txid)
+        .eq("email", data.email)
+        .maybeSingle();
+
+      await registrarEvento({
+        tipo: "pagamento",
+        titulo: "Pix pago",
+        corpo: `Pix de R$ ${Number(pre?.valor ?? 0).toFixed(2)} confirmado — ${pre?.plano ?? "plano"} (${data.email})`,
+        refEmail: data.email,
+        refPlano: pre?.plano ?? null,
+        refValor: Number(pre?.valor) || null,
+        dedupeKey: `pagamento:${data.email}:${data.txid}`,
+      });
 
       return { paid: true };
     } catch (err: any) {
@@ -539,10 +590,39 @@ export const activatePlanPostSignup = createServerFn({ method: "POST" })
 
     if (pre.plano === "Planilha do Erick") {
       await upsertCompraPlanilha(userId);
+      await registrarEvento({
+        tipo: "compra",
+        titulo: "Planilha vendida",
+        corpo: `Planilha do Erick (R$ 70,00) — ${userEmail}`,
+        refUserId: userId,
+        refEmail: userEmail,
+        refPlano: pre.plano,
+        refValor: 70,
+        dedupeKey: `compra:${userId}:planilha`,
+      });
     } else if (pre.plano === "Mentoria com Erick") {
       await upsertCompraMentoria(userId);
+      await registrarEvento({
+        tipo: "compra",
+        titulo: "Mentoria vendida",
+        corpo: `Mentoria com Erick (R$ 497,00) — ${userEmail}`,
+        refUserId: userId,
+        refEmail: userEmail,
+        refPlano: pre.plano,
+        refValor: 497,
+        dedupeKey: `compra:${userId}:mentoria`,
+      });
     } else {
       await upsertAssinatura(userId, pre.plano);
+      await registrarEvento({
+        tipo: "pagamento",
+        titulo: "Plano ativado",
+        corpo: `${pre.plano} ativado — ${userEmail}`,
+        refUserId: userId,
+        refEmail: userEmail,
+        refPlano: pre.plano,
+        dedupeKey: `ativado:${userId}:${pre.plano}`,
+      });
     }
 
     // Mark pre_pagamento as activated

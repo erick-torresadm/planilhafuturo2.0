@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Download, Loader2, X } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -33,6 +34,11 @@ function RouteComponent() {
   const { user } = Route.useRouteContext();
   const [showBanner, setShowBanner] = useState(false);
   const [migrating, setMigrating] = useState(false);
+
+  // Push de notificações: aviso de novo cadastro (todos) + assinatura de push (admin).
+  // Chamado antes do gate do paywall para o cadastro disparar mesmo se o usuário
+  // novo ainda não estiver ativo.
+  usePushNotifications();
 
   // Gate de assinatura: teste grátis expirado sem pagamento → tudo travado.
   // Workspace-aware: se está vendo o workspace de outro (ADM), o plano do DONO

@@ -1,4 +1,4 @@
-const CACHE = "planilha-v6";
+const CACHE = "planilha-v7";
 const STATIC_ASSETS = [
   "/",
   "/app",
@@ -121,6 +121,49 @@ async function fetchAndCache(req, cacheName) {
   }
   return res;
 }
+
+/* ── Web Push (notificações do admin) ── */
+self.addEventListener("push", (e) => {
+  let payload = { titulo: "planilhafuturo", corpo: "", tag: "evento" };
+  try {
+    const data = e.data ? e.data.json() : null;
+    if (data && data.titulo) {
+      payload = {
+        titulo: data.titulo,
+        corpo: typeof data.corpo === "string" ? data.corpo : "",
+        tag: typeof data.tipo === "string" ? data.tipo : "evento",
+      };
+    }
+  } catch {
+    // payload não-JSON → usa o default
+  }
+  e.waitUntil(
+    self.registration.showNotification(payload.titulo, {
+      body: payload.corpo,
+      icon: "/pwa-icon.png",
+      badge: "/favicon.png",
+      tag: payload.tag,
+      renotify: true,
+      data: { url: "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/";
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ("focus" in c) {
+          c.focus();
+          return;
+        }
+      }
+      return clients.openWindow(url);
+    }),
+  );
+});
 
 /* ── Background Sync for offline mutations ── */
 self.addEventListener("sync", (e) => {
