@@ -8,8 +8,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, type ReactNode } from "react";
-import { toast } from "sonner";
-
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
@@ -180,42 +178,53 @@ function RootComponent() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Register service worker + update detection
+  // Register service worker + silent auto-update
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
 
-    let toastId: string | number | undefined;
+    let firstUpdateChecked = false;
+    let checkTimer: ReturnType<typeof setInterval> | undefined;
+
+    const checkForUpdate = () => {
+      navigator.serviceWorker
+        .getRegistration("/sw.js")
+        .then((reg) => reg?.update())
+        .catch(() => {});
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    };
 
     navigator.serviceWorker.register("/sw.js").then((reg) => {
-      // Check for updates on each page load
+      // Checagens periódicas: mantém o app atualizado mesmo se ficar aberto.
+      checkTimer = setInterval(checkForUpdate, 60 * 60 * 1000);
+      document.addEventListener("visibilitychange", onVisible);
+
       reg.addEventListener("updatefound", () => {
         const newSW = reg.installing;
         if (!newSW) return;
         newSW.addEventListener("statechange", () => {
-          if (newSW.state === "installed" && navigator.serviceWorker.controller) {
-            // New version available
-            toastId = toast("Nova versão disponível", {
-              description: "Atualize para a versão mais recente.",
-              action: {
-                label: "Atualizar",
-                onClick: () => {
-                  newSW.postMessage({ type: "SKIP_WAITING" });
-                  window.location.reload();
-                },
-              },
-              duration: 10000,
-            });
+          if (newSW.state !== "installed") return;
+          if (!firstUpdateChecked) {
+            // Checagem da abertura (ou 1º install): aplica já, silencioso.
+            // Update achado no meio da sessão fica "aguardando" e aplica na
+            // próxima abertura — não interrompe a digitação do usuário.
+            firstUpdateChecked = true;
+            newSW.postMessage({ type: "SKIP_WAITING" });
           }
         });
       });
     }).catch(() => {});
 
-    // Reload when a waiting SW takes over
+    // Quando um SW novo toma controle (após SKIP_WAITING), recarrega 1x.
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       window.location.reload();
     });
 
-    return () => { /* cleanup handled by navigator lifetime */ };
+    return () => {
+      if (checkTimer) clearInterval(checkTimer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   // Handle install

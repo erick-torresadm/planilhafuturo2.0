@@ -1,4 +1,4 @@
-const CACHE = "planilha-v7";
+const CACHE = "planilha-v8";
 const STATIC_ASSETS = [
   "/",
   "/app",
@@ -20,7 +20,7 @@ self.addEventListener("install", (e) => {
           }).catch(() => {}),
         ),
       );
-    }).then(() => self.skipWaiting()),
+    }),
   );
 });
 
@@ -30,6 +30,11 @@ self.addEventListener("activate", (e) => {
       Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
     ).then(() => self.clients.claim()),
   );
+});
+
+/* ── Controle de update: o client posta SKIP_WAITING ao aplicar na abertura ── */
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", (e) => {
