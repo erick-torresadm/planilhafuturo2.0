@@ -63,6 +63,7 @@ function Nav() {
           <a href="#features" className="hover:text-foreground transition">Produto</a>
           <a href="#pricing" className="hover:text-foreground transition">Preços</a>
           <a href="#faq" className="hover:text-foreground transition">Perguntas</a>
+          <Link to="/suporte" className="hover:text-foreground transition">Suporte</Link>
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-2">
@@ -538,11 +539,12 @@ function Footer() {
             <a href="#pricing" className="hover:text-foreground">Preços</a>
             <a href="#faq" className="hover:text-foreground">Perguntas</a>
             <Link to="/guia" className="hover:text-foreground">Como usar</Link>
+            <Link to="/suporte" className="hover:text-foreground">Suporte</Link>
             <Link to="/auth" className="hover:text-foreground">Entrar</Link>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} planilhafuturo. Feito no Brasil.</div>
+          <div>© {new Date().getFullYear()} planilhafuturo · <a href="https://fandimcapital.com.br" target="_blank" rel="noopener noreferrer" className="hover:text-foreground font-medium">grupo Fandim Capital</a></div>
           <div className="flex flex-wrap gap-x-5 gap-y-1">
             <Link to="/termos" className="hover:text-foreground">Termos</Link>
             <Link to="/privacidade" className="hover:text-foreground">Privacidade</Link>

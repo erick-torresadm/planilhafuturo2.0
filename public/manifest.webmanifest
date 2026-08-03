@@ -1,7 +1,7 @@
 {
-  "name": "planilhafuturo — Planejamento financeiro em 6 meses",
+  "name": "planilhafuturo — Planejamento financeiro em 12 meses",
   "short_name": "planilhafuturo",
-  "description": "Enxergue seus próximos 6 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas, desejos e investimentos.",
+  "description": "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas, desejos e investimentos.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",

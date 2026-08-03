@@ -1,35 +1,35 @@
 # planilhafuturo
 
-> SaaS brasileiro de planejamento financeiro pessoal. Mostra o fluxo de caixa dos próximos 6 meses, dia a dia, sem precisar de fórmula de Excel. Feito pra celular. Método próprio inspirado em orçamento base-zero, dividindo a renda em Sobrevivência, Proteção e Liberdade.
+> SaaS brasileiro de planejamento financeiro pessoal. Mostra o fluxo de caixa dos próximos 12 meses, dia a dia, sem precisar de fórmula de Excel. Feito pra celular. Método próprio inspirado em orçamento base-zero, dividindo a renda em Sobrevivência, Proteção e Liberdade.
 
 ## O produto em uma linha
-Uma planilha inteligente que projeta 6 meses de saldo diário e responde: "vai sobrar ou vai faltar?".
+Uma planilha inteligente que projeta 12 meses de saldo diário e responde: "vai sobrar ou vai faltar?".
 
 ## Público
 Trabalhadores CLT, autônomos e freelancers brasileiros que querem sair do sufoco, montar reserva e construir patrimônio sem precisar virar planilheiro.
 
 ## Funcionalidades principais
-- Fluxo diário: 180 dias visíveis num scroll, com saldo recalculado em tempo real
+- Fluxo diário: saldo recalculado dia a dia, com projeção de 12 meses
 - Gastos fixos: contas mensais e anuais com dia de vencimento
 - Parcelas: cartão de crédito e compras parceladas, sabendo exatamente quando termina
 - Desejos e metas: caixinhas com data, o app diz se dá pra comprar
 - Investimentos: patrimônio, rendimento e projeção
-- Produtividade: pomodoro, foco do dia e hábitos
-- Lembretes de contas a pagar por e-mail
+- Produtividade: pomodoro, foco do dia, hábitos e notas
+- Histórico: todos os meses, incluindo os passados
 
 ## Planos e preços (em Reais)
-- Starter — R$ 69,90/ano · 1 mês de projeção, gastos fixos ilimitados
-- Anual — R$ 300/ano (~R$ 25/mês) · tudo liberado + suporte em call com o fundador (recomendado)
-- Vitalício — R$ 800 pagamento único · acesso permanente + selo fundador + suporte prioritário
-- Planilha Excel/Sheets — R$ 129,90 pagamento único · pra quem prefere planilha
+- Trial grátis: 7 dias com tudo liberado, sem cartão de crédito
+- PRO Anual — R$ 250/ano (~R$ 21/mês) · 12 meses de projeção, todas as funcionalidades, suporte prioritário
+- Vitalício — R$ 450 pagamento único · acesso permanente + atualizações + call de 30 min com o Erick para analisar seu projeto
+- Planilha do Erick — R$ 70 pagamento único · a mesma planilha que o Erick usa, em Excel (.xlsx), sem assinatura
 - Garantia de 7 dias em todos os planos, reembolso sem burocracia
 
 ## Diferenciais
-- Feito para celular primeiro (97% dos usuários usam no smartphone)
-- Dados criptografados na Lovable Cloud com Row-Level Security por usuário
+- Feito para celular primeiro
+- Dados protegidos com Row-Level Security por usuário (Supabase)
 - Não conecta ao banco, não usa Open Finance — você digita, mantém controle
 - Sem rastreadores publicitários, sem venda de dados
-- Suporte direto com o fundador (Erick) em call nos planos Anual e Vitalício
+- Suporte direto com o fundador (Erick)
 
 ## Metodologia
 Divide a renda mensal em três pilares:
@@ -41,27 +41,28 @@ Fluxo E-S-D-E-C: Entrada, Saída, Diário, Extra, Compras parceladas.
 
 ## Empresa
 - Nome comercial: planilhafuturo
-- Domínio: planilhafuturo.com.br (institucional) e planilhafuturo.lovable.app (aplicativo)
+- Domínio: planilhafuturo.com.br
 - Fundador: Erick Torres
+- Grupo: Fandim Capital
 - País: Brasil (São Paulo)
 - Idioma: português brasileiro
 - Contato: contato@planilhafuturo.com.br
 
 ## Como falar com a gente
-- Chat com IA (Futura) direto no site — responde em segundos
+- Página de Suporte: https://planilhafuturo.com.br/suporte
 - E-mail: contato@planilhafuturo.com.br (resposta em até 24h)
 - Suporte em call (fundador Erick) para assinantes Anual e Vitalício
 
 ## Documentos
-- [Termos de Uso](https://planilhafuturo.lovable.app/termos)
-- [Política de Privacidade](https://planilhafuturo.lovable.app/privacidade)
-- [Política de Cookies](https://planilhafuturo.lovable.app/cookies)
-- [Documentação do produto](https://planilhafuturo.lovable.app/docs)
+- [Termos de Uso](https://planilhafuturo.com.br/termos)
+- [Política de Privacidade](https://planilhafuturo.com.br/privacidade)
+- [Política de Cookies](https://planilhafuturo.com.br/cookies)
+- [Como usar](https://planilhafuturo.com.br/guia)
 
 ## Perguntas frequentes
-- **É seguro?** Sim. Dados criptografados em trânsito e em repouso, senhas com bcrypt, RLS por usuário, backups diários.
-- **Precisa conectar banco?** Não. Você digita. Integração Open Finance está no roadmap 2026.
-- **Funciona offline?** Não; requer conexão. Existe versão em Excel/Sheets (R$ 129,90) que funciona offline.
+- **É seguro?** Sim. Dados criptografados em trânsito e em repouso, RLS por usuário, backups diários.
+- **Precisa conectar banco?** Não. Você digita. Integração Open Finance está no roadmap.
+- **Funciona offline?** Não; requer conexão. Existe versão em Excel (.xlsx, R$ 70) que funciona offline.
 - **Tem app nativo?** É PWA — instala pelo navegador (Android/iOS) e funciona como app.
 - **Posso cancelar?** Sim, quando quiser, sem multa. Dados ficam exportáveis por 30 dias.
 

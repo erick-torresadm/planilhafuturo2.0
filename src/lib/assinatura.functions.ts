@@ -161,20 +161,22 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
       return { status: "ativo", plano: assinatura.plano ?? "Mensal" };
     }
 
-    // Check trial
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("trial_ends_at, plano")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (profile?.trial_ends_at) {
-      const remaining = Math.ceil(
-        (new Date(profile.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+    // Trial calculado a partir do created_at do auth.users (não editável pelo
+    // usuário). NÃO confiar em profiles.trial_ends_at/plano: a RLS "own profile"
+    // permite o usuário alterar a própria linha e furar o paywall. Também evita
+    // travar contas legadas com trial_ends_at NULL.
+    const DIAS_TRIAL = 15;
+    const { data: authUser } = await admin.auth.admin.getUserById(userId);
+    const created = authUser?.user?.created_at;
+    if (created) {
+      const endsAt = new Date(created).getTime() + DIAS_TRIAL * 24 * 60 * 60 * 1000;
+      const remaining = Math.ceil((endsAt - Date.now()) / (1000 * 60 * 60 * 24));
       if (remaining > 0) {
         return { status: "trial", plano: "Grátis", diasRestantes: remaining };
       }
+    } else {
+      // Sem created_at (caso improvável) → não trava ninguém por engano.
+      return { status: "trial", plano: "Grátis", diasRestantes: DIAS_TRIAL };
     }
 
     return { status: "inativo" };

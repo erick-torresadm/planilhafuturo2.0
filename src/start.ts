@@ -28,6 +28,7 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => 
     const h = (target as Response).headers;
     h.set("X-Frame-Options", "DENY");
     h.set("X-Content-Type-Options", "nosniff");
+    h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     h.set("Referrer-Policy", "strict-origin-when-cross-origin");
     h.set("Cross-Origin-Opener-Policy", "same-origin");
     h.set("Cross-Origin-Resource-Policy", "same-origin");

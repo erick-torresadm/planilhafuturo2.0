@@ -20,6 +20,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlanilhaRouteImport } from './routes/planilha'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as Pv2RouteImport } from './routes/pv2'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
@@ -87,6 +88,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const Pv2Route = Pv2RouteImport.update({
   id: '/pv2',
   path: '/pv2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermosRoute = TermosRouteImport.update({
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/planilha': typeof PlanilhaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/pv2': typeof Pv2Route
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/planilha'
     | '/privacidade'
     | '/pv2'
+    | '/suporte'
     | '/termos'
     | '/app'
     | '/config'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/planilha'
     | '/privacidade'
     | '/pv2'
+    | '/suporte'
     | '/termos'
     | '/app'
     | '/config'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/planilha'
     | '/privacidade'
     | '/pv2'
+    | '/suporte'
     | '/termos'
     | '/_authenticated/app'
     | '/_authenticated/config'
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   PlanilhaRoute: typeof PlanilhaRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   Pv2Route: typeof Pv2Route
+  SuporteRoute: typeof SuporteRoute
   TermosRoute: typeof TermosRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
 }
@@ -417,6 +430,13 @@ declare module '@tanstack/react-router' {
       path: '/pv2'
       fullPath: '/pv2'
       preLoaderRoute: typeof Pv2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/termos': {
@@ -573,6 +593,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanilhaRoute: PlanilhaRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   Pv2Route: Pv2Route,
+  SuporteRoute: SuporteRoute,
   TermosRoute: TermosRoute,
   ConviteTokenRoute: ConviteTokenRoute,
 }
