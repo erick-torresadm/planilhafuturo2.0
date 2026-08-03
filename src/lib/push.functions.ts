@@ -312,8 +312,12 @@ export async function verificarExpirados(): Promise<{ expirados: number; avisado
  * - Header `x-vercel-cron-schedule` (a Vercel só envia em invocação real)
  * - OU `?token=<CRON_TOKEN>` quando a env está configurada (teste manual)
  */
+export type CronExpiracaoResult =
+  | { ok: true; expirados: number; avisados: number }
+  | { ok: false; error: string };
+
 export const rodarCronExpiracao = createServerFn({ method: "GET" })
-  .handler(async (): Promise<{ ok: boolean; expirados: number; avisados: number }> => {
+  .handler(async (): Promise<CronExpiracaoResult> => {
     const request = getRequest();
     const cronSchedule = request.headers.get("x-vercel-cron-schedule") ?? "";
     const url = new URL(request.url);
@@ -322,7 +326,7 @@ export const rodarCronExpiracao = createServerFn({ method: "GET" })
 
     const authorized = cronSchedule.length > 0 || (expectedToken.length > 0 && token === expectedToken);
     if (!authorized) {
-      throw Object.assign(new Error("Não autorizado"), { statusCode: 401 });
+      return { ok: false, error: "Não autorizado" };
     }
 
     const r = await verificarExpirados();

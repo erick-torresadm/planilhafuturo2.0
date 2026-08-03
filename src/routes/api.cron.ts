@@ -8,7 +8,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/cron")({
   loader: async () => {
     const m = await import("@/lib/push.functions");
-    return m.rodarCronExpiracao();
+    const result = await m.rodarCronExpiracao();
+    // Erro lançado aqui (na rota, fora da RPC da server fn) preserva o statusCode.
+    if (result.ok === false) {
+      throw Object.assign(new Error(result.error), { statusCode: 401 });
+    }
+    return result;
   },
   component: () => null,
 });
