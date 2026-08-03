@@ -141,19 +141,46 @@ type SubscriptionStatus =
   | { status: "trial"; plano: string; diasRestantes: number }
   | { status: "inativo" };
 
+/**
+ * Status de assinatura com consciência de workspace.
+ *
+ * - Sem `forOwner`: status do próprio usuário logado (sua conta).
+ * - Com `forOwner` (workspace ativo): status do DONO do workspace — o ADM
+ *   convidado herda o plano do dono para os DADOS do workspace, mas NUNCA
+ *   ganha plano ativo na própria conta por causa disso.
+ *
+ * Segurança: `forOwner` só é aceito se o chamador for membro do workspace.
+ * Caso contrário retorna inativo sem revelar o plano do dono.
+ */
 export const getSubscriptionStatus = createServerFn({ method: "GET" })
-  .handler(async (): Promise<SubscriptionStatus> => {
-    const userId = await getUserId();
-    if (!userId) return { status: "inativo" };
+  .validator((data: { forOwner?: string } | undefined) => data ?? {})
+  .handler(async ({ data }): Promise<SubscriptionStatus> => {
+    const me = await getAuthedUser();
+    const meId = me?.id ?? null;
+    if (!meId) return { status: "inativo" };
 
     // Service role com user_id explícito — o client supabase não tem sessão no servidor.
     const admin = await getAdminDb();
+
+    // Para quem estamos calculando o plano?
+    let targetId = meId;
+    if (data.forOwner) {
+      // Só membro do workspace pode consultar o plano do dono.
+      const { data: mem } = await admin
+        .from("workspace_members")
+        .select("owner_id")
+        .eq("owner_id", data.forOwner)
+        .eq("member_id", meId)
+        .maybeSingle();
+      if (!mem) return { status: "inativo" }; // não é membro → não revela o plano
+      targetId = data.forOwner;
+    }
 
     // Check for active subscription
     const { data: assinatura } = await admin
       .from("assinaturas")
       .select("plano")
-      .eq("user_id", userId)
+      .eq("user_id", targetId)
       .eq("status", "ativo")
       .maybeSingle();
 
@@ -166,7 +193,7 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
     // permite o usuário alterar a própria linha e furar o paywall. Também evita
     // travar contas legadas com trial_ends_at NULL.
     const DIAS_TRIAL = 15;
-    const { data: authUser } = await admin.auth.admin.getUserById(userId);
+    const { data: authUser } = await admin.auth.admin.getUserById(targetId);
     const created = authUser?.user?.created_at;
     if (created) {
       const endsAt = new Date(created).getTime() + DIAS_TRIAL * 24 * 60 * 60 * 1000;
@@ -180,6 +207,70 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
     }
 
     return { status: "inativo" };
+  });
+
+// ─── Workspaces do usuário (ADM convidado) ────────────────────
+// Listagens via service role: o client NÃO lê profiles de terceiros pela RLS
+// (evita vazar email/dados financeiros do dono para membros).
+
+type MemberWorkspace = { ownerId: string; ownerNome: string; ownerAtivo: boolean };
+
+/** Workspaces em que o usuário logado é membro (ADM). Só devolve id + nome do dono. */
+export const getMemberWorkspaces = createServerFn({ method: "GET" })
+  .handler(async (): Promise<MemberWorkspace[]> => {
+    const me = await getAuthedUser();
+    const meId = me?.id ?? null;
+    if (!meId) return [];
+    const admin = await getAdminDb();
+
+    const { data: memberships } = await admin
+      .from("workspace_members")
+      .select("owner_id")
+      .eq("member_id", meId);
+
+    const ownerIds = [...new Set((memberships ?? []).map((r) => r.owner_id))];
+    if (ownerIds.length === 0) return [];
+
+    const [{ data: owners }, { data: assinaturas }] = await Promise.all([
+      admin.from("profiles").select("id, nome").in("id", ownerIds),
+      admin.from("assinaturas").select("user_id").eq("status", "ativo").in("user_id", ownerIds),
+    ]);
+
+    const ativos = new Set((assinaturas ?? []).map((r) => r.user_id));
+    return ownerIds.map((oid) => ({
+      ownerId: oid,
+      ownerNome: owners?.find((o) => o.id === oid)?.nome ?? "Workspace",
+      ownerAtivo: ativos.has(oid),
+    }));
+  });
+
+/** Membros de um workspace que o usuário logado é DONO. Usado na seção Equipe. */
+export const getWorkspaceMembers = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{ member_id: string; nome: string; email: string | null }[]> => {
+    const me = await getAuthedUser();
+    const meId = me?.id ?? null;
+    if (!meId) return [];
+    const admin = await getAdminDb();
+
+    const { data: rows } = await admin
+      .from("workspace_members")
+      .select("member_id")
+      .eq("owner_id", meId);
+
+    const memberIds = (rows ?? []).map((r) => r.member_id);
+    if (memberIds.length === 0) return [];
+
+    const { data: profs } = await admin
+      .from("profiles")
+      .select("id, nome, email")
+      .in("id", memberIds);
+
+    const byId = new Map((profs ?? []).map((p) => [p.id, p]));
+    return (rows ?? []).map((r) => ({
+      member_id: r.member_id,
+      nome: byId.get(r.member_id)?.nome ?? "Usuário",
+      email: byId.get(r.member_id)?.email ?? null,
+    }));
   });
 
 // ─── Pre-signup checkout (pay first, create account later) ──

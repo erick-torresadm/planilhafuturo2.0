@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Paywall } from "@/components/Paywall";
 import { supabase } from "@/integrations/supabase/client";
+import { getActiveWorkspace } from "@/lib/workspace";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -34,11 +35,14 @@ function RouteComponent() {
   const [migrating, setMigrating] = useState(false);
 
   // Gate de assinatura: teste grátis expirado sem pagamento → tudo travado.
+  // Workspace-aware: se está vendo o workspace de outro (ADM), o plano do DONO
+  // é quem vale para os dados daquele workspace — mas NUNCA ativa a própria conta.
   const sub = useQuery({
     queryKey: ["subscription"],
     queryFn: async () => {
       const m = await import("@/lib/assinatura.functions");
-      return m.getSubscriptionStatus();
+      const activeWs = getActiveWorkspace();
+      return m.getSubscriptionStatus({ data: activeWs ? { forOwner: activeWs } : {} });
     },
     staleTime: 60_000,
   });

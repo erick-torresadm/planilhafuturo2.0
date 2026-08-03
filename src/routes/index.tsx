@@ -244,7 +244,7 @@ function Compare() {
 /* ============ FEATURES (bento) ============ */
 function Features() {
   const items = [
-    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 12 meses, com saldo calculado.", accent: "col-span-2 row-span-2" },
+    { icon: CalendarDays, title: "Fluxo diário", desc: "Todos os dias dos próximos 12 meses, com saldo calculado.", accent: "md:col-span-2 md:row-span-2" },
     { icon: Receipt, title: "Gastos fixos", desc: "Contas mensais e anuais, cada uma no seu dia." },
     { icon: CreditCard, title: "Parcelas", desc: "Divide sozinho pelos meses. Sabe quando termina." },
     { icon: Sparkles, title: "Desejos & caixinhas", desc: "Metas com data. Ele diz se dá pra comprar." },
@@ -257,7 +257,7 @@ function Features() {
         <div className="text-xs uppercase tracking-widest text-primary mb-3">O que tem dentro</div>
         <h2 className="font-display text-4xl sm:text-5xl">Tudo que aquela planilha faz.<br /><span className="italic text-muted-foreground">Mais alguma coisa.</span></h2>
       </motion.div>
-      <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:auto-rows-[180px]">
         {items.map((f, i) => {
           const Icon = f.icon;
           return (

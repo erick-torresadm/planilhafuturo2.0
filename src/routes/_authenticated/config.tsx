@@ -252,17 +252,9 @@ function EquipeSection() {
   const members = useQuery({
     queryKey: ["workspace_members"],
     queryFn: async (): Promise<{ member_id: string; nome: string }[]> => {
-      const { data: rows } = await supabase
-        .from("workspace_members")
-        .select("member_id");
-      const memberIds = (rows ?? []).map((r) => r.member_id);
-      if (memberIds.length === 0) return [];
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, nome, email")
-        .in("id", memberIds);
-      const nameById = new Map((profs ?? []).map((p) => [p.id, p.nome || p.email]));
-      return (rows ?? []).map((r) => ({ member_id: r.member_id, nome: nameById.get(r.member_id) ?? "Usuário" }));
+      const m = await import("@/lib/assinatura.functions");
+      const rows = await m.getWorkspaceMembers();
+      return rows.map((r) => ({ member_id: r.member_id, nome: r.nome || r.email || "Usuário" }));
     },
     enabled: !!sessionId.data,
     retry: false,

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { getActiveWorkspace, setActiveWorkspace } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, User, Users } from "lucide-react";
@@ -11,31 +10,14 @@ export function WorkspaceSwitcher() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
+  // Server fn segura: só retorna id+nome dos donos em que somos membros.
+  // Não lê profiles de terceiros pela RLS (evita vazar email/dados do dono).
   const { data: workspaces = [] } = useQuery({
     queryKey: ["workspaces"],
     queryFn: async (): Promise<Workspace[]> => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const me = session?.user?.id;
-      if (!me) return [];
-
-      const { data: rows } = await supabase
-        .from("workspace_members")
-        .select("owner_id")
-        .eq("member_id", me);
-
-      const ownerIds = (rows ?? []).map((r) => r.owner_id);
-      if (ownerIds.length === 0) return [];
-
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, nome")
-        .in("id", ownerIds);
-
-      const nameById = new Map((profs ?? []).map((p) => [p.id, p.nome]));
-      return ownerIds.map((ownerId) => ({
-        ownerId,
-        ownerNome: nameById.get(ownerId) ?? "Workspace",
-      }));
+      const m = await import("@/lib/assinatura.functions");
+      const list = await m.getMemberWorkspaces();
+      return list.map((w) => ({ ownerId: w.ownerId, ownerNome: w.ownerNome }));
     },
     retry: false,
   });

@@ -1,15 +1,29 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
-import { Lock, ArrowRight, LogOut, RefreshCcw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Lock, ArrowRight, LogOut, RefreshCcw, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { setActiveWorkspace } from "@/lib/workspace";
 import { toast } from "sonner";
 
 /**
  * Tela exibida quando o teste grátis expirou e não há assinatura ativa.
- * Bloqueia o acesso a todos os dados até o usuário pagar.
+ * Bloqueia o acesso à PRÓPRIA conta até o usuário pagar — mas se o usuário
+ * for ADM de um workspace cujo dono tem plano ativo, oferece entrar nesse
+ * workspace (o plano do dono cobre os dados do workspace).
  */
 export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
   const { logout } = useAuth();
+
+  const { data: memberWs = [] } = useQuery({
+    queryKey: ["member_workspaces_paywall"],
+    queryFn: async () => {
+      const m = await import("@/lib/assinatura.functions");
+      return m.getMemberWorkspaces();
+    },
+    retry: false,
+  });
+  const workspacesAtivos = memberWs.filter((w) => w.ownerAtivo);
 
   async function handleLogout() {
     try {
@@ -17,6 +31,11 @@ export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
     } catch {
       toast.error("Erro ao sair");
     }
+  }
+
+  async function enterWorkspace(ownerId: string) {
+    setActiveWorkspace(ownerId);
+    onRefresh?.();
   }
 
   return (
@@ -34,6 +53,25 @@ export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
             Seus dados continuam salvos. Assine o PRO para voltar a usar tudo na hora.
           </p>
         </div>
+
+        {workspacesAtivos.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Você é administrador de um workspace com plano ativo. Pode acessá-lo sem assinar.
+              </p>
+              {workspacesAtivos.map((w) => (
+                <button
+                  key={w.ownerId}
+                  onClick={() => enterWorkspace(w.ownerId)}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold tap-target"
+                >
+                  <Users className="h-4 w-4" /> Entrar no workspace de {w.ownerNome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <Link

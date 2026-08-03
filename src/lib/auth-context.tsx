@@ -50,6 +50,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Keepalive de sessão: renova o access token proativamente antes de expirar,
+  // mantendo o refresh token vivo. Assim o PWA não desloga fácil nem perde a
+  // conta recém-criada quando volta de um link de convite.
+  useEffect(() => {
+    const t = setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.expires_at) return;
+        const expiresInMs = session.expires_at * 1000 - Date.now();
+        if (expiresInMs < 5 * 60 * 1000) {
+          await supabase.auth.refreshSession();
+        }
+      } catch {
+        // Falha de rede momentânea — tenta de novo no próximo tick.
+      }
+    }, 60_000);
+    return () => clearInterval(t);
+  }, []);
+
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error) return { error: null };
