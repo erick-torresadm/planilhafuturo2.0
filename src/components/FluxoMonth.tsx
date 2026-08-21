@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
-import { MESES_ABREV, isoDate, num } from "@/lib/format";
+import { MESES_ABREV, isoDate, num, saldoHeat } from "@/lib/format";
 import { SheetCell } from "@/components/SheetCell";
 import { cn } from "@/lib/utils";
 import { usePrivacy, useBrl, DOTS } from "@/lib/privacy";
@@ -355,6 +355,9 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
   const totalSF = mm.dias.reduce((a: number, d: any) => a + d.saidaFixa, 0);
   const totalSD = mm.dias.reduce((a: number, d: any) => a + d.saidaDiaria, 0);
   const saldoFim = mm.dias.length ? mm.dias[mm.dias.length - 1].saldo : 0;
+  const saldos = mm.dias.map((d: any) => d.saldo as number);
+  const heatMin = Math.min(0, ...saldos);
+  const heatMax = Math.max(0, ...saldos);
 
   useEffect(() => { todayRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, [mm.y, mm.m]);
 
@@ -377,15 +380,16 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
             const isToday = isoDate(mm.y, mm.m, d.dia) === isoDate(today.getFullYear(), today.getMonth(), today.getDate());
             const wd = WD_SHORT[new Date(mm.y, mm.m, d.dia).getDay()];
             const isWk = [0, 6].includes(new Date(mm.y, mm.m, d.dia).getDay());
+            const heat = saldoHeat(d.saldo, heatMin, heatMax);
             return (
               <tr
                 key={d.dia}
                 ref={isToday ? todayRef : undefined}
                 className={cn(
                   "border-t border-border/60 transition-colors hover:bg-primary/[0.02]",
-                  isToday ? "bg-primary/[0.04] ring-1 ring-primary/30 ring-inset" : d.saldo < 0 ? "bg-negative-soft/30" : "",
+                  isToday && "ring-1 ring-primary/30 ring-inset",
                 )}
-                style={isToday ? { scrollMarginTop: 120 } : undefined}
+                style={isToday ? { scrollMarginTop: 120, background: "color-mix(in oklab, var(--color-primary) 6%, transparent)" } : undefined}
               >
                 <td className="px-4 py-2.5 align-top">
                   <div className={cn("text-base font-bold leading-none", isToday && "text-primary", isWk && !isToday && "text-muted-foreground")}>
@@ -413,7 +417,10 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
                     <SheetCell value={d.saidaDiaria} onCommit={(v) => onCommit(d.data, "saida_diaria", v, d.saidaDiaria)} className="text-right font-semibold" />
                   </div>
                 </td>
-                <td className={cn("px-4 py-2.5 text-right font-bold tabular-nums", d.saldo < 0 ? "text-negative" : "text-positive")}>
+                <td
+                  className="px-4 py-2.5 text-right font-bold tabular-nums"
+                  style={{ background: heat.background, color: heat.color }}
+                >
                   {f(d.saldo)}
                 </td>
                 <td className="px-2 py-2.5 text-center">

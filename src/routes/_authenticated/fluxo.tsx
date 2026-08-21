@@ -6,7 +6,10 @@ import { useMemo, useState } from "react";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { MonthScroller, FluxoMonthView } from "@/components/FluxoMonth";
+import { HorizonteSaldos } from "@/components/HorizonteSaldos";
 import { useBrl } from "@/lib/privacy";
+import { LayoutGrid, Rows3 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/fluxo")({
   head: () => ({ meta: [{ title: "Fluxo Diário — planilhafuturo" }] }),
@@ -18,6 +21,7 @@ function FluxoPage() {
   const today = new Date();
   const [anchor, setAnchor] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [monthOffset, setMonthOffset] = useState(0);
+  const [view, setView] = useState<"detalhe" | "horizonte">("detalhe");
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
@@ -57,16 +61,46 @@ function FluxoPage() {
 
   return (
     <div className="page-container space-y-3 animate-in">
-      <MonthScroller
-        mesesData={mesesData}
-        offset={monthOffset}
-        onSelect={setMonthOffset}
-        onPrev={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
-        onNext={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
-        canGoBack={!atCurrent}
-        today={today}
-      />
-      <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1">
+          {view === "detalhe" && (
+            <MonthScroller
+              mesesData={mesesData}
+              offset={monthOffset}
+              onSelect={setMonthOffset}
+              onPrev={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
+              onNext={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
+              canGoBack={!atCurrent}
+              today={today}
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => setView("detalhe")}
+            aria-label="Ver detalhe do mês"
+            className={cn("h-8 w-8 grid place-items-center rounded-lg transition-colors", view === "detalhe" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          >
+            <Rows3 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("horizonte")}
+            aria-label="Ver horizonte de 12 meses"
+            className={cn("h-8 w-8 grid place-items-center rounded-lg transition-colors", view === "horizonte" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {view === "detalhe" ? (
+        <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
+      ) : (
+        <HorizonteSaldos mesesData={mesesData} today={today} />
+      )}
+
       <div className="text-xs text-muted-foreground text-center pt-2">
         Saldo base: <span className="font-semibold text-foreground">{f(saldoInicial)}</span> · ajuste em Configurações
       </div>

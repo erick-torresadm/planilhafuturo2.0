@@ -582,3 +582,54 @@
 .dark {
   --shadow-hero: 0 20px 60px -20px rgba(0,0,0,0.4), 0 4px 20px -8px rgba(0,0,0,0.3);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   /pv3 — paleta escopada (nao afeta o resto do app)
+   Light: trust-blue premium · Dark: cinema/glass indigo
+   ═══════════════════════════════════════════════════════════════ */
+.pv3 {
+  --bg: #f6f7fb;
+  --fg: #0b1220;
+  --card: #ffffff;
+  --card-fg: #0b1220;
+  --popover: #ffffff;
+  --popover-fg: #0b1220;
+  --primary: #1e40af;
+  --primary-fg: #ffffff;
+  --secondary: #eef1f8;
+  --secondary-fg: #1a2033;
+  --muted: #eef1f8;
+  --muted-fg: #64748b;
+  --accent: #e7f6ef;
+  --accent-fg: #065f46;
+  --destructive: #dc2626;
+  --border: #e3e6ee;
+  --input: #dfe2ea;
+  --ring: #1e40af;
+}
+.pv3 .dot-grid {
+  background-image: radial-gradient(circle, var(--color-border) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 55% 65% at 50% 35%, black 25%, transparent 72%);
+  mask-image: radial-gradient(ellipse 55% 65% at 50% 35%, black 25%, transparent 72%);
+}
+.pv3.dark {
+  --bg: #020203;
+  --fg: #f4f5f7;
+  --card: #101018;
+  --card-fg: #f4f5f7;
+  --popover: #0a0a0c;
+  --popover-fg: #f4f5f7;
+  --primary: #5e6ad2;
+  --primary-fg: #ffffff;
+  --secondary: #101018;
+  --secondary-fg: #f4f5f7;
+  --muted: #101018;
+  --muted-fg: #8a8f99;
+  --accent: #0a2920;
+  --accent-fg: #6ee7b7;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #5e6ad2;
+}
