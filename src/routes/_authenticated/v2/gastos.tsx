@@ -78,6 +78,31 @@ const TIPOS = [
 const FORMAS = ["Pix", "Cartao", "Debito", "Boleto"];
 const FREQ = ["mensal", "anual"] as const;
 
+/* Tags customizadas: categorias que o usuario digitou e nao estavam na
+   lista fixa. Persistidas no navegador pra sugerir de novo depois —
+   assim ele "adiciona mais coisas" sem precisar de uma tela de admin. */
+const CUSTOM_TAGS_KEY = "pf_gastos_tags_v2";
+
+function loadCustomTags(): string[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_TAGS_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomTag(tag: string) {
+  try {
+    const cur = loadCustomTags();
+    if (!cur.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+      localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify([...cur, tag]));
+    }
+  } catch {
+    // localStorage indisponivel (modo privado etc) — segue sem persistir
+  }
+}
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -118,6 +143,12 @@ function GastosPageV2() {
       return subB - subA;
     });
   }, [rows]);
+
+  const allTags = useMemo(() => {
+    const usadas = allRows.map((r) => r.categoria).filter(Boolean);
+    const set = new Set<string>([...CATEGORIAS, ...usadas, ...loadCustomTags()]);
+    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [allRows]);
 
   const upd = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: any }) => updateRow("gastos_fixos", id, patch),
@@ -317,6 +348,7 @@ function GastosPageV2() {
         onOpenChange={setOpenNew}
         onSave={(data) => add.mutate(data)}
         saving={add.isPending}
+        tags={allTags}
       />
       <ConfirmDialog
         open={!!delId}
@@ -343,11 +375,13 @@ function NewGastoDialog({
   onOpenChange,
   onSave,
   saving,
+  tags,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onSave: (data: any) => void;
   saving: boolean;
+  tags: string[];
 }) {
   const [form, setForm] = useState({
     descricao: "",
@@ -392,9 +426,11 @@ function NewGastoDialog({
           onSubmit={(e) => {
             e.preventDefault();
             if (!form.descricao.trim()) return;
+            const categoria = form.categoria.trim() || "Outros";
+            if (!CATEGORIAS.includes(categoria)) saveCustomTag(categoria);
             onSave({
               descricao: form.descricao.trim(),
-              categoria: form.categoria,
+              categoria,
               valor: Number(String(form.valor).replace(",", ".")) || 0,
               tipo: form.tipo,
               frequencia: form.frequencia,
@@ -431,18 +467,20 @@ function NewGastoDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Categoria</Label>
-              <select
+              <Label htmlFor="g-cat-v2">Categoria (tag)</Label>
+              <Input
+                id="g-cat-v2"
+                list="g-cat-datalist-v2"
                 value={form.categoria}
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                {CATEGORIAS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                placeholder="Escolha ou digite uma nova…"
+                autoComplete="off"
+              />
+              <datalist id="g-cat-datalist-v2">
+                {tags.map((c) => (
+                  <option key={c} value={c} />
                 ))}
-              </select>
+              </datalist>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

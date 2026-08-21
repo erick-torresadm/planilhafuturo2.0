@@ -85,6 +85,11 @@
 
 /* ─── Light (default) ─── */
 :root {
+  /* Marca: cor fixa do wordmark "futuro" no Logo — nao segue o --primary
+     de nenhuma superficie (pv2/pv3/v2 podem ter accent proprio, a marca
+     em si fica sempre verde). */
+  --brand: #059669;
+
   --bg: #f8f9fc;
   --fg: #1a1d23;
 

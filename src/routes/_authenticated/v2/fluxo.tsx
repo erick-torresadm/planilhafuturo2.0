@@ -7,9 +7,11 @@ import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { MonthScroller, FluxoMonthView } from "@/components/FluxoMonth";
 import { HorizonteSaldos } from "@/components/HorizonteSaldos";
+import { DayActionsSheet } from "@/components/DayActionsSheet";
 import { useBrl } from "@/lib/privacy";
 import { LayoutGrid, Rows3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { DiaFluxo } from "@/lib/finance";
 
 /* /v2/fluxo — mesma logica de dados de /fluxo (nenhuma regra de negocio
    reescrita), so roda dentro da casca AppShellV2. */
@@ -24,6 +26,7 @@ function FluxoPageV2() {
   const [anchor, setAnchor] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [monthOffset, setMonthOffset] = useState(0);
   const [view, setView] = useState<"detalhe" | "horizonte">("detalhe");
+  const [dayDetail, setDayDetail] = useState<{ dia: DiaFluxo; mesLabel: string } | null>(null);
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
@@ -121,13 +124,24 @@ function FluxoPageV2() {
       {view === "detalhe" ? (
         <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
       ) : (
-        <HorizonteSaldos mesesData={mesesData} today={today} />
+        <HorizonteSaldos
+          mesesData={mesesData}
+          today={today}
+          onDayClick={(dia, mesLabel) => setDayDetail({ dia, mesLabel })}
+        />
       )}
 
       <div className="text-xs text-muted-foreground text-center pt-2">
         Saldo base: <span className="font-semibold text-foreground">{f(saldoInicial)}</span> ·
         ajuste em Configurações
       </div>
+
+      <DayActionsSheet
+        dia={dayDetail?.dia ?? null}
+        mesLabel={dayDetail?.mesLabel ?? ""}
+        onCommit={commit}
+        onClose={() => setDayDetail(null)}
+      />
     </div>
   );
 }

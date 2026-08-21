@@ -3,12 +3,22 @@ import { MESES_ABREV, compactNum, saldoHeat } from "@/lib/format";
 import { usePrivacy, DOTS } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import type { MesData } from "@/components/FluxoMonth";
+import type { DiaFluxo } from "@/lib/finance";
 
 /* ─── Horizonte de saldos ───
    Grid compacta: dias nas linhas, meses nas colunas, cada célula
    colorida por heat-map (vermelho → cinza → verde) do saldo do dia.
-   Inspirado em apps de finanças com visão calendário de 12 meses. */
-export function HorizonteSaldos({ mesesData, today }: { mesesData: MesData[]; today: Date }) {
+   Clique num dia abre o detalhe (onDayClick) — usado pra listar e
+   remover os lançamentos daquele dia. */
+export function HorizonteSaldos({
+  mesesData,
+  today,
+  onDayClick,
+}: {
+  mesesData: MesData[];
+  today: Date;
+  onDayClick?: (dia: DiaFluxo, mesLabel: string) => void;
+}) {
   const { hidden } = usePrivacy();
   const maxDays = Math.max(...mesesData.map((m) => m.dias.length), 28);
   const rows = Array.from({ length: maxDays }, (_, i) => i + 1);
@@ -74,13 +84,25 @@ export function HorizonteSaldos({ mesesData, today }: { mesesData: MesData[]; to
                       );
                     }
                     const heat = saldoHeat(d.saldo, min, max);
+                    const mesLabel = `${MESES_ABREV[m.m]}/${String(m.y).slice(2)}`;
                     return (
                       <td
                         key={`${m.y}-${m.m}-${dia}`}
-                        className="border-b border-border/40 px-3 py-1.5 text-right font-mono tabular-nums font-semibold"
-                        style={{ background: heat.background, color: heat.color }}
+                        className="border-b border-border/40 p-0"
+                        style={{ background: heat.background }}
                       >
-                        {hidden ? DOTS : compactNum(d.saldo)}
+                        <button
+                          type="button"
+                          onClick={() => onDayClick?.(d, mesLabel)}
+                          aria-label={`Ver ações de ${dia} ${mesLabel}`}
+                          className={cn(
+                            "w-full h-full min-h-9 px-3 py-1.5 text-right font-mono tabular-nums font-semibold transition-[filter]",
+                            onDayClick && "cursor-pointer hover:brightness-95",
+                          )}
+                          style={{ color: heat.color }}
+                        >
+                          {hidden ? DOTS : compactNum(d.saldo)}
+                        </button>
                       </td>
                     );
                   })}
