@@ -38,24 +38,24 @@ function HistoricoPage() {
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const { list: lanc } = useLancamentosLocal();
 
-  // Histórico só volta até o dia que a pessoa comecou a preencher: o
-  // primeiro lançamento diário registrado, ou a criação da conta se
-  // ela ainda não lançou nada.
-  const start = useMemo(() => {
-    const primeiroLanc = lanc.reduce<string | null>(
-      (min, l) => (min === null || l.data < min ? l.data : min),
-      null,
-    );
-    const iso = primeiroLanc ?? profile.data?.created_at;
-    if (iso) {
-      const d = new Date(iso);
-      if (!isNaN(d.getTime())) return { y: d.getFullYear(), m: d.getMonth() };
-    }
-    return { y: today.getFullYear(), m: today.getMonth() };
-  }, [lanc, profile.data?.created_at]);
-
   const g = (gastos.data ?? []) as GastoFixo[];
   const p = (parcelas.data ?? []) as unknown as Parcela[];
+
+  // Histórico só volta até o dia que a pessoa realmente começou a
+  // preencher dados — o lançamento (diário) ou a compra parcelada
+  // mais antiga que ela registrou. Nunca usa a data de criação da
+  // conta: não interessa quando a conta foi criada, só quando os
+  // dados começaram a existir.
+  const start = useMemo(() => {
+    const datas: string[] = [];
+    for (const l of lanc) if (l.data) datas.push(l.data);
+    for (const pc of p) if (pc.data) datas.push(pc.data);
+    if (!datas.length) return { y: today.getFullYear(), m: today.getMonth() };
+    const min = datas.reduce((a, b) => (b < a ? b : a));
+    const d = new Date(min);
+    if (isNaN(d.getTime())) return { y: today.getFullYear(), m: today.getMonth() };
+    return { y: d.getFullYear(), m: d.getMonth() };
+  }, [lanc, p]);
   const saldoInicial = Number(profile.data?.saldo_inicial ?? 0);
   const renda = Number(profile.data?.renda_mensal ?? 0);
 
