@@ -29,20 +29,30 @@ export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,
 });
 
-const BACK = 24;
-
 function HistoricoPage() {
   const today = new Date();
-  const [start] = useState(() => {
-    const d = new Date(today.getFullYear(), today.getMonth() - BACK, 1);
-    return { y: d.getFullYear(), m: d.getMonth() };
-  });
-  const [anchor, setAnchor] = useState(start);
+  const [anchor, setAnchor] = useState({ y: today.getFullYear(), m: today.getMonth() });
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const { list: lanc } = useLancamentosLocal();
+
+  // Histórico só volta até o dia que a pessoa comecou a preencher: o
+  // primeiro lançamento diário registrado, ou a criação da conta se
+  // ela ainda não lançou nada.
+  const start = useMemo(() => {
+    const primeiroLanc = lanc.reduce<string | null>(
+      (min, l) => (min === null || l.data < min ? l.data : min),
+      null,
+    );
+    const iso = primeiroLanc ?? profile.data?.created_at;
+    if (iso) {
+      const d = new Date(iso);
+      if (!isNaN(d.getTime())) return { y: d.getFullYear(), m: d.getMonth() };
+    }
+    return { y: today.getFullYear(), m: today.getMonth() };
+  }, [lanc, profile.data?.created_at]);
 
   const g = (gastos.data ?? []) as GastoFixo[];
   const p = (parcelas.data ?? []) as unknown as Parcela[];
