@@ -121,7 +121,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
             {!collapsed && <Logo size={18} />}
             <button
               onClick={() => setCollapsed((c) => !c)}
-              className="h-7 w-7 rounded-lg grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+              className="h-11 w-11 rounded-lg grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
               aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             >
               {collapsed ? (
@@ -199,7 +199,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                   aria-label={hidden ? "Mostrar valores" : "Ocultar valores"}
                   title={hidden ? "Mostrar valores" : "Ocultar valores"}
                   className={cn(
-                    "h-8 w-8 rounded-lg grid place-items-center transition-colors shrink-0 cursor-pointer",
+                    "h-11 w-11 rounded-lg grid place-items-center transition-colors shrink-0 cursor-pointer",
                     hidden
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
@@ -213,7 +213,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                 </button>
                 <Link
                   to="/config"
-                  className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors shrink-0"
+                  className="h-11 w-11 rounded-lg grid place-items-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors shrink-0"
                   aria-label="Configurações"
                 >
                   <Settings className="h-4 w-4" strokeWidth={2} />
@@ -327,7 +327,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                   <button
                     onClick={() => setMoreOpen(false)}
                     aria-label="Fechar"
-                    className="h-7 w-7 rounded-full grid place-items-center text-muted-foreground hover:bg-muted"
+                    className="h-11 w-11 rounded-full grid place-items-center text-muted-foreground hover:bg-muted"
                   >
                     <X className="h-4 w-4" />
                   </button>

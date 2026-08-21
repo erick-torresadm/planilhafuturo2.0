@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { useSounds } from "@/hooks/useSounds";
 import { Money } from "@/components/Money";
-import { KpiCard } from "@/components/KpiCard";
+import { KpiCardV2 } from "@/components/dashboards/KpiCardV2";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import type { GastoFixo } from "@/lib/finance";
@@ -177,14 +177,14 @@ function GastosPageV2() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5">
-        <KpiCard
+        <KpiCardV2
           label="Total ativo/mês"
           value={totalAtivo}
           icon={TrendingDown}
           hint={`${qtdAtivos} de ${allRows.length} contas`}
           tone="negative"
         />
-        <KpiCard
+        <KpiCardV2
           label="Média por conta"
           value={qtdAtivos ? totalAtivo / qtdAtivos : 0}
           hint="Ticket médio mensal"
@@ -276,7 +276,7 @@ function GastosPageV2() {
                           onClick={() => upd.mutate({ id: r.id, patch: { ativo: !r.ativo } })}
                           aria-label={r.ativo ? "Desativar gasto" : "Ativar gasto"}
                           className={cn(
-                            "h-8 w-8 rounded-lg grid place-items-center transition-colors shrink-0",
+                            "h-11 w-11 rounded-lg grid place-items-center transition-colors shrink-0",
                             r.ativo
                               ? "text-primary hover:bg-primary/10"
                               : "text-muted-foreground hover:bg-muted",
@@ -298,7 +298,7 @@ function GastosPageV2() {
                         <button
                           onClick={() => setDelId(r.id)}
                           aria-label={`Excluir ${r.descricao}`}
-                          className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors"
+                          className="h-11 w-11 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

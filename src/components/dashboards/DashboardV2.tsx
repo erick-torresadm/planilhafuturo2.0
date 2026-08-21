@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Wallet, Target, Eye, EyeOff, CalendarClock } from "lucide-react";
 import { MESES } from "@/lib/format";
 import { Money } from "@/components/Money";
-import { KpiCard } from "@/components/KpiCard";
+import { KpiCardV2 } from "@/components/dashboards/KpiCardV2";
 import {
   AreaChart,
   Area,
@@ -45,7 +45,7 @@ export function DashboardV2(p: DashboardProps) {
               <span className="eyebrow">Saldo de hoje</span>
               <button
                 onClick={() => p.setSaldoVisivel(!p.saldoVisivel)}
-                className="h-5 w-5 grid place-items-center rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="grid place-items-center rounded-full p-2.5 -m-2.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 aria-label={p.saldoVisivel ? "Ocultar saldo" : "Mostrar saldo"}
               >
                 {p.saldoVisivel ? (
@@ -99,10 +99,10 @@ export function DashboardV2(p: DashboardProps) {
 
       {/* KPI row */}
       <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-        <KpiCard label="Fim do mês" value={p.saldoFimMes} icon={Wallet} tone="primary" />
-        <KpiCard label="Entradas" value={p.totalEntradasMes} icon={TrendingUp} tone="positive" />
-        <KpiCard label="Saídas" value={p.totalSaidasMes} icon={TrendingDown} tone="negative" />
-        <KpiCard label="Investido" value={p.totalInvestido} icon={Target} tone="default" />
+        <KpiCardV2 label="Fim do mês" value={p.saldoFimMes} icon={Wallet} tone="primary" />
+        <KpiCardV2 label="Entradas" value={p.totalEntradasMes} icon={TrendingUp} tone="positive" />
+        <KpiCardV2 label="Saídas" value={p.totalSaidasMes} icon={TrendingDown} tone="negative" />
+        <KpiCardV2 label="Investido" value={p.totalInvestido} icon={Target} tone="default" />
       </motion.div>
 
       {/* Projeção */}

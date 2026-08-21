@@ -94,7 +94,7 @@ function FluxoPageV2() {
             onClick={() => setView("detalhe")}
             aria-label="Ver detalhe do mês"
             className={cn(
-              "h-8 w-8 grid place-items-center rounded-lg transition-colors",
+              "h-11 w-11 grid place-items-center rounded-lg transition-colors",
               view === "detalhe"
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -107,7 +107,7 @@ function FluxoPageV2() {
             onClick={() => setView("horizonte")}
             aria-label="Ver horizonte de 12 meses"
             className={cn(
-              "h-8 w-8 grid place-items-center rounded-lg transition-colors",
+              "h-11 w-11 grid place-items-center rounded-lg transition-colors",
               view === "horizonte"
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
