@@ -207,7 +207,7 @@ function GastosPageV2() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por descrição…"
-          className="w-full h-11 pl-9 pr-3 bg-card border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+          className="w-full h-11 pl-9 pr-3 bg-card border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
         />
       </div>
 
@@ -249,7 +249,7 @@ function GastosPageV2() {
                     <div
                       key={r.id}
                       className={cn(
-                        "rounded-2xl bg-card border border-border p-4 transition-all hover:shadow-card",
+                        "rounded-2xl bg-card border border-border p-4 transition-shadow hover:shadow-card",
                         !r.ativo && "opacity-50",
                       )}
                     >
@@ -274,6 +274,7 @@ function GastosPageV2() {
                         </div>
                         <button
                           onClick={() => upd.mutate({ id: r.id, patch: { ativo: !r.ativo } })}
+                          aria-label={r.ativo ? "Desativar gasto" : "Ativar gasto"}
                           className={cn(
                             "h-8 w-8 rounded-lg grid place-items-center transition-colors shrink-0",
                             r.ativo
@@ -296,6 +297,7 @@ function GastosPageV2() {
                         />
                         <button
                           onClick={() => setDelId(r.id)}
+                          aria-label={`Excluir ${r.descricao}`}
                           className="h-8 w-8 rounded-lg grid place-items-center text-negative/70 hover:text-negative hover:bg-negative-soft/50 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />

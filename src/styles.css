@@ -633,3 +633,23 @@
   --input: rgba(255, 255, 255, 0.12);
   --ring: #5e6ad2;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   /v2 app — identidade indigo (deliberadamente distinta do verde
+   do app atual), escopada em .v2-app. --positive/--negative ficam
+   intocados (semantica financeira de entrada/saida nao muda).
+   ═══════════════════════════════════════════════════════════════ */
+.v2-app {
+  --primary: #4f46e5;
+  --primary-fg: #ffffff;
+  --accent: #eef2ff;
+  --accent-fg: #3730a3;
+  --ring: #4f46e5;
+}
+.v2-app.dark {
+  --primary: #818cf8;
+  --primary-fg: #0b0b14;
+  --accent: #1e1b4b;
+  --accent-fg: #c7d2fe;
+  --ring: #818cf8;
+}
