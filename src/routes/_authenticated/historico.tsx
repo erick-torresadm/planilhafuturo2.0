@@ -86,42 +86,14 @@ function HistoricoPage() {
     ? (mes.dias.find((d) => d.dia === today.getDate())?.saidaDiaria ?? 0)
     : 0;
 
+  // Mesma logica de cor do card "sobrou": entrou dinheiro = verde,
+  // saiu dinheiro = vermelho. Sem cor decorativa por categoria.
   const movimentacoes = [
-    {
-      key: "entradas",
-      label: "entradas",
-      value: entradas,
-      icon: CheckCircle2,
-      tone: "text-positive bg-positive-soft",
-    },
-    {
-      key: "saidas",
-      label: "saídas",
-      value: saidasFixas,
-      icon: TrendingDown,
-      tone: "text-negative bg-negative-soft",
-    },
-    {
-      key: "diarios",
-      label: "diários",
-      value: diariosSaida,
-      icon: Zap,
-      tone: "text-[#ec4899] bg-[#ec4899]/10",
-    },
-    {
-      key: "economias",
-      label: "economias",
-      value: economias,
-      icon: PiggyBank,
-      tone: "text-positive bg-positive-soft",
-    },
-    {
-      key: "cartao",
-      label: "gastos com cartão",
-      value: cartao,
-      icon: CreditCard,
-      tone: "text-[#7c3aed] bg-[#7c3aed]/10",
-    },
+    { key: "entradas", label: "entradas", value: entradas, icon: CheckCircle2, positive: true },
+    { key: "saidas", label: "saídas", value: saidasFixas, icon: TrendingDown, positive: false },
+    { key: "diarios", label: "diários", value: diariosSaida, icon: Zap, positive: false },
+    { key: "economias", label: "economias", value: economias, icon: PiggyBank, positive: true },
+    { key: "cartao", label: "gastos com cartão", value: cartao, icon: CreditCard, positive: false },
   ];
 
   return (
@@ -216,16 +188,23 @@ function HistoricoPage() {
                       <div
                         className={cn(
                           "h-6 w-6 rounded-full grid place-items-center shrink-0",
-                          m.tone,
+                          m.positive
+                            ? "text-positive bg-positive-soft"
+                            : "text-negative bg-negative-soft",
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" />
                       </div>
                       <span className="text-sm">{m.label}</span>
                     </div>
-                    <span className="font-mono text-sm font-semibold tabular-nums">
-                      <Money value={m.value} />
-                    </span>
+                    <Money
+                      value={m.value}
+                      signed={false}
+                      className={cn(
+                        "font-mono text-sm font-semibold",
+                        m.positive ? "text-positive" : "text-negative",
+                      )}
+                    />
                   </div>
                 );
               })}
