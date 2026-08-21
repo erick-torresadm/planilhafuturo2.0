@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
+  TrendingUp,
   TrendingDown,
   Zap,
   PiggyBank,
@@ -76,7 +77,8 @@ function HistoricoPage() {
   const saidasFixas = totalGastoFixoMensal(g);
   const cartao = parcelasNoMes(p, anchor.y, anchor.m);
   const custoDeVida = saidasFixas + diariosSaida + cartao;
-  const economias = Math.max(0, entradas - custoDeVida);
+  const sobra = entradas - custoDeVida;
+  const economias = Math.max(0, sobra);
 
   const diasBase = isCurrentMonth ? Math.max(1, today.getDate()) : daysInMonth(anchor.y, anchor.m);
   const diarioMedio = diariosSaida / diasBase;
@@ -167,21 +169,20 @@ function HistoricoPage() {
         <>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-border bg-card p-4">
-              <div className="text-sm font-semibold">custo de vida</div>
-              <div className="mt-1.5 flex items-center -space-x-1.5">
-                <IconDot icon={TrendingDown} tone="bg-negative text-white" />
-                <IconDot icon={Zap} tone="bg-[#ec4899] text-white" />
-                <IconDot icon={CreditCard} tone="bg-[#7c3aed] text-white" />
+              <div className="text-sm font-semibold">sobrou</div>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <IconDot
+                  icon={sobra >= 0 ? TrendingUp : TrendingDown}
+                  tone={sobra >= 0 ? "bg-positive text-white" : "bg-negative text-white"}
+                />
               </div>
               <div className="mt-3 font-mono text-xl font-bold tabular-nums">
-                <Money value={custoDeVida} />
+                <Money value={sobra} />
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {renda > 0
-                  ? custoDeVida <= renda
-                    ? "dentro da renda"
-                    : "acima da renda"
-                  : "renda não cadastrada"}
+                {sobra >= 0 ? "sobrou esse mês" : "faltou esse mês"} · gastou{" "}
+                <Money value={custoDeVida} signed={false} className="text-muted-foreground" />
+                {renda > 0 && (custoDeVida <= renda ? " (dentro da renda)" : " (acima da renda)")}
               </div>
             </div>
 
