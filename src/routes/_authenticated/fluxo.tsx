@@ -7,9 +7,11 @@ import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { MonthScroller, FluxoMonthView } from "@/components/FluxoMonth";
 import { HorizonteSaldos } from "@/components/HorizonteSaldos";
+import { DayActionsSheet } from "@/components/DayActionsSheet";
 import { useBrl } from "@/lib/privacy";
 import { LayoutGrid, Rows3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { DiaFluxo } from "@/lib/finance";
 
 export const Route = createFileRoute("/_authenticated/fluxo")({
   head: () => ({ meta: [{ title: "Fluxo Diário — planilhafuturo" }] }),
@@ -22,16 +24,21 @@ function FluxoPage() {
   const [anchor, setAnchor] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [monthOffset, setMonthOffset] = useState(0);
   const [view, setView] = useState<"detalhe" | "horizonte">("detalhe");
+  const [dayDetail, setDayDetail] = useState<{ dia: DiaFluxo; mesLabel: string } | null>(null);
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
   const { list: lanc, upsert } = useLancamentosLocal();
 
-  const meses = useMemo(() => Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(anchor.y, anchor.m + i, 1);
-    return { y: d.getFullYear(), m: d.getMonth() };
-  }), [anchor]);
+  const meses = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => {
+        const d = new Date(anchor.y, anchor.m + i, 1);
+        return { y: d.getFullYear(), m: d.getMonth() };
+      }),
+    [anchor],
+  );
 
   const saldoInicial = Number(profile.data?.saldo_inicial ?? 0);
 
@@ -56,7 +63,6 @@ function FluxoPage() {
   const loading = profile.isPending || gastos.isPending || parcelas.isPending;
   const mm = mesesData[monthOffset];
   const f = useBrl();
-  // A partir do mês atual para a frente — sem voltar para meses passados (ver Histórico).
   const atCurrent = anchor.y === today.getFullYear() && anchor.m === today.getMonth();
 
   return (
@@ -68,8 +74,16 @@ function FluxoPage() {
               mesesData={mesesData}
               offset={monthOffset}
               onSelect={setMonthOffset}
-              onPrev={() => { const d = new Date(anchor.y, anchor.m - 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
-              onNext={() => { const d = new Date(anchor.y, anchor.m + 1, 1); setAnchor({ y: d.getFullYear(), m: d.getMonth() }); setMonthOffset(0); }}
+              onPrev={() => {
+                const d = new Date(anchor.y, anchor.m - 1, 1);
+                setAnchor({ y: d.getFullYear(), m: d.getMonth() });
+                setMonthOffset(0);
+              }}
+              onNext={() => {
+                const d = new Date(anchor.y, anchor.m + 1, 1);
+                setAnchor({ y: d.getFullYear(), m: d.getMonth() });
+                setMonthOffset(0);
+              }}
               canGoBack={!atCurrent}
               today={today}
             />
@@ -80,7 +94,12 @@ function FluxoPage() {
             type="button"
             onClick={() => setView("detalhe")}
             aria-label="Ver detalhe do mês"
-            className={cn("h-8 w-8 grid place-items-center rounded-lg transition-colors", view === "detalhe" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+            className={cn(
+              "h-11 w-11 grid place-items-center rounded-lg transition-colors",
+              view === "detalhe"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
             <Rows3 className="h-4 w-4" />
           </button>
@@ -88,7 +107,12 @@ function FluxoPage() {
             type="button"
             onClick={() => setView("horizonte")}
             aria-label="Ver horizonte de 12 meses"
-            className={cn("h-8 w-8 grid place-items-center rounded-lg transition-colors", view === "horizonte" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+            className={cn(
+              "h-11 w-11 grid place-items-center rounded-lg transition-colors",
+              view === "horizonte"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
@@ -98,12 +122,24 @@ function FluxoPage() {
       {view === "detalhe" ? (
         <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
       ) : (
-        <HorizonteSaldos mesesData={mesesData} today={today} />
+        <HorizonteSaldos
+          mesesData={mesesData}
+          today={today}
+          onDayClick={(dia, mesLabel) => setDayDetail({ dia, mesLabel })}
+        />
       )}
 
       <div className="text-xs text-muted-foreground text-center pt-2">
-        Saldo base: <span className="font-semibold text-foreground">{f(saldoInicial)}</span> · ajuste em Configurações
+        Saldo base: <span className="font-semibold text-foreground">{f(saldoInicial)}</span> ·
+        ajuste em Configurações
       </div>
+
+      <DayActionsSheet
+        dia={dayDetail?.dia ?? null}
+        mesLabel={dayDetail?.mesLabel ?? ""}
+        onCommit={commit}
+        onClose={() => setDayDetail(null)}
+      />
     </div>
   );
 }

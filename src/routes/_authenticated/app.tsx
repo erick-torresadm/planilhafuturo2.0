@@ -2,16 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { selectAll, getProfile } from "@/lib/db";
-import { computaMes, totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
+import {
+  computaMes,
+  totalGastoFixoMensal,
+  parcelasNoMes,
+  type GastoFixo,
+  type Parcela,
+} from "@/lib/finance";
 import { MESES, MESES_ABREV } from "@/lib/format";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
 import { useExternalData } from "@/hooks/useExternalData";
 import { Plus, TrendingUp, DollarSign, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DashboardMercury } from "@/components/dashboards";
+import { DashboardV2 } from "@/components/dashboards/DashboardV2";
 import { FinanceCoach } from "@/components/FinanceCoach";
 import { gerarInsights, type AppDataForAI } from "@/lib/insights";
+
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Hoje — planilhafuturo" }] }),
   component: HojePage,
@@ -23,12 +30,19 @@ function HojePage() {
   const y = today.getFullYear();
   const m0 = today.getMonth();
   const dToday = today.getDate();
-  const dayName = today.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  const dayName = today.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
   const gastos = useQuery({ queryKey: ["gastos_fixos"], queryFn: () => selectAll("gastos_fixos") });
   const parcelas = useQuery({ queryKey: ["parcelas"], queryFn: () => selectAll("parcelas") });
-  const invest = useQuery({ queryKey: ["investimentos"], queryFn: () => selectAll("investimentos") });
+  const invest = useQuery({
+    queryKey: ["investimentos"],
+    queryFn: () => selectAll("investimentos"),
+  });
   const desejosQ = useQuery({ queryKey: ["desejos"], queryFn: () => selectAll("desejos") });
   const { list: lanc, upsert } = useLancamentosLocal();
 
@@ -47,7 +61,8 @@ function HojePage() {
     let carry = saldoInicial;
     return Array.from({ length: 12 }, (_, i) => {
       const d = new Date(y, m0 + i, 1);
-      const yy = d.getFullYear(); const mm = d.getMonth();
+      const yy = d.getFullYear();
+      const mm = d.getMonth();
       const dias = computaMes(yy, mm, carry, g, p, lanc);
       carry = dias.length ? dias[dias.length - 1].saldo : carry;
       return { y: yy, m: mm, dias, saldoFim: carry };
@@ -59,46 +74,61 @@ function HojePage() {
   const saldoHoje = diaHoje?.saldo ?? saldoInicial;
   const saldoFimMes = mesAtual?.dias[mesAtual.dias.length - 1]?.saldo ?? saldoInicial;
 
-  const totalEntradasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0) ?? 0;
-  const totalSaidasMes = mesAtual?.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0) ?? 0;
+  const totalEntradasMes =
+    mesAtual?.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0) ?? 0;
+  const totalSaidasMes =
+    mesAtual?.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0) ?? 0;
 
   const primeiroNegativo = meses12.find((mm) => mm.saldoFim < 0);
   const ultimoPositivo = [...meses12].reverse().find((mm) => mm.saldoFim >= 0);
 
-  const totalInvestido = ((invest.data ?? []) as any[]).reduce((a, r) => a + Number(r.posicao_atual), 0);
+  const totalInvestido = ((invest.data ?? []) as any[]).reduce(
+    (a, r) => a + Number(r.posicao_atual),
+    0,
+  );
 
-  const chartData = useMemo(() => meses12.map((s) => ({
-    label: `${MESES_ABREV[s.m]}/${String(s.y).slice(2)}`,
-    saldo: s.saldoFim,
-    entradas: s.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0),
-    saidas: s.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0),
-  })), [meses12]);
+  const chartData = useMemo(
+    () =>
+      meses12.map((s) => ({
+        label: `${MESES_ABREV[s.m]}/${String(s.y).slice(2)}`,
+        saldo: s.saldoFim,
+        entradas: s.dias.reduce((a: number, d: any) => a + d.entradaFixa + d.entradaDiaria, 0),
+        saidas: s.dias.reduce((a: number, d: any) => a + d.saidaFixa + d.saidaDiaria, 0),
+      })),
+    [meses12],
+  );
 
   const [qaOpen, setQaOpen] = useState<null | "in" | "out">(null);
   const [qaValor, setQaValor] = useState("");
 
   function commitQuick() {
     const n = Number(qaValor.replace(/\./g, "").replace(",", ".")) || 0;
-    if (n <= 0 || !diaHoje) { setQaOpen(null); setQaValor(""); return; }
+    if (n <= 0 || !diaHoje) {
+      setQaOpen(null);
+      setQaValor("");
+      return;
+    }
 
-    // Add lancamento
     upsert({
       data: diaHoje.data,
       tipo: qaOpen === "in" ? "entrada_diaria" : "saida_diaria",
-      valor: n
+      valor: n,
     });
 
     playSound(qaOpen === "in" ? "kaching" : "pop");
-    setQaOpen(null); setQaValor("");
+    setQaOpen(null);
+    setQaValor("");
   }
 
   const variacaoPercentual = saldoInicial ? ((saldoHoje - saldoInicial) / saldoInicial) * 100 : 0;
 
   const renda = Number(profile.data?.renda_mensal ?? 0);
-  const fixos = totalGastoFixoMensal(((gastos.data ?? []) as GastoFixo[]));
-  const parcMes = parcelasNoMes(((parcelas.data ?? []) as unknown as Parcela[]), y, m0);
+  const fixos = totalGastoFixoMensal((gastos.data ?? []) as GastoFixo[]);
+  const parcMes = parcelasNoMes((parcelas.data ?? []) as unknown as Parcela[], y, m0);
 
-  const folgaHoje = diaHoje ? (diaHoje.entradaFixa + diaHoje.entradaDiaria - diaHoje.saidaFixa - diaHoje.saidaDiaria) : 0;
+  const folgaHoje = diaHoje
+    ? diaHoje.entradaFixa + diaHoje.entradaDiaria - diaHoje.saidaFixa - diaHoje.saidaDiaria
+    : 0;
   const desejos = ((desejosQ.data ?? []) as any[]).filter((d) => Number(d.valor ?? 0) > 0);
   const maiorDesejo = desejos.length
     ? desejos.reduce((a, b) => (Number(b.valor ?? 0) > Number(a.valor ?? 0) ? b : a))
@@ -118,37 +148,54 @@ function HojePage() {
     folgaHoje,
     mesesReserva: Number((profile.data as any)?.meses_reserva_emergencia ?? 6),
     primeiroNegativo: primeiroNegativo
-      ? { label: `${MESES_ABREV[primeiroNegativo.m]}/${String(primeiroNegativo.y).slice(2)}`, saldo: primeiroNegativo.saldoFim }
+      ? {
+          label: `${MESES_ABREV[primeiroNegativo.m]}/${String(primeiroNegativo.y).slice(2)}`,
+          saldo: primeiroNegativo.saldoFim,
+        }
       : null,
-    maiorDesejo: maiorDesejo ? { item: maiorDesejo.item, valor: Number(maiorDesejo.valor ?? 0) } : null,
+    maiorDesejo: maiorDesejo
+      ? { item: maiorDesejo.item, valor: Number(maiorDesejo.valor ?? 0) }
+      : null,
   };
   const insights = gerarInsights(appData);
 
   const dashboardProps = {
-    saldoHoje, saldoFimMes, saldoInicial,
-    totalEntradasMes, totalSaidasMes,
-    nome, dayName, dToday, m0,
-    chartData, seis: meses12,
-    primeiroNegativo, ultimoPositivo,
-    totalInvestido, variacaoPercentual,
-    saldoVisivel, setSaldoVisivel,
+    saldoHoje,
+    saldoFimMes,
+    saldoInicial,
+    totalEntradasMes,
+    totalSaidasMes,
+    nome,
+    dayName,
+    dToday,
+    m0,
+    chartData,
+    seis: meses12,
+    primeiroNegativo,
+    ultimoPositivo,
+    totalInvestido,
+    variacaoPercentual,
+    saldoVisivel,
+    setSaldoVisivel,
   };
 
   if (loading) {
     return (
       <div className="page-container space-y-4 animate-in">
-        <div className="skeleton h-12 w-60 rounded-lg" />
-        <div className="skeleton h-40 w-full rounded-xl" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-28 w-full rounded-xl" />)}
+        <div className="skeleton h-24 w-full rounded-2xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton h-28 w-full rounded-2xl" />
+          ))}
         </div>
+        <div className="skeleton h-56 w-full rounded-2xl" />
       </div>
     );
   }
 
   return (
     <div className="page-container space-y-4 animate-in">
-      <DashboardMercury {...dashboardProps} />
+      <DashboardV2 {...dashboardProps} />
 
       {/* Conselheiro financeiro — insights da planilha do usuário */}
       <FinanceCoach nome={nome} insights={insights} />
@@ -159,22 +206,26 @@ function HojePage() {
           <span className="eyebrow">Mercado</span>
           {extData.usd && (
             <span className="chip chip-ghost flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" /> USD <strong className="tabular-nums">R$ {extData.usd.toFixed(2)}</strong>
+              <TrendingUp className="h-3 w-3" /> USD{" "}
+              <strong className="tabular-nums">R$ {extData.usd.toFixed(2)}</strong>
             </span>
           )}
           {extData.eur && (
             <span className="chip chip-ghost flex items-center gap-1">
-              <DollarSign className="h-3 w-3" /> EUR <strong className="tabular-nums">R$ {extData.eur.toFixed(2)}</strong>
+              <DollarSign className="h-3 w-3" /> EUR{" "}
+              <strong className="tabular-nums">R$ {extData.eur.toFixed(2)}</strong>
             </span>
           )}
           {extData.selic && (
             <span className="chip chip-ghost flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" /> Selic <strong className="tabular-nums">{extData.selic.toFixed(2)}%</strong>
+              <TrendingUp className="h-3 w-3" /> Selic{" "}
+              <strong className="tabular-nums">{extData.selic.toFixed(2)}%</strong>
             </span>
           )}
           {extData.ipca && (
             <span className="chip chip-ghost flex items-center gap-1">
-              <PiggyBank className="h-3 w-3" /> IPCA <strong className="tabular-nums">{extData.ipca.toFixed(1)}%</strong>
+              <PiggyBank className="h-3 w-3" /> IPCA{" "}
+              <strong className="tabular-nums">{extData.ipca.toFixed(1)}%</strong>
             </span>
           )}
           {extData.updatedAt && (
@@ -192,11 +243,15 @@ function HojePage() {
         <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
 
-      {/* AI Chat */}
-
       {/* Quick-add sheet */}
       {qaOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center" onClick={() => { setQaOpen(null); setQaValor(""); }}>
+        <div
+          className="fixed inset-0 z-50 grid place-items-end sm:place-items-center"
+          onClick={() => {
+            setQaOpen(null);
+            setQaValor("");
+          }}
+        >
           <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
           <div
             className="relative w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl border border-border p-5 space-y-4 safe-bottom"
@@ -207,13 +262,26 @@ function HojePage() {
             </div>
             <div>
               <span className="eyebrow">{qaOpen === "in" ? "Nova entrada" : "Nova saída"}</span>
-              <h3 className="font-display text-lg font-bold mt-0.5">Hoje, {dToday} de {MESES[m0].toLowerCase()}</h3>
+              <h3 className="font-display text-lg font-bold mt-0.5">
+                Hoje, {dToday} de {MESES[m0].toLowerCase()}
+              </h3>
             </div>
-            <div className={cn(
-              "flex items-center gap-2 h-16 px-4 rounded-2xl border-2",
-              qaOpen === "in" ? "border-positive bg-positive-soft" : "border-negative bg-negative-soft",
-            )}>
-              <span className={cn("text-lg font-mono font-bold", qaOpen === "in" ? "text-positive" : "text-negative")}>R$</span>
+            <div
+              className={cn(
+                "flex items-center gap-2 h-16 px-4 rounded-2xl border-2",
+                qaOpen === "in"
+                  ? "border-positive bg-positive-soft"
+                  : "border-negative bg-negative-soft",
+              )}
+            >
+              <span
+                className={cn(
+                  "text-lg font-mono font-bold",
+                  qaOpen === "in" ? "text-positive" : "text-negative",
+                )}
+              >
+                R$
+              </span>
               <input
                 autoFocus
                 inputMode="decimal"
@@ -225,8 +293,24 @@ function HojePage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => { setQaOpen(null); setQaValor(""); }} className="h-12 rounded-xl border border-border text-sm font-medium">Cancelar</button>
-              <button onClick={commitQuick} className={cn("h-12 rounded-xl text-white font-bold", qaOpen === "in" ? "bg-positive" : "bg-negative")}>Adicionar</button>
+              <button
+                onClick={() => {
+                  setQaOpen(null);
+                  setQaValor("");
+                }}
+                className="h-12 rounded-xl border border-border text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={commitQuick}
+                className={cn(
+                  "h-12 rounded-xl text-white font-bold",
+                  qaOpen === "in" ? "bg-positive" : "bg-negative",
+                )}
+              >
+                Adicionar
+              </button>
             </div>
           </div>
         </div>

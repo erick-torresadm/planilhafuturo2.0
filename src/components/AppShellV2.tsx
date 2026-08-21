@@ -34,22 +34,20 @@ import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { PrivacyProvider, usePrivacy } from "@/lib/privacy";
 
 /* ============================================================
-   AppShellV2 — casca nova do /v2, mesma taxonomia de navegacao
-   do AppShell original (mesmas rotas, mesmos icones), so visual
-   e interacao novos: sidebar colapsavel com indicador animado,
-   bottom-nav flutuante, sheet "mais" com grid.
+   AppShellV2 — casca do app inteiro. Sidebar colapsavel com
+   indicador animado, bottom-nav flutuante, sheet "mais" com grid.
    ============================================================ */
 const NAV = [
-  { to: "/v2/app", label: "Hoje", icon: Home, hint: "Resumo do dia" },
-  { to: "/v2/fluxo", label: "Fluxo", icon: CalendarDays, hint: "Projeção mensal" },
-  { to: "/v2/gastos", label: "Gastos", icon: Receipt, hint: "Contas fixas" },
+  { to: "/app", label: "Hoje", icon: Home, hint: "Resumo do dia" },
+  { to: "/fluxo", label: "Fluxo", icon: CalendarDays, hint: "Projeção mensal" },
+  { to: "/gastos", label: "Gastos", icon: Receipt, hint: "Contas fixas" },
   { to: "/parcelas", label: "Parcelas", icon: CreditCard, hint: "Compras no cartão" },
 ] as const;
 
 const MORE = [
   { to: "/investimentos", label: "Investimentos", icon: Wallet, hint: "Sua carteira" },
   { to: "/mercado", label: "Mercado", icon: TrendingUp, hint: "Indicadores" },
-  { to: "/v2/historico", label: "Histórico", icon: History, hint: "Meses passados" },
+  { to: "/historico", label: "Histórico", icon: History, hint: "Meses passados" },
   { to: "/desejos", label: "Desejos", icon: Sparkles, hint: "Metas & sonhos" },
   { to: "/tarefas", label: "Tarefas", icon: ListChecks, hint: "Lembretes" },
   { to: "/produtividade", label: "Foco & Notas", icon: Zap, hint: "Pomodoro, notas & hábitos" },
@@ -175,9 +173,6 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
             <div className="h-14 flex items-center gap-3 px-4 lg:px-6 safe-top">
               <div className="lg:hidden flex items-center min-w-0 flex-1 gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
-                  <Grid2x2 className="h-3 w-3" /> v2
-                </span>
                 <Logo size={17} />
               </div>
               <div className="hidden lg:flex items-center gap-3 min-w-0 flex-1">
@@ -189,9 +184,6 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                     — {current.hint}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary shrink-0">
-                  v2
-                </span>
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <button

@@ -1,13 +1,16 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
+import { AppShellV2 as AppShell } from "@/components/AppShellV2";
 import { Paywall } from "@/components/Paywall";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  hasLocalData, getLocalStats, migrateLocalDataToSupabase,
-  clearLocalData, getLocalTotalCount,
+  hasLocalData,
+  getLocalStats,
+  migrateLocalDataToSupabase,
+  clearLocalData,
+  getLocalTotalCount,
 } from "@/lib/migrate-local-to-supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -17,7 +20,9 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) throw redirect({ to: "/auth" });
     return {
       user: {
@@ -137,7 +142,8 @@ function RouteComponent() {
             <div className="min-w-0">
               <p className="text-sm font-medium">Dados locais disponíveis</p>
               <p className="text-xs text-muted-foreground truncate">
-                {getLocalTotalCount()} registros em {getLocalStats().length} tabelas — importe para a nuvem
+                {getLocalTotalCount()} registros em {getLocalStats().length} tabelas — importe para
+                a nuvem
               </p>
             </div>
           </div>
@@ -146,7 +152,10 @@ function RouteComponent() {
               {migrating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               Importar
             </Button>
-            <button onClick={() => setShowBanner(false)} className="text-muted-foreground hover:text-foreground p-1">
+            <button
+              onClick={() => setShowBanner(false)}
+              className="text-muted-foreground hover:text-foreground p-1"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
