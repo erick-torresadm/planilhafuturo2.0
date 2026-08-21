@@ -39,6 +39,10 @@ import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedV2RouteRouteImport } from './routes/_authenticated/v2/route'
+import { Route as AuthenticatedV2GastosRouteImport } from './routes/_authenticated/v2/gastos'
+import { Route as AuthenticatedV2FluxoRouteImport } from './routes/_authenticated/v2/fluxo'
+import { Route as AuthenticatedV2AppRouteImport } from './routes/_authenticated/v2/app'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -191,6 +195,26 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedV2RouteRoute = AuthenticatedV2RouteRouteImport.update({
+  id: '/v2',
+  path: '/v2',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedV2GastosRoute = AuthenticatedV2GastosRouteImport.update({
+  id: '/gastos',
+  path: '/gastos',
+  getParentRoute: () => AuthenticatedV2RouteRoute,
+} as any)
+const AuthenticatedV2FluxoRoute = AuthenticatedV2FluxoRouteImport.update({
+  id: '/fluxo',
+  path: '/fluxo',
+  getParentRoute: () => AuthenticatedV2RouteRoute,
+} as any)
+const AuthenticatedV2AppRoute = AuthenticatedV2AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedV2RouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -207,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/pv3': typeof Pv3Route
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
+  '/v2': typeof AuthenticatedV2RouteRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
@@ -222,6 +247,9 @@ export interface FileRoutesByFullPath {
   '/api/cron': typeof ApiCronRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/v2/app': typeof AuthenticatedV2AppRoute
+  '/v2/fluxo': typeof AuthenticatedV2FluxoRoute
+  '/v2/gastos': typeof AuthenticatedV2GastosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -238,6 +266,7 @@ export interface FileRoutesByTo {
   '/pv3': typeof Pv3Route
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
+  '/v2': typeof AuthenticatedV2RouteRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
@@ -253,6 +282,9 @@ export interface FileRoutesByTo {
   '/api/cron': typeof ApiCronRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/v2/app': typeof AuthenticatedV2AppRoute
+  '/v2/fluxo': typeof AuthenticatedV2FluxoRoute
+  '/v2/gastos': typeof AuthenticatedV2GastosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -271,6 +303,7 @@ export interface FileRoutesById {
   '/pv3': typeof Pv3Route
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/v2': typeof AuthenticatedV2RouteRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/desejos': typeof AuthenticatedDesejosRoute
@@ -286,6 +319,9 @@ export interface FileRoutesById {
   '/api/cron': typeof ApiCronRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/_authenticated/v2/app': typeof AuthenticatedV2AppRoute
+  '/_authenticated/v2/fluxo': typeof AuthenticatedV2FluxoRoute
+  '/_authenticated/v2/gastos': typeof AuthenticatedV2GastosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -304,6 +340,7 @@ export interface FileRouteTypes {
     | '/pv3'
     | '/suporte'
     | '/termos'
+    | '/v2'
     | '/app'
     | '/config'
     | '/desejos'
@@ -319,6 +356,9 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/auth/callback'
     | '/convite/$token'
+    | '/v2/app'
+    | '/v2/fluxo'
+    | '/v2/gastos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -335,6 +375,7 @@ export interface FileRouteTypes {
     | '/pv3'
     | '/suporte'
     | '/termos'
+    | '/v2'
     | '/app'
     | '/config'
     | '/desejos'
@@ -350,6 +391,9 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/auth/callback'
     | '/convite/$token'
+    | '/v2/app'
+    | '/v2/fluxo'
+    | '/v2/gastos'
   id:
     | '__root__'
     | '/'
@@ -367,6 +411,7 @@ export interface FileRouteTypes {
     | '/pv3'
     | '/suporte'
     | '/termos'
+    | '/_authenticated/v2'
     | '/_authenticated/app'
     | '/_authenticated/config'
     | '/_authenticated/desejos'
@@ -382,6 +427,9 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/auth/callback'
     | '/convite/$token'
+    | '/_authenticated/v2/app'
+    | '/_authenticated/v2/fluxo'
+    | '/_authenticated/v2/gastos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -616,10 +664,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/v2': {
+      id: '/_authenticated/v2'
+      path: '/v2'
+      fullPath: '/v2'
+      preLoaderRoute: typeof AuthenticatedV2RouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/gastos': {
+      id: '/_authenticated/v2/gastos'
+      path: '/gastos'
+      fullPath: '/v2/gastos'
+      preLoaderRoute: typeof AuthenticatedV2GastosRouteImport
+      parentRoute: typeof AuthenticatedV2RouteRoute
+    }
+    '/_authenticated/v2/fluxo': {
+      id: '/_authenticated/v2/fluxo'
+      path: '/fluxo'
+      fullPath: '/v2/fluxo'
+      preLoaderRoute: typeof AuthenticatedV2FluxoRouteImport
+      parentRoute: typeof AuthenticatedV2RouteRoute
+    }
+    '/_authenticated/v2/app': {
+      id: '/_authenticated/v2/app'
+      path: '/app'
+      fullPath: '/v2/app'
+      preLoaderRoute: typeof AuthenticatedV2AppRouteImport
+      parentRoute: typeof AuthenticatedV2RouteRoute
+    }
   }
 }
 
+interface AuthenticatedV2RouteRouteChildren {
+  AuthenticatedV2AppRoute: typeof AuthenticatedV2AppRoute
+  AuthenticatedV2FluxoRoute: typeof AuthenticatedV2FluxoRoute
+  AuthenticatedV2GastosRoute: typeof AuthenticatedV2GastosRoute
+}
+
+const AuthenticatedV2RouteRouteChildren: AuthenticatedV2RouteRouteChildren = {
+  AuthenticatedV2AppRoute: AuthenticatedV2AppRoute,
+  AuthenticatedV2FluxoRoute: AuthenticatedV2FluxoRoute,
+  AuthenticatedV2GastosRoute: AuthenticatedV2GastosRoute,
+}
+
+const AuthenticatedV2RouteRouteWithChildren =
+  AuthenticatedV2RouteRoute._addFileChildren(AuthenticatedV2RouteRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedV2RouteRoute: typeof AuthenticatedV2RouteRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDesejosRoute: typeof AuthenticatedDesejosRoute
@@ -635,6 +727,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedV2RouteRoute: AuthenticatedV2RouteRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDesejosRoute: AuthenticatedDesejosRoute,
