@@ -650,6 +650,8 @@
   --accent: #eef2ff;
   --accent-fg: #3730a3;
   --ring: #4f46e5;
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 .v2-app.dark {
   --primary: #818cf8;

@@ -22,7 +22,10 @@ function NotFoundComponent() {
         <h2 className="mt-4 text-xl font-semibold">Página não encontrada</h2>
         <p className="mt-2 text-sm text-muted-foreground">Essa rota não existe.</p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold"
+          >
             Voltar
           </Link>
         </div>
@@ -42,15 +45,25 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Algo deu errado</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Tente novamente ou volte para o início.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Tente novamente ou volte para o início.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold"
           >
             Tentar de novo
           </button>
-          <a href="/" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm">Início</a>
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm"
+          >
+            Início
+          </a>
         </div>
       </div>
     </div>
@@ -61,20 +74,50 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no",
+      },
       { name: "theme-color", content: "#059669" },
       { name: "apple-mobile-web-app-title", content: "planilhafuturo" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha" },
-      { property: "og:title", content: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha" },
-      { name: "twitter:title", content: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha" },
-      { name: "description", content: "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { property: "og:description", content: "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { name: "twitter:description", content: "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a5131fd4-32e1-4b7e-87f8-98d84fe0ff06/id-preview-05dcb2c3--e4af5627-8ad9-48c6-9281-d1cad83cbd18.lovable.app-1784919172813.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a5131fd4-32e1-4b7e-87f8-98d84fe0ff06/id-preview-05dcb2c3--e4af5627-8ad9-48c6-9281-d1cad83cbd18.lovable.app-1784919172813.png" },
+      {
+        property: "og:title",
+        content: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha",
+      },
+      {
+        name: "twitter:title",
+        content: "planilhafuturo — Planejamento financeiro em 12 meses, sem planilha",
+      },
+      {
+        name: "description",
+        content:
+          "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro.",
+      },
+      {
+        property: "og:description",
+        content:
+          "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Enxergue seus próximos 12 meses de dinheiro em um olhar. Fluxo diário, gastos fixos, parcelas e desejos — feito pra brasileiro comum, não pra planilheiro.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a5131fd4-32e1-4b7e-87f8-98d84fe0ff06/id-preview-05dcb2c3--e4af5627-8ad9-48c6-9281-d1cad83cbd18.lovable.app-1784919172813.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a5131fd4-32e1-4b7e-87f8-98d84fe0ff06/id-preview-05dcb2c3--e4af5627-8ad9-48c6-9281-d1cad83cbd18.lovable.app-1784919172813.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "planilhafuturo" },
@@ -97,7 +140,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+      },
     ],
     scripts: [
       {
@@ -134,7 +180,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
                 { "@type": "Offer", name: "Anual", price: "250.00", priceCurrency: "BRL" },
                 { "@type": "Offer", name: "Vitalício", price: "450.00", priceCurrency: "BRL" },
               ],
-              aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "142" },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: "4.9",
+                ratingCount: "142",
+              },
             },
           ],
         }),
@@ -146,7 +196,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -195,26 +244,29 @@ function RootComponent() {
       if (document.visibilityState === "visible") checkForUpdate();
     };
 
-    navigator.serviceWorker.register("/sw.js").then((reg) => {
-      // Checagens periódicas: mantém o app atualizado mesmo se ficar aberto.
-      checkTimer = setInterval(checkForUpdate, 60 * 60 * 1000);
-      document.addEventListener("visibilitychange", onVisible);
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => {
+        // Checagens periódicas: mantém o app atualizado mesmo se ficar aberto.
+        checkTimer = setInterval(checkForUpdate, 60 * 60 * 1000);
+        document.addEventListener("visibilitychange", onVisible);
 
-      reg.addEventListener("updatefound", () => {
-        const newSW = reg.installing;
-        if (!newSW) return;
-        newSW.addEventListener("statechange", () => {
-          if (newSW.state !== "installed") return;
-          if (!firstUpdateChecked) {
-            // Checagem da abertura (ou 1º install): aplica já, silencioso.
-            // Update achado no meio da sessão fica "aguardando" e aplica na
-            // próxima abertura — não interrompe a digitação do usuário.
-            firstUpdateChecked = true;
-            newSW.postMessage({ type: "SKIP_WAITING" });
-          }
+        reg.addEventListener("updatefound", () => {
+          const newSW = reg.installing;
+          if (!newSW) return;
+          newSW.addEventListener("statechange", () => {
+            if (newSW.state !== "installed") return;
+            if (!firstUpdateChecked) {
+              // Checagem da abertura (ou 1º install): aplica já, silencioso.
+              // Update achado no meio da sessão fica "aguardando" e aplica na
+              // próxima abertura — não interrompe a digitação do usuário.
+              firstUpdateChecked = true;
+              newSW.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
         });
-      });
-    }).catch(() => {});
+      })
+      .catch(() => {});
 
     // Quando um SW novo toma controle (após SKIP_WAITING), recarrega 1x.
     navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -240,7 +292,9 @@ function RootComponent() {
   // Expose install handler globally so any component can trigger it (e.g. sidebar)
   useEffect(() => {
     (window as any).__installPWA = handleInstall;
-    return () => { delete (window as any).__installPWA; };
+    return () => {
+      delete (window as any).__installPWA;
+    };
   }, [handleInstall]);
 
   return (

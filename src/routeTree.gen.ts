@@ -26,6 +26,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ApiKeepaliveRouteImport } from './routes/api.keepalive'
 import { Route as ApiCronRouteImport } from './routes/api.cron'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthenticatedSobreRouteImport } from './routes/_authenticated/sobre'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedV2RouteRouteImport } from './routes/_authenticated/v2/route'
+import { Route as AuthenticatedV2HistoricoRouteImport } from './routes/_authenticated/v2/historico'
 import { Route as AuthenticatedV2GastosRouteImport } from './routes/_authenticated/v2/gastos'
 import { Route as AuthenticatedV2FluxoRouteImport } from './routes/_authenticated/v2/fluxo'
 import { Route as AuthenticatedV2AppRouteImport } from './routes/_authenticated/v2/app'
@@ -128,6 +130,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const ApiKeepaliveRoute = ApiKeepaliveRouteImport.update({
+  id: '/api/keepalive',
+  path: '/api/keepalive',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronRoute = ApiCronRouteImport.update({
   id: '/api/cron',
   path: '/api/cron',
@@ -200,6 +207,12 @@ const AuthenticatedV2RouteRoute = AuthenticatedV2RouteRouteImport.update({
   path: '/v2',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedV2HistoricoRoute =
+  AuthenticatedV2HistoricoRouteImport.update({
+    id: '/historico',
+    path: '/historico',
+    getParentRoute: () => AuthenticatedV2RouteRoute,
+  } as any)
 const AuthenticatedV2GastosRoute = AuthenticatedV2GastosRouteImport.update({
   id: '/gastos',
   path: '/gastos',
@@ -245,11 +258,13 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/cron': typeof ApiCronRoute
+  '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/v2/app': typeof AuthenticatedV2AppRoute
   '/v2/fluxo': typeof AuthenticatedV2FluxoRoute
   '/v2/gastos': typeof AuthenticatedV2GastosRoute
+  '/v2/historico': typeof AuthenticatedV2HistoricoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -280,11 +295,13 @@ export interface FileRoutesByTo {
   '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/cron': typeof ApiCronRoute
+  '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/v2/app': typeof AuthenticatedV2AppRoute
   '/v2/fluxo': typeof AuthenticatedV2FluxoRoute
   '/v2/gastos': typeof AuthenticatedV2GastosRoute
+  '/v2/historico': typeof AuthenticatedV2HistoricoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -317,11 +334,13 @@ export interface FileRoutesById {
   '/_authenticated/sobre': typeof AuthenticatedSobreRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/cron': typeof ApiCronRoute
+  '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/_authenticated/v2/app': typeof AuthenticatedV2AppRoute
   '/_authenticated/v2/fluxo': typeof AuthenticatedV2FluxoRoute
   '/_authenticated/v2/gastos': typeof AuthenticatedV2GastosRoute
+  '/_authenticated/v2/historico': typeof AuthenticatedV2HistoricoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -354,11 +373,13 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/tarefas'
     | '/api/cron'
+    | '/api/keepalive'
     | '/auth/callback'
     | '/convite/$token'
     | '/v2/app'
     | '/v2/fluxo'
     | '/v2/gastos'
+    | '/v2/historico'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -389,11 +410,13 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/tarefas'
     | '/api/cron'
+    | '/api/keepalive'
     | '/auth/callback'
     | '/convite/$token'
     | '/v2/app'
     | '/v2/fluxo'
     | '/v2/gastos'
+    | '/v2/historico'
   id:
     | '__root__'
     | '/'
@@ -425,11 +448,13 @@ export interface FileRouteTypes {
     | '/_authenticated/sobre'
     | '/_authenticated/tarefas'
     | '/api/cron'
+    | '/api/keepalive'
     | '/auth/callback'
     | '/convite/$token'
     | '/_authenticated/v2/app'
     | '/_authenticated/v2/fluxo'
     | '/_authenticated/v2/gastos'
+    | '/_authenticated/v2/historico'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -449,6 +474,7 @@ export interface RootRouteChildren {
   SuporteRoute: typeof SuporteRoute
   TermosRoute: typeof TermosRoute
   ApiCronRoute: typeof ApiCronRoute
+  ApiKeepaliveRoute: typeof ApiKeepaliveRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
 }
 
@@ -573,6 +599,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/api/keepalive': {
+      id: '/api/keepalive'
+      path: '/api/keepalive'
+      fullPath: '/api/keepalive'
+      preLoaderRoute: typeof ApiKeepaliveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron': {
       id: '/api/cron'
       path: '/api/cron'
@@ -671,6 +704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedV2RouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/v2/historico': {
+      id: '/_authenticated/v2/historico'
+      path: '/historico'
+      fullPath: '/v2/historico'
+      preLoaderRoute: typeof AuthenticatedV2HistoricoRouteImport
+      parentRoute: typeof AuthenticatedV2RouteRoute
+    }
     '/_authenticated/v2/gastos': {
       id: '/_authenticated/v2/gastos'
       path: '/gastos'
@@ -699,12 +739,14 @@ interface AuthenticatedV2RouteRouteChildren {
   AuthenticatedV2AppRoute: typeof AuthenticatedV2AppRoute
   AuthenticatedV2FluxoRoute: typeof AuthenticatedV2FluxoRoute
   AuthenticatedV2GastosRoute: typeof AuthenticatedV2GastosRoute
+  AuthenticatedV2HistoricoRoute: typeof AuthenticatedV2HistoricoRoute
 }
 
 const AuthenticatedV2RouteRouteChildren: AuthenticatedV2RouteRouteChildren = {
   AuthenticatedV2AppRoute: AuthenticatedV2AppRoute,
   AuthenticatedV2FluxoRoute: AuthenticatedV2FluxoRoute,
   AuthenticatedV2GastosRoute: AuthenticatedV2GastosRoute,
+  AuthenticatedV2HistoricoRoute: AuthenticatedV2HistoricoRoute,
 }
 
 const AuthenticatedV2RouteRouteWithChildren =
@@ -772,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteRoute: SuporteRoute,
   TermosRoute: TermosRoute,
   ApiCronRoute: ApiCronRoute,
+  ApiKeepaliveRoute: ApiKeepaliveRoute,
   ConviteTokenRoute: ConviteTokenRoute,
 }
 export const routeTree = rootRouteImport

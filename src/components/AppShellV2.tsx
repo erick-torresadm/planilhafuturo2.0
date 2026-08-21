@@ -49,7 +49,7 @@ const NAV = [
 const MORE = [
   { to: "/investimentos", label: "Investimentos", icon: Wallet, hint: "Sua carteira" },
   { to: "/mercado", label: "Mercado", icon: TrendingUp, hint: "Indicadores" },
-  { to: "/historico", label: "Histórico", icon: History, hint: "Meses passados" },
+  { to: "/v2/historico", label: "Histórico", icon: History, hint: "Meses passados" },
   { to: "/desejos", label: "Desejos", icon: Sparkles, hint: "Metas & sonhos" },
   { to: "/tarefas", label: "Tarefas", icon: ListChecks, hint: "Lembretes" },
   { to: "/produtividade", label: "Foco & Notas", icon: Zap, hint: "Pomodoro, notas & hábitos" },
@@ -105,7 +105,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="v2-app min-h-[100dvh] w-full flex bg-background">
+      <div className="v2-app font-sans min-h-[100dvh] w-full flex bg-background">
         {/* ─── Desktop Sidebar ─── */}
         <motion.aside
           animate={{ width: collapsed ? 76 : 232 }}
