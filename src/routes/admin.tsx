@@ -14,6 +14,7 @@ import { Users, Clock, XCircle, CheckCircle2, Loader2 } from "lucide-react";
    nao passa pelo paywall (o dono nao pode ficar preso atras do
    proprio paywall). A seguranca real e no server fn (isAdminEmail). */
 export const Route = createFileRoute("/admin")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Admin — planilhafuturo" }] }),
   beforeLoad: async () => {
     const {

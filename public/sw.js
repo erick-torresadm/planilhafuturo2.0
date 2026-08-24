@@ -1,4 +1,4 @@
-const CACHE = "planilha-v8";
+const CACHE = "planilha-v9";
 const STATIC_ASSETS = [
   "/",
   "/app",
@@ -74,16 +74,18 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(networkFirst(e.request, CACHE));
 });
 
-/** Navigation: network first → cached HTML → offline page */
+/** Navigation: network first → cached HTML → offline page.
+    So cai pro offline.html quando o fetch de fato falha (sem rede) —
+    uma resposta HTTP com erro (401/500/etc) e devolvida como veio,
+    pra nao mascarar bug de servidor como "sem conexao". */
 async function navStrategy(req) {
   try {
     const res = await fetch(req);
     if (res.ok) {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(req, copy));
-      return res;
     }
-    throw new Error("Navigation response not ok");
+    return res;
   } catch {
     const cached = await caches.match(req);
     if (cached) return cached;
