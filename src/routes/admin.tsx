@@ -6,7 +6,7 @@ import { Money } from "@/components/Money";
 import { KpiCardV2 } from "@/components/dashboards/KpiCardV2";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
-import { Users, Clock, XCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Users, Clock, XCircle, CheckCircle2, Loader2, UserX } from "lucide-react";
 
 /* /admin — painel só-leitura pro dono ver em que fase cada usuário
    está no funil "grátis no vermelho → paga" (mesma regra de negócio
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const FASE_LABEL: Record<FaseUsuario, string> = {
+  sem_uso: "Cadastrou, nunca preencheu",
   gratis: "Grátis (no vermelho)",
   graca: "Ficou positivo — na graça",
   inativo: "Graça expirou",
@@ -33,6 +34,7 @@ const FASE_LABEL: Record<FaseUsuario, string> = {
 };
 
 const FASE_TONE: Record<FaseUsuario, string> = {
+  sem_uso: "text-negative/80 bg-negative-soft/60",
   gratis: "text-muted-foreground bg-muted",
   graca: "text-warning bg-warning-soft",
   inativo: "text-negative bg-negative-soft",
@@ -66,7 +68,7 @@ function AdminPage() {
       acc[u.fase]++;
       return acc;
     },
-    { gratis: 0, graca: 0, inativo: 0, ativo: 0 } as Record<FaseUsuario, number>,
+    { sem_uso: 0, gratis: 0, graca: 0, inativo: 0, ativo: 0 } as Record<FaseUsuario, number>,
   );
 
   return (
@@ -79,12 +81,18 @@ function AdminPage() {
       </header>
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
           <KpiCardV2
             label="Total de usuários"
             value={usuarios.length}
             icon={Users}
             tone="default"
+          />
+          <KpiCardV2
+            label="Cadastrou, não usou"
+            value={counts.sem_uso}
+            icon={UserX}
+            tone="negative"
           />
           <KpiCardV2
             label="Grátis (no vermelho)"
@@ -95,7 +103,7 @@ function AdminPage() {
           <KpiCardV2 label="Na graça (7 dias)" value={counts.graca} icon={Clock} tone="warning" />
           <KpiCardV2 label="Graça expirou" value={counts.inativo} icon={XCircle} tone="negative" />
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
           <KpiCardV2 label="Pagantes" value={counts.ativo} icon={CheckCircle2} tone="positive" />
         </div>
 

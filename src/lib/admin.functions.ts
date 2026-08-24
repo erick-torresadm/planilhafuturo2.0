@@ -18,7 +18,7 @@ async function getAdminDb() {
   return supabaseAdmin;
 }
 
-export type FaseUsuario = "gratis" | "graca" | "inativo" | "ativo";
+export type FaseUsuario = "sem_uso" | "gratis" | "graca" | "inativo" | "ativo";
 
 export type UsuarioAdmin = {
   id: string;
@@ -54,7 +54,23 @@ async function assertAdmin() {
 }
 
 /** Ordem de urgência: quem tá na graça (prestes a virar paywall) primeiro. */
-const ORDEM_FASE: Record<FaseUsuario, number> = { graca: 0, gratis: 1, inativo: 2, ativo: 3 };
+const ORDEM_FASE: Record<FaseUsuario, number> = {
+  graca: 0,
+  gratis: 1,
+  sem_uso: 2,
+  inativo: 3,
+  ativo: 4,
+};
+
+/** Cadastrou mas nunca lançou nada — nenhuma das 3 fontes de dado tem linha dele. */
+async function temAlgumDado(admin: any, userId: string): Promise<boolean> {
+  const [lanc, gastos, parcelas] = await Promise.all([
+    admin.from("lancamentos").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    admin.from("gastos_fixos").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    admin.from("parcelas").select("id", { count: "exact", head: true }).eq("user_id", userId),
+  ]);
+  return (lanc.count ?? 0) > 0 || (gastos.count ?? 0) > 0 || (parcelas.count ?? 0) > 0;
+}
 
 export const getAdminOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<AdminOverview> => {
@@ -112,6 +128,10 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(
           } else {
             fase = "inativo";
           }
+        } else if (!(await temAlgumDado(admin, p.id))) {
+          // Nunca ficou positivo E nunca lançou nada — cadastrou e sumiu,
+          // diferente de quem tá usando e ainda no vermelho.
+          fase = "sem_uso";
         }
 
         return {
