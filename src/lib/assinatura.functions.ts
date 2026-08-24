@@ -45,16 +45,17 @@ async function upsertAssinatura(userId: string, planoNome: string) {
       .update({ plano: planoNome, updated_at: now })
       .eq("id", existing.id);
   } else {
-    await admin
-      .from("assinaturas")
-      .insert({ user_id: userId, plano: planoNome, status: "ativo", created_at: now, updated_at: now });
+    await admin.from("assinaturas").insert({
+      user_id: userId,
+      plano: planoNome,
+      status: "ativo",
+      created_at: now,
+      updated_at: now,
+    });
   }
 
   // Update profile
-  await admin
-    .from("profiles")
-    .update({ plano: planoNome, trial_ends_at: null })
-    .eq("id", userId);
+  await admin.from("profiles").update({ plano: planoNome, trial_ends_at: null }).eq("id", userId);
 }
 
 /**
@@ -117,10 +118,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     if (!userId) return { ok: false, error: "Não autenticado" };
 
     try {
-      const pix = await createPixCharge(
-        plano.valor,
-        `Planilhafuturo ${plano.nome}`,
-      );
+      const pix = await createPixCharge(plano.valor, `Planilhafuturo ${plano.nome}`);
       return {
         ok: true,
         txid: pix.txid,
@@ -133,9 +131,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     }
   });
 
-type PaymentResult =
-  | { paid: true; plano: string; dias: number }
-  | { paid: false; error: string };
+type PaymentResult = { paid: true; plano: string; dias: number } | { paid: false; error: string };
 
 export const verifyPayment = createServerFn({ method: "POST" })
   .validator((data: { txid: string; plano: string }) => data)
@@ -178,10 +174,10 @@ type SubscriptionStatus =
   | { status: "graca"; plano: string; diasRestantes: number }
   | { status: "inativo" };
 
-/** Constantes do gate "grátis no vermelho". */
-const SOBRA_MIN_POSITIVO = 250; // sobra do mês (entradas − saídas) a partir da qual fica "positivo"
-const INVESTIDO_MIN_POSITIVO = 3000; // patrimônio investido a partir do qual fica "positivo"
-const DIAS_GRACA = 7; // prazo para pagar após ficar positivo (segue mesmo se cair no vermelho)
+/** Constantes do gate "grátis no vermelho". Exportadas pro painel /admin reusar a mesma regra. */
+export const SOBRA_MIN_POSITIVO = 250; // sobra do mês (entradas − saídas) a partir da qual fica "positivo"
+export const INVESTIDO_MIN_POSITIVO = 3000; // patrimônio investido a partir do qual fica "positivo"
+export const DIAS_GRACA = 7; // prazo para pagar após ficar positivo (segue mesmo se cair no vermelho)
 
 /**
  * Calcula a "sobra do mês" corrente com movimentações REAIS (server-side).
@@ -190,7 +186,7 @@ const DIAS_GRACA = 7; // prazo para pagar após ficar positivo (segue mesmo se c
  * (RLS user_owns) e inflar o saldo inicial para escapar do gate. Sobra =
  * entradas reais − saídas reais do mês corrente.
  */
-async function computaSobraMes(
+export async function computaSobraMes(
   admin: any,
   userId: string,
 ): Promise<{ sobra: number; investido: number }> {
@@ -201,12 +197,24 @@ async function computaSobraMes(
   const lastDay = new Date(y, m0 + 1, 0).getDate();
   const last = `${y}-${String(m0 + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-  const [{ data: lancamentos }, { data: gastos }, { data: parcelas }, { data: invest }] = await Promise.all([
-    admin.from("lancamentos").select("tipo, valor").eq("user_id", userId).gte("data", first).lte("data", last),
-    admin.from("gastos_fixos").select("valor, frequencia, mes_anual, ativo, dia").eq("user_id", userId),
-    admin.from("parcelas").select("data, valor_total, qtd_parcelas, parcela_inicial").eq("user_id", userId),
-    admin.from("investimentos").select("posicao_atual").eq("user_id", userId),
-  ]);
+  const [{ data: lancamentos }, { data: gastos }, { data: parcelas }, { data: invest }] =
+    await Promise.all([
+      admin
+        .from("lancamentos")
+        .select("tipo, valor")
+        .eq("user_id", userId)
+        .gte("data", first)
+        .lte("data", last),
+      admin
+        .from("gastos_fixos")
+        .select("valor, frequencia, mes_anual, ativo, dia")
+        .eq("user_id", userId),
+      admin
+        .from("parcelas")
+        .select("data, valor_total, qtd_parcelas, parcela_inicial")
+        .eq("user_id", userId),
+      admin.from("investimentos").select("posicao_atual").eq("user_id", userId),
+    ]);
 
   let entradas = 0;
   let saidasDiarias = 0;
@@ -234,7 +242,10 @@ async function computaSobraMes(
     saidasFixas += Math.round((Number(p.valor_total) / Math.max(p.qtd_parcelas, 1)) * 100) / 100;
   }
 
-  const investido = (invest ?? []).reduce((a: number, r: any) => a + Number(r.posicao_atual) || 0, 0);
+  const investido = (invest ?? []).reduce(
+    (a: number, r: any) => a + Number(r.posicao_atual) || 0,
+    0,
+  );
   return { sobra: entradas - saidasDiarias - saidasFixas, investido };
 }
 
@@ -347,8 +358,8 @@ export const getSubscriptionStatus = createServerFn({ method: "GET" })
 type MemberWorkspace = { ownerId: string; ownerNome: string; ownerAtivo: boolean };
 
 /** Workspaces em que o usuário logado é membro (ADM). Só devolve id + nome do dono. */
-export const getMemberWorkspaces = createServerFn({ method: "GET" })
-  .handler(async (): Promise<MemberWorkspace[]> => {
+export const getMemberWorkspaces = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MemberWorkspace[]> => {
     const me = await getAuthedUser();
     const meId = me?.id ?? null;
     if (!meId) return [];
@@ -373,11 +384,12 @@ export const getMemberWorkspaces = createServerFn({ method: "GET" })
       ownerNome: owners?.find((o) => o.id === oid)?.nome ?? "Workspace",
       ownerAtivo: ativos.has(oid),
     }));
-  });
+  },
+);
 
 /** Membros de um workspace que o usuário logado é DONO. Usado na seção Equipe. */
-export const getWorkspaceMembers = createServerFn({ method: "GET" })
-  .handler(async (): Promise<{ member_id: string; nome: string; email: string | null }[]> => {
+export const getWorkspaceMembers = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ member_id: string; nome: string; email: string | null }[]> => {
     const me = await getAuthedUser();
     const meId = me?.id ?? null;
     if (!meId) return [];
@@ -402,7 +414,8 @@ export const getWorkspaceMembers = createServerFn({ method: "GET" })
       nome: byId.get(r.member_id)?.nome ?? "Usuário",
       email: byId.get(r.member_id)?.email ?? null,
     }));
-  });
+  },
+);
 
 // ─── Pre-signup checkout (pay first, create account later) ──
 
@@ -412,24 +425,26 @@ type PreSignupCheckoutResult =
   | { ok: false; error: string };
 
 export const createPreSignupCheckout = createServerFn({ method: "POST" })
-  .validator((data: {
-    email: string;
-    plano: string;
-    metodo: "pix" | "cartao";
-    paymentToken?: string;
-    customerName?: string;
-    customerCpf?: string;
-    customerPhone?: string;
-    billing?: {
-      street: string;
-      number: string;
-      neighborhood: string;
-      city: string;
-      state: string;
-      zipcode: string;
-    };
-    installments?: number;
-  }) => data)
+  .validator(
+    (data: {
+      email: string;
+      plano: string;
+      metodo: "pix" | "cartao";
+      paymentToken?: string;
+      customerName?: string;
+      customerCpf?: string;
+      customerPhone?: string;
+      billing?: {
+        street: string;
+        number: string;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipcode: string;
+      };
+      installments?: number;
+    }) => data,
+  )
   .handler(async ({ data }): Promise<PreSignupCheckoutResult> => {
     const plano = PLANOS[data.plano];
     if (!plano) return { ok: false, error: "Plano inválido" };
@@ -462,7 +477,8 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
       } else {
         // Credit card — card was tokenized in the browser by Efí's
         // payment-token-efi lib; only the payment_token reaches this server.
-        if (!data.paymentToken) return { ok: false, error: "Token do cartão não gerado. Tente novamente." };
+        if (!data.paymentToken)
+          return { ok: false, error: "Token do cartão não gerado. Tente novamente." };
 
         const cardResult = await createCreditCardCharge(
           plano.valor,
@@ -517,9 +533,7 @@ export const createPreSignupCheckout = createServerFn({ method: "POST" })
     }
   });
 
-type PreSignupVerifyResult =
-  | { paid: true }
-  | { paid: false; error: string };
+type PreSignupVerifyResult = { paid: true } | { paid: false; error: string };
 
 export const verifyPreSignupPayment = createServerFn({ method: "POST" })
   .validator((data: { email: string; txid: string }) => data)
@@ -560,9 +574,7 @@ export const verifyPreSignupPayment = createServerFn({ method: "POST" })
     }
   });
 
-type ActivateResult =
-  | { ok: true; plano: string }
-  | { ok: false; error: string };
+type ActivateResult = { ok: true; plano: string } | { ok: false; error: string };
 
 /**
  * Called after user signs up to activate a pre-paid plan.
