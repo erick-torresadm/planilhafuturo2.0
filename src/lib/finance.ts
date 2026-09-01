@@ -72,6 +72,53 @@ export function saidaFixaDia(
   return s;
 }
 
+export type ItemFixoDia = {
+  descricao: string;
+  valor: number;
+  origem: "fixo" | "parcela";
+  detalhe?: string;
+};
+
+/** Itens (gastos fixos + parcelas) que compõem a saída fixa do dia D */
+export function itensFixosDia(
+  y: number,
+  m0: number,
+  d: number,
+  gastos: GastoFixo[],
+  parcelas: Parcela[],
+): ItemFixoDia[] {
+  const out: ItemFixoDia[] = [];
+  for (const g of gastos) {
+    if (!g.ativo) continue;
+    if (g.dia !== d) continue;
+    if (g.frequencia === "anual") {
+      if (g.mes_anual == null) continue;
+      if (g.mes_anual - 1 !== m0) continue;
+    }
+    out.push({
+      descricao: g.descricao,
+      valor: Number(g.valor) || 0,
+      origem: "fixo",
+      detalhe: g.categoria,
+    });
+  }
+  for (const p of parcelas) {
+    const dt = new Date(p.data + "T00:00:00");
+    if (dt.getDate() !== d) continue;
+    const v = valorParcelaNoMes(p, y, m0);
+    if (v <= 0) continue;
+    const monthsAhead = (y - dt.getFullYear()) * 12 + (m0 - dt.getMonth());
+    const n = p.parcela_inicial + monthsAhead;
+    out.push({
+      descricao: p.descricao,
+      valor: v,
+      origem: "parcela",
+      detalhe: `${n}/${p.qtd_parcelas}${p.cartao ? ` · ${p.cartao}` : ""}`,
+    });
+  }
+  return out.sort((a, b) => b.valor - a.valor);
+}
+
 export type DiaFluxo = {
   data: string;
   dia: number;

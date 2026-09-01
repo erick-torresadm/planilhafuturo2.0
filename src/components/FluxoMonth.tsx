@@ -96,17 +96,20 @@ export function MonthScroller({
 }
 
 /* ─── Visão completa do mês (sparkline + grid mobile + tabela desktop) ─── */
-export function FluxoMonthView({ mm, today, onCommit, loading }: {
+export type DayClickFn = (dia: DiaFluxo, mesLabel: string) => void;
+
+export function FluxoMonthView({ mm, today, onCommit, loading, onDayClick }: {
   mm?: MesData;
   today: Date;
   onCommit: CommitFn;
   loading?: boolean;
+  onDayClick?: DayClickFn;
 }) {
   return (
     <>
       {mm && <MiniChart dias={mm.dias} />}
       <div className="lg:hidden">
-        {mm && <DayFocus mm={mm} today={today} onCommit={onCommit} />}
+        {mm && <DayFocus mm={mm} today={today} onCommit={onCommit} onDayClick={onDayClick} />}
       </div>
       <div className="hidden lg:block">
         {loading ? (
@@ -114,11 +117,15 @@ export function FluxoMonthView({ mm, today, onCommit, loading }: {
             {[1, 2, 3, 4, 5].map((i) => <div key={i} className="skeleton h-10 w-full rounded-md" />)}
           </div>
         ) : mm ? (
-          <MonthTable mm={mm} today={today} onCommit={onCommit} />
+          <MonthTable mm={mm} today={today} onCommit={onCommit} onDayClick={onDayClick} />
         ) : null}
       </div>
     </>
   );
+}
+
+function mesLabelOf(mm: MesData) {
+  return `${MESES_ABREV[mm.m]}/${String(mm.y).slice(2)}`;
 }
 
 /* Mini balance sparkline */
@@ -151,7 +158,7 @@ function MiniChart({ dias }: { dias: DiaFluxo[] }) {
 }
 
 /* Mobile — spreadsheet-like day grid */
-function DayFocus({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit: CommitFn }) {
+function DayFocus({ mm, today, onCommit, onDayClick }: { mm: MesData; today: Date; onCommit: CommitFn; onDayClick?: DayClickFn }) {
   const isCurrentMonth = mm.y === today.getFullYear() && mm.m === today.getMonth();
   const [sel, setSel] = useState<number>(isCurrentMonth ? today.getDate() : 1);
   const listRef = useRef<HTMLDivElement>(null);
@@ -238,10 +245,20 @@ function DayFocus({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit:
                 <CellSm value={d.saidaDiaria} onCommit={(v: number) => onCommit(d.data, "saida_diaria", v, d.saidaDiaria)} tone="out" />
               </div>
 
-              {/* Balance */}
-              <div className={cn("w-20 text-right font-bold tabular-nums text-sm shrink-0", d.saldo < 0 ? "text-negative" : "text-positive")}>
+              {/* Balance — clique abre o detalhe do dia */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDayClick?.(d, mesLabelOf(mm));
+                }}
+                className={cn(
+                  "w-20 text-right font-bold tabular-nums text-sm shrink-0 rounded-md px-1 py-1 -my-1 hover:bg-muted/60 active:bg-muted transition-colors touch-manipulation",
+                  d.saldo < 0 ? "text-negative" : "text-positive",
+                )}
+              >
                 {f(d.saldo)}
-              </div>
+              </button>
             </div>
           );
         })}
@@ -343,9 +360,8 @@ function MiniStat({ icon: Icon, label, value, tone }: { icon: any; label: string
 }
 
 /* Desktop table */
-function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommit: CommitFn }) {
+function MonthTable({ mm, today, onCommit, onDayClick }: { mm: MesData; today: Date; onCommit: CommitFn; onDayClick?: DayClickFn }) {
   const todayRef = useRef<HTMLTableRowElement>(null);
-  const [expanded, setExpanded] = useState<number | null>(null);
   const f = useBrl();
 
   if (!mm?.dias) return null;
@@ -418,17 +434,19 @@ function MonthTable({ mm, today, onCommit }: { mm: MesData; today: Date; onCommi
                   </div>
                 </td>
                 <td
-                  className="px-4 py-2.5 text-right font-bold tabular-nums"
+                  className="px-4 py-2.5 text-right font-bold tabular-nums cursor-pointer hover:brightness-95 transition-[filter]"
                   style={{ background: heat.background, color: heat.color }}
+                  onClick={() => onDayClick?.(d, mesLabelOf(mm))}
                 >
                   {f(d.saldo)}
                 </td>
                 <td className="px-2 py-2.5 text-center">
                   <button
-                    onClick={() => setExpanded(ex => ex === d.dia ? null : d.dia)}
+                    onClick={() => onDayClick?.(d, mesLabelOf(mm))}
+                    aria-label={`Detalhar dia ${d.dia}`}
                     className="text-muted-foreground/50 hover:text-foreground transition-colors"
                   >
-                    <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded === d.dia && "rotate-90")} />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 </td>
               </tr>

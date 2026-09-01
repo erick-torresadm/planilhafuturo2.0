@@ -1,22 +1,24 @@
 import { AnimatePresence, motion } from "motion/react";
-import { X, TrendingUp, TrendingDown, Wallet, Info } from "lucide-react";
+import { X, TrendingUp, TrendingDown, Wallet, Info, Receipt, CreditCard } from "lucide-react";
 import { Money } from "@/components/Money";
-import type { DiaFluxo } from "@/lib/finance";
+import type { DiaFluxo, ItemFixoDia } from "@/lib/finance";
 import type { CommitFn } from "@/components/FluxoMonth";
 
 /* ─── Ações do dia ───
    Sheet que lista os lançamentos avulsos de um dia (entrada fixa
    extra, entrada diária, saída diária) com botão de remover cada um.
-   Saída fixa (contas/parcelas recorrentes) aparece só como leitura —
-   ela vem de /gastos e /parcelas, não é um lançamento removível aqui. */
+   Saída fixa (contas/parcelas recorrentes) aparece itemizada como
+   leitura — vem de /gastos e /parcelas, não é removível aqui. */
 export function DayActionsSheet({
   dia,
   mesLabel,
+  itensFixos = [],
   onCommit,
   onClose,
 }: {
   dia: DiaFluxo | null;
   mesLabel: string;
+  itensFixos?: ItemFixoDia[];
   onCommit: CommitFn;
   onClose: () => void;
 }) {
@@ -90,6 +92,47 @@ export function DayActionsSheet({
               </span>
             </div>
 
+            {/* Como o saldo foi calculado */}
+            {(() => {
+              const entradas = dia.entradaFixa + dia.entradaDiaria;
+              const saidas = dia.saidaFixa + dia.saidaDiaria;
+              const anterior = dia.saldo - entradas + saidas;
+              const row = "flex items-center justify-between text-sm";
+              return (
+                <div className="rounded-xl border border-border px-3.5 py-3 space-y-1.5">
+                  <span className="eyebrow">Por que esse saldo</span>
+                  <div className={row}>
+                    <span className="text-muted-foreground">Saldo anterior</span>
+                    <span className="font-mono font-semibold">
+                      <Money value={anterior} />
+                    </span>
+                  </div>
+                  {entradas > 0 && (
+                    <div className={row}>
+                      <span className="text-muted-foreground">+ Entradas do dia</span>
+                      <span className="font-mono font-semibold text-positive">
+                        <Money value={entradas} />
+                      </span>
+                    </div>
+                  )}
+                  {saidas > 0 && (
+                    <div className={row}>
+                      <span className="text-muted-foreground">− Saídas do dia</span>
+                      <span className="font-mono font-semibold text-negative">
+                        <Money value={saidas} />
+                      </span>
+                    </div>
+                  )}
+                  <div className="border-t border-border pt-1.5 flex items-center justify-between text-sm font-bold">
+                    <span>= Saldo do dia</span>
+                    <span className={dia.saldo < 0 ? "font-mono text-negative" : "font-mono text-positive"}>
+                      <Money value={dia.saldo} />
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {acoes.length === 0 && dia.saidaFixa === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
                 Nenhuma ação lançada nesse dia ainda.
@@ -142,15 +185,42 @@ export function DayActionsSheet({
             )}
 
             {dia.saidaFixa > 0 && (
-              <div className="flex items-start gap-2.5 rounded-xl bg-muted/60 px-3.5 py-3 text-xs text-muted-foreground">
-                <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                <span>
-                  Saída fixa do dia:{" "}
-                  <strong className="text-foreground">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <span className="eyebrow">Descontos do dia</span>
+                  <span className="font-mono text-sm font-bold text-negative">
                     <Money value={dia.saidaFixa} />
-                  </strong>
-                  . Vem de contas recorrentes — gerencie em Gastos Fixos ou Parcelas.
-                </span>
+                  </span>
+                </div>
+                <div className="rounded-xl border border-border divide-y divide-border max-h-56 overflow-y-auto">
+                  {itensFixos.map((it, i) => {
+                    const Icon = it.origem === "parcela" ? CreditCard : Receipt;
+                    return (
+                      <div key={i} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="h-8 w-8 rounded-lg bg-negative-soft text-negative grid place-items-center shrink-0">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{it.descricao}</div>
+                            {it.detalhe && (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {it.origem === "parcela" ? `Parcela ${it.detalhe}` : it.detalhe}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <span className="font-mono text-sm font-bold text-negative shrink-0">
+                          <Money value={it.valor} />
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-start gap-2 px-1 text-xs text-muted-foreground">
+                  <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  <span>Vêm de contas recorrentes — gerencie em Gastos Fixos ou Parcelas.</span>
+                </div>
               </div>
             )}
           </motion.div>

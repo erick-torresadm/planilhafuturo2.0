@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { selectAll, getProfile } from "@/lib/db";
-import { computaMes, type GastoFixo, type Parcela } from "@/lib/finance";
+import { computaMes, itensFixosDia, type GastoFixo, type Parcela } from "@/lib/finance";
 import { useMemo, useState } from "react";
 import { useSounds } from "@/hooks/useSounds";
 import { useLancamentosLocal } from "@/hooks/useLancamentosLocal";
@@ -120,7 +120,13 @@ function FluxoPage() {
       </div>
 
       {view === "detalhe" ? (
-        <FluxoMonthView mm={mm} today={today} onCommit={commit} loading={loading} />
+        <FluxoMonthView
+          mm={mm}
+          today={today}
+          onCommit={commit}
+          loading={loading}
+          onDayClick={(dia, mesLabel) => setDayDetail({ dia, mesLabel })}
+        />
       ) : (
         <HorizonteSaldos
           mesesData={mesesData}
@@ -137,6 +143,17 @@ function FluxoPage() {
       <DayActionsSheet
         dia={dayDetail?.dia ?? null}
         mesLabel={dayDetail?.mesLabel ?? ""}
+        itensFixos={
+          dayDetail
+            ? itensFixosDia(
+                Number(dayDetail.dia.data.slice(0, 4)),
+                Number(dayDetail.dia.data.slice(5, 7)) - 1,
+                dayDetail.dia.dia,
+                (gastos.data ?? []) as GastoFixo[],
+                (parcelas.data ?? []) as unknown as Parcela[],
+              )
+            : []
+        }
         onCommit={commit}
         onClose={() => setDayDetail(null)}
       />
