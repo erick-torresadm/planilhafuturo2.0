@@ -452,18 +452,10 @@
   position: relative;
   overflow: hidden;
 }
-.metric-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--color-primary);
-  opacity: 0.3;
-}
-.metric-card-positive::before { background: var(--color-positive); opacity: 0.4; }
-.metric-card-negative::before { background: var(--color-negative); opacity: 0.4; }
+/* Sem barra colorida no topo (carimbo de template): destaque vem de
+   tinta de fundo sutil apenas quando o card pede tom semantico. */
+.metric-card-positive { background: color-mix(in oklab, var(--color-positive) 4%, var(--color-card)); }
+.metric-card-negative { background: color-mix(in oklab, var(--color-negative) 4%, var(--color-card)); }
 
 /* ─── Stat row ─── */
 .stat-row {
@@ -533,7 +525,7 @@
   min-height: 44px;
 }
 .mint-gradient {
-  background: linear-gradient(135deg, var(--color-primary), #34d399);
+  background: var(--color-primary);
   color: var(--color-primary-foreground);
 }
 
@@ -544,10 +536,10 @@
   justify-content: center;
   gap: 0.5rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--color-primary), #34d399);
+  background: var(--color-primary);
   color: var(--color-primary-foreground);
   font-weight: 600;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 6px 20px -8px color-mix(in oklab, var(--color-primary) 55%, transparent), var(--shadow-card);
   transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
 }
 .cta-pill:hover {
@@ -640,23 +632,40 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   /v2 app — identidade indigo (deliberadamente distinta do verde
-   do app atual), escopada em .v2-app. --positive/--negative ficam
-   intocados (semantica financeira de entrada/saida nao muda).
+   App — identidade da marca: verde planilhafuturo, sem indigo.
+   Escopada em .v2-app. --positive/--negative ficam intocados
+   (semantica financeira de entrada/saida nao muda).
    ═══════════════════════════════════════════════════════════════ */
 .v2-app {
-  --primary: #4f46e5;
+  --primary: #047857;
   --primary-fg: #ffffff;
-  --accent: #eef2ff;
-  --accent-fg: #3730a3;
-  --ring: #4f46e5;
+  --accent: #ecfdf5;
+  --accent-fg: #065f46;
+  --ring: #047857;
   --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 .v2-app.dark {
-  --primary: #818cf8;
-  --primary-fg: #0b0b14;
-  --accent: #1e1b4b;
-  --accent-fg: #c7d2fe;
-  --ring: #818cf8;
+  --primary: #34d399;
+  --primary-fg: #06231a;
+  --accent: #0a2920;
+  --accent-fg: #6ee7b7;
+  --ring: #34d399;
+}
+
+/* ─── Assinatura visual: "extrato" ───
+   Detalhes que remetem a papel de planilha/recibo, marca da casa. */
+.ledger-divider {
+  border: 0;
+  border-top: 1px dashed color-mix(in oklab, var(--color-muted-fg) 35%, transparent);
+}
+.ledger-total {
+  border-top: 1px dashed color-mix(in oklab, var(--color-muted-fg) 45%, transparent);
+  border-bottom: 3px double color-mix(in oklab, var(--color-muted-fg) 45%, transparent);
+}
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }

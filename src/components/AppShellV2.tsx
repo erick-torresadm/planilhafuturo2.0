@@ -242,7 +242,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                   {a && (
                     <motion.div
                       layoutId="bottom-nav-pill-v2"
-                      className="absolute top-1.5 h-8 w-8 rounded-xl bg-primary/10"
+                      className="absolute top-0 h-[3px] w-8 rounded-b-full bg-primary"
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
@@ -251,10 +251,10 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                       "h-[18px] w-[18px] relative",
                       a ? "text-primary" : "text-muted-foreground",
                     )}
-                    strokeWidth={a ? 2.4 : 1.8}
+                    strokeWidth={a ? 2.2 : 1.75}
                   />
                   <span
-                    className={cn("eyebrow relative", a ? "text-primary" : "text-muted-foreground")}
+                    className={cn("nav-label relative", a ? "text-primary" : "text-muted-foreground")}
                   >
                     {n.label}
                   </span>
@@ -268,7 +268,7 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
               {inMore && (
                 <motion.div
                   layoutId="bottom-nav-pill-v2"
-                  className="absolute top-1.5 h-8 w-8 rounded-xl bg-primary/10"
+                  className="absolute top-0 h-[3px] w-8 rounded-b-full bg-primary"
                   transition={{ duration: 0.25 }}
                 />
               )}
@@ -277,11 +277,11 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                   "h-[18px] w-[18px] relative",
                   inMore ? "text-primary" : "text-muted-foreground",
                 )}
-                strokeWidth={inMore ? 2.4 : 1.8}
+                strokeWidth={inMore ? 2.2 : 1.75}
               />
               <span
                 className={cn(
-                  "eyebrow relative",
+                  "nav-label relative",
                   inMore ? "text-primary" : "text-muted-foreground",
                 )}
               >
@@ -341,17 +341,17 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                         >
                           <div
                             className={cn(
-                              "h-11 w-11 rounded-xl grid place-items-center",
+                              "h-11 w-11 rounded-[14px] grid place-items-center",
                               a
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "bg-muted text-foreground/70",
                             )}
                           >
-                            <Icon className="h-[20px] w-[20px]" strokeWidth={a ? 2.2 : 1.8} />
+                            <Icon className="h-[20px] w-[20px]" strokeWidth={a ? 2 : 1.75} />
                           </div>
                           <span
                             className={cn(
-                              "eyebrow text-center leading-tight",
+                              "nav-label text-center",
                               a ? "text-primary" : "text-muted-foreground",
                             )}
                           >
@@ -395,13 +395,16 @@ function SidebarLink({
   return (
     <Link
       to={n.to}
-      className="relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-colors mb-0.5"
+      className={cn(
+        "relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors mb-0.5",
+        active ? "bg-muted/70" : "hover:bg-muted/50",
+      )}
       title={collapsed ? n.label : undefined}
     >
       {active && (
         <motion.div
           layoutId="sidebar-active-pill"
-          className="absolute inset-0 rounded-xl bg-primary/10"
+          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-primary"
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         />
       )}
@@ -409,15 +412,15 @@ function SidebarLink({
         className={cn(
           "relative shrink-0",
           small ? "h-[16px] w-[16px]" : "h-[18px] w-[18px]",
-          active ? "text-primary" : "text-muted-foreground",
+          active ? "text-foreground" : "text-muted-foreground",
         )}
-        strokeWidth={active ? 2.2 : 1.8}
+        strokeWidth={active ? 2 : 1.75}
       />
       {!collapsed && (
         <span
           className={cn(
-            "relative truncate text-[13px] font-medium",
-            active ? "text-primary font-semibold" : "text-muted-foreground",
+            "relative truncate text-[13px]",
+            active ? "text-foreground font-semibold" : "text-muted-foreground font-medium",
           )}
         >
           {n.label}
