@@ -96,8 +96,8 @@ export function DayActionsSheet({
               <span className="text-sm font-semibold text-primary flex items-center gap-2">
                 <Wallet className="h-4 w-4" /> Saldo do dia
               </span>
-              <span className="font-mono text-base font-bold text-primary">
-                <Money value={dia.saldo} />
+              <span className={dia.saldo < 0 ? "font-mono text-base font-bold text-negative" : "font-mono text-base font-bold text-positive"}>
+                <Money value={dia.saldo} signed={false} />
               </span>
             </div>
 
@@ -108,14 +108,14 @@ export function DayActionsSheet({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Saldo no início do mês</span>
                   <span className="font-mono font-semibold">
-                    <Money value={acumulado.saldoInicioMes} />
+                    <Money value={acumulado.saldoInicioMes} signed={false} />
                   </span>
                 </div>
                 {acumulado.entradas > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">+ Entradas até dia {dia.dia}</span>
                     <span className="font-mono font-semibold text-positive">
-                      <Money value={acumulado.entradas} />
+                      <Money value={acumulado.entradas} signed={false} />
                     </span>
                   </div>
                 )}
@@ -123,7 +123,7 @@ export function DayActionsSheet({
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">− Contas e parcelas até dia {dia.dia}</span>
                     <span className="font-mono font-semibold text-negative">
-                      <Money value={acumulado.saidasFixas} />
+                      <Money value={acumulado.saidasFixas} signed={false} />
                     </span>
                   </div>
                 )}
@@ -131,14 +131,14 @@ export function DayActionsSheet({
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">− Gastos lançados até dia {dia.dia}</span>
                     <span className="font-mono font-semibold text-negative">
-                      <Money value={acumulado.saidasDiarias} />
+                      <Money value={acumulado.saidasDiarias} signed={false} />
                     </span>
                   </div>
                 )}
                 <div className="border-t border-border pt-1.5 flex items-center justify-between text-sm font-bold">
                   <span>= Saldo do dia {dia.dia}</span>
                   <span className={dia.saldo < 0 ? "font-mono text-negative" : "font-mono text-positive"}>
-                    <Money value={dia.saldo} />
+                    <Money value={dia.saldo} signed={false} />
                   </span>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function DayActionsSheet({
                                 : "font-mono text-sm font-bold text-negative"
                             }
                           >
-                            <Money value={a.valor} />
+                            <Money value={a.valor} signed={false} />
                           </div>
                         </div>
                       </div>
@@ -200,7 +200,7 @@ export function DayActionsSheet({
                 <div className="flex items-center justify-between px-1">
                   <span className="eyebrow">O que pesou até dia {dia.dia}</span>
                   <span className="font-mono text-sm font-bold text-negative">
-                    <Money value={acumulado.saidasFixas} />
+                    <Money value={acumulado.saidasFixas} signed={false} />
                   </span>
                 </div>
                 <div className="rounded-xl border border-border divide-y divide-border max-h-56 overflow-y-auto overscroll-contain">
@@ -223,7 +223,7 @@ export function DayActionsSheet({
                           </div>
                         </div>
                         <span className="font-mono text-sm font-bold text-negative shrink-0">
-                          <Money value={it.valor} />
+                          <Money value={it.valor} signed={false} />
                         </span>
                       </div>
                     );
