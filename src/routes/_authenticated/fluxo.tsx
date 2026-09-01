@@ -53,6 +53,47 @@ function FluxoPage() {
     });
   }, [meses, gastos.data, parcelas.data, lanc, saldoInicial]);
 
+  /* Acumulado do mês até o dia clicado — explica o saldo do dia
+     com tudo que entrou e pesou desde o início daquele mês. */
+  const acumulado = useMemo(() => {
+    if (!dayDetail) return null;
+    const y = Number(dayDetail.dia.data.slice(0, 4));
+    const m = Number(dayDetail.dia.data.slice(5, 7)) - 1;
+    const mes = mesesData.find((md) => md.y === y && md.m === m);
+    if (!mes) return null;
+    const g = (gastos.data ?? []) as GastoFixo[];
+    const p = (parcelas.data ?? []) as unknown as Parcela[];
+    const upTo = mes.dias.filter((dd) => dd.dia <= dayDetail.dia.dia);
+    const first = upTo[0];
+    if (!first) return null;
+    const saldoInicioMes =
+      first.saldo + first.saidaFixa + first.saidaDiaria - first.entradaFixa - first.entradaDiaria;
+    let entradas = 0, saidasFixas = 0, saidasDiarias = 0;
+    const porItem = new Map<string, { descricao: string; valor: number; origem: "fixo" | "parcela"; detalhe?: string; vezes: number }>();
+    for (const dd of upTo) {
+      entradas += dd.entradaFixa + dd.entradaDiaria;
+      saidasFixas += dd.saidaFixa;
+      saidasDiarias += dd.saidaDiaria;
+      for (const it of itensFixosDia(y, m, dd.dia, g, p)) {
+        const k = `${it.origem}:${it.descricao}:${it.detalhe ?? ""}`;
+        const cur = porItem.get(k);
+        if (cur) {
+          cur.valor += it.valor;
+          cur.vezes += 1;
+        } else {
+          porItem.set(k, { ...it, vezes: 1 });
+        }
+      }
+    }
+    return {
+      saldoInicioMes,
+      entradas,
+      saidasFixas,
+      saidasDiarias,
+      itens: [...porItem.values()].sort((a, b) => b.valor - a.valor),
+    };
+  }, [dayDetail, mesesData, gastos.data, parcelas.data]);
+
   function commit(data: string, tipo: string, valor: number, prev: number) {
     if (valor === prev) return;
     upsert({ data, tipo, valor });
@@ -143,17 +184,7 @@ function FluxoPage() {
       <DayActionsSheet
         dia={dayDetail?.dia ?? null}
         mesLabel={dayDetail?.mesLabel ?? ""}
-        itensFixos={
-          dayDetail
-            ? itensFixosDia(
-                Number(dayDetail.dia.data.slice(0, 4)),
-                Number(dayDetail.dia.data.slice(5, 7)) - 1,
-                dayDetail.dia.dia,
-                (gastos.data ?? []) as GastoFixo[],
-                (parcelas.data ?? []) as unknown as Parcela[],
-              )
-            : []
-        }
+        acumulado={acumulado}
         onCommit={commit}
         onClose={() => setDayDetail(null)}
       />

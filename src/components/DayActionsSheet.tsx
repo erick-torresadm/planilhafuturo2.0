@@ -4,21 +4,30 @@ import { Money } from "@/components/Money";
 import type { DiaFluxo, ItemFixoDia } from "@/lib/finance";
 import type { CommitFn } from "@/components/FluxoMonth";
 
+export type AcumuladoMes = {
+  saldoInicioMes: number;
+  entradas: number;
+  saidasFixas: number;
+  saidasDiarias: number;
+  itens: (ItemFixoDia & { vezes: number })[];
+};
+
 /* ─── Ações do dia ───
    Sheet que lista os lançamentos avulsos de um dia (entrada fixa
-   extra, entrada diária, saída diária) com botão de remover cada um.
-   Saída fixa (contas/parcelas recorrentes) aparece itemizada como
-   leitura — vem de /gastos e /parcelas, não é removível aqui. */
+   extra, entrada diária, saída diária) com botão de remover cada um,
+   e explica o saldo: o acumulado do mês até o dia clicado, com cada
+   fixo/parcela que pesou. Saída fixa é leitura — vem de /gastos e
+   /parcelas, não é removível aqui. */
 export function DayActionsSheet({
   dia,
   mesLabel,
-  itensFixos = [],
+  acumulado,
   onCommit,
   onClose,
 }: {
   dia: DiaFluxo | null;
   mesLabel: string;
-  itensFixos?: ItemFixoDia[];
+  acumulado?: AcumuladoMes | null;
   onCommit: CommitFn;
   onClose: () => void;
 }) {
@@ -65,7 +74,7 @@ export function DayActionsSheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl border border-border p-5 space-y-4 safe-bottom"
+            className="relative w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl border border-border p-5 space-y-4 safe-bottom max-h-[85dvh] overflow-y-auto overscroll-contain"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -92,46 +101,48 @@ export function DayActionsSheet({
               </span>
             </div>
 
-            {/* Como o saldo foi calculado */}
-            {(() => {
-              const entradas = dia.entradaFixa + dia.entradaDiaria;
-              const saidas = dia.saidaFixa + dia.saidaDiaria;
-              const anterior = dia.saldo - entradas + saidas;
-              const row = "flex items-center justify-between text-sm";
-              return (
-                <div className="rounded-xl border border-border px-3.5 py-3 space-y-1.5">
-                  <span className="eyebrow">Por que esse saldo</span>
-                  <div className={row}>
-                    <span className="text-muted-foreground">Saldo anterior</span>
-                    <span className="font-mono font-semibold">
-                      <Money value={anterior} />
-                    </span>
-                  </div>
-                  {entradas > 0 && (
-                    <div className={row}>
-                      <span className="text-muted-foreground">+ Entradas do dia</span>
-                      <span className="font-mono font-semibold text-positive">
-                        <Money value={entradas} />
-                      </span>
-                    </div>
-                  )}
-                  {saidas > 0 && (
-                    <div className={row}>
-                      <span className="text-muted-foreground">− Saídas do dia</span>
-                      <span className="font-mono font-semibold text-negative">
-                        <Money value={saidas} />
-                      </span>
-                    </div>
-                  )}
-                  <div className="border-t border-border pt-1.5 flex items-center justify-between text-sm font-bold">
-                    <span>= Saldo do dia</span>
-                    <span className={dia.saldo < 0 ? "font-mono text-negative" : "font-mono text-positive"}>
-                      <Money value={dia.saldo} />
-                    </span>
-                  </div>
+            {/* Como chegou nesse número — acumulado do mês até o dia */}
+            {acumulado && (
+              <div className="rounded-xl border border-border px-3.5 py-3 space-y-1.5">
+                <span className="eyebrow">Como chegou nesse número</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Saldo no início do mês</span>
+                  <span className="font-mono font-semibold">
+                    <Money value={acumulado.saldoInicioMes} />
+                  </span>
                 </div>
-              );
-            })()}
+                {acumulado.entradas > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">+ Entradas até dia {dia.dia}</span>
+                    <span className="font-mono font-semibold text-positive">
+                      <Money value={acumulado.entradas} />
+                    </span>
+                  </div>
+                )}
+                {acumulado.saidasFixas > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">− Contas e parcelas até dia {dia.dia}</span>
+                    <span className="font-mono font-semibold text-negative">
+                      <Money value={acumulado.saidasFixas} />
+                    </span>
+                  </div>
+                )}
+                {acumulado.saidasDiarias > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">− Gastos lançados até dia {dia.dia}</span>
+                    <span className="font-mono font-semibold text-negative">
+                      <Money value={acumulado.saidasDiarias} />
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-1.5 flex items-center justify-between text-sm font-bold">
+                  <span>= Saldo do dia {dia.dia}</span>
+                  <span className={dia.saldo < 0 ? "font-mono text-negative" : "font-mono text-positive"}>
+                    <Money value={dia.saldo} />
+                  </span>
+                </div>
+              </div>
+            )}
 
             {acoes.length === 0 && dia.saidaFixa === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
@@ -184,16 +195,16 @@ export function DayActionsSheet({
               </div>
             )}
 
-            {dia.saidaFixa > 0 && (
+            {acumulado && acumulado.itens.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <span className="eyebrow">Descontos do dia</span>
+                  <span className="eyebrow">O que pesou até dia {dia.dia}</span>
                   <span className="font-mono text-sm font-bold text-negative">
-                    <Money value={dia.saidaFixa} />
+                    <Money value={acumulado.saidasFixas} />
                   </span>
                 </div>
-                <div className="rounded-xl border border-border divide-y divide-border max-h-56 overflow-y-auto">
-                  {itensFixos.map((it, i) => {
+                <div className="rounded-xl border border-border divide-y divide-border max-h-56 overflow-y-auto overscroll-contain">
+                  {acumulado.itens.map((it, i) => {
                     const Icon = it.origem === "parcela" ? CreditCard : Receipt;
                     return (
                       <div key={i} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
@@ -206,6 +217,7 @@ export function DayActionsSheet({
                             {it.detalhe && (
                               <div className="text-xs text-muted-foreground truncate">
                                 {it.origem === "parcela" ? `Parcela ${it.detalhe}` : it.detalhe}
+                                {it.vezes > 1 ? ` · ${it.vezes}x` : ""}
                               </div>
                             )}
                           </div>
