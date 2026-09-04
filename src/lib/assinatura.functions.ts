@@ -27,7 +27,7 @@ async function getAdminDb() {
   return supabaseAdmin;
 }
 
-async function upsertAssinatura(userId: string, planoNome: string) {
+export async function upsertAssinatura(userId: string, planoNome: string) {
   const admin = await getAdminDb();
   const now = new Date().toISOString();
 

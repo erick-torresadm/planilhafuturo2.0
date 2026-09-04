@@ -55,7 +55,16 @@ function getVapidKeys(): { publicKey: string; privateKey: string; subject: strin
 
 // ─── Eventos: gravar + notificar ──────────────────────────────
 
-export type EventoTipo = "cadastro" | "pagamento" | "compra" | "positivo" | "expiracao";
+export type EventoTipo =
+  | "cadastro"
+  | "pagamento"
+  | "compra"
+  | "positivo"
+  | "expiracao"
+  | "club_ativado"
+  | "club_reembolso"
+  | "club_renovacao_aviso"
+  | "club_expirado";
 
 interface RegistrarEventoParams {
   tipo: EventoTipo;
@@ -156,19 +165,21 @@ async function enviarPush(payload: PushPayload): Promise<void> {
 // ─── Server fns expostas ao client ────────────────────────────
 
 /** É o admin logado? (chamada pelo client para ativar o fluxo de push) */
-export const isAdminLogado = createServerFn({ method: "GET" })
-  .handler(async (): Promise<boolean> => {
+export const isAdminLogado = createServerFn({ method: "GET" }).handler(
+  async (): Promise<boolean> => {
     const me = await getAuthedUser();
     return isAdminEmail(me?.email ?? null);
-  });
+  },
+);
 
 /** Chave VAPID pública — só para o admin. Não é segredo, mas evita ruído. */
-export const getVapidPublicKey = createServerFn({ method: "GET" })
-  .handler(async (): Promise<string> => {
+export const getVapidPublicKey = createServerFn({ method: "GET" }).handler(
+  async (): Promise<string> => {
     const me = await getAuthedUser();
     if (!isAdminEmail(me?.email ?? null)) return "";
     return getVapidKeys().publicKey;
-  });
+  },
+);
 
 /** Salva (upsert) a subscription do admin logado. */
 export const salvarPushSubscription = createServerFn({ method: "POST" })
@@ -186,7 +197,13 @@ export const salvarPushSubscription = createServerFn({ method: "POST" })
     const now = new Date().toISOString();
 
     const { error } = await admin.from("push_subscriptions").upsert(
-      { endpoint: data.endpoint, user_id: me.id, p256dh: data.p256dh, auth: data.auth, updated_at: now },
+      {
+        endpoint: data.endpoint,
+        user_id: me.id,
+        p256dh: data.p256dh,
+        auth: data.auth,
+        updated_at: now,
+      },
       { onConflict: "endpoint" },
     );
     if (error) return { ok: false, error: error.message };
@@ -216,8 +233,8 @@ export const removerPushSubscription = createServerFn({ method: "POST" })
  * usuários que já existiam antes do deploy desta feature — só quem se cadastrou
  * depois dele gera push. Dedupe por user_id garante 1 push por pessoa.
  */
-export const notificarCadastroSeNovo = createServerFn({ method: "GET" })
-  .handler(async (): Promise<void> => {
+export const notificarCadastroSeNovo = createServerFn({ method: "GET" }).handler(
+  async (): Promise<void> => {
     const me = await getAuthedUser();
     if (!me?.id) return;
 
@@ -242,7 +259,8 @@ export const notificarCadastroSeNovo = createServerFn({ method: "GET" })
       refEmail: prof?.email ?? me.email,
       dedupeKey: `cadastro:${me.id}`,
     });
-  });
+  },
+);
 
 // ─── Expiração (cron diário) ──────────────────────────────────
 
@@ -259,10 +277,7 @@ export async function verificarExpirados(): Promise<{ expirados: number; avisado
   const agoraIso = new Date().toISOString();
 
   // Quem já pagou não expira.
-  const { data: ativos } = await admin
-    .from("assinaturas")
-    .select("user_id")
-    .eq("status", "ativo");
+  const { data: ativos } = await admin.from("assinaturas").select("user_id").eq("status", "ativo");
   const ativosSet = new Set((ativos ?? []).map((a) => a.user_id));
 
   // Todos com positivo_em marcado.
@@ -316,19 +331,21 @@ export type CronExpiracaoResult =
   | { ok: true; expirados: number; avisados: number }
   | { ok: false; error: string };
 
-export const rodarCronExpiracao = createServerFn({ method: "GET" })
-  .handler(async (): Promise<CronExpiracaoResult> => {
+export const rodarCronExpiracao = createServerFn({ method: "GET" }).handler(
+  async (): Promise<CronExpiracaoResult> => {
     const request = getRequest();
     const cronSchedule = request.headers.get("x-vercel-cron-schedule") ?? "";
     const url = new URL(request.url);
     const token = url.searchParams.get("token") ?? "";
     const expectedToken = process.env.CRON_TOKEN ?? "";
 
-    const authorized = cronSchedule.length > 0 || (expectedToken.length > 0 && token === expectedToken);
+    const authorized =
+      cronSchedule.length > 0 || (expectedToken.length > 0 && token === expectedToken);
     if (!authorized) {
       return { ok: false, error: "Não autorizado" };
     }
 
     const r = await verificarExpirados();
     return { ok: true, expirados: r.expirados, avisados: r.avisados };
-  });
+  },
+);
