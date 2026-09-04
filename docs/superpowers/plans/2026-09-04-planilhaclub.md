@@ -2411,6 +2411,19 @@ No navegador: `club.planilhafuturo.com.br` mostra a página do clube; login lá 
 
 ---
 
+## Desvios aplicados na execução (2026-09-04)
+
+O código na branch `feat/planilhaclub` difere dos blocos acima nestes pontos, todos vindos de achados de revisão. O código é a referência; este plano fica como histórico.
+
+- **Task 1:** todas as policies levam `TO authenticated`; `REVOKE ALL ... FROM anon` e `GRANT` explícitos por tabela (já refletido no bloco SQL acima).
+- **Task 3:** `ativarMembership` faz o claim com `.neq("status","active")` (atômico por membership) e compensa a expiração da anterior se o claim falhar; inserts de membership checam `error`; cartão aprovado sem linha/ativação gera evento `club_erro` e devolve `ok:false`; Premium usa `garantirPremiumNoApp` (linha própria `"PlanilhaClub Premium"`, nunca renomeia Vitalício/PRO Anual) em vez de `upsertAssinatura`; downgrade Premium→Start na renovação revoga o app; `EventoTipo` ganhou `club_erro`.
+- **Task 2:** `podeReembolsar` exige `0 <= agora − início <= 7 dias` (início no futuro, após renovação antecipada, não abre janela).
+- **Task 5:** loop do cron isola cada membership em `try/catch` e devolve `erros`.
+- **Task 6:** `rsvpEvento` valida `podeVer(tier, evento.tier_required)`; `excluirPost` devolve erro quando nada foi apagado; leituras logam `error` em vez de engolir.
+- **Task 7:** card de aula é `div role="button"` (sem botão aninhado); query do canal fechado só dispara para membro; `_authenticated/route.tsx` deixa membro do clube passar pelo paywall em `/club*` e mostra o banner de renovação fora de `/club`.
+- **Pendências humanas antes do merge:** aplicar `009_planilhaclub.sql` e regenerar `src/integrations/supabase/types.ts` (remover o `any` de `getAdminDb`); sandbox Efí (Pix 238,80 com "Já paguei" duplicado; cartão 12x aprovado e recusado; avulsa→Start 168,80; cron com `CRON_TOKEN`); nameservers na Hostinger e domínio `club.` na Vercel. **Ordem de deploy:** migration → verificar → código.
+- **Follow-ups parqueados:** `verificarAssinaturaClube`/`ativarVitalicioClube` não checam o retorno de `ativarMembership` (Pix é re-tentável; Vitalício fica preso 24h até o cron limpar a `pending`); corrida entre dois checkouts distintos do mesmo usuário falha com erro genérico (índice único segura); N+1 em `profiles` no cron; sem cap em `description` de evento; `club.functions.ts`/`club.tsx` grandes (dividir depois); unificar `checkout.tsx` com `CheckoutForm`.
+
 ## Self-review
 
 **Spec coverage:** tabelas + `club_tier` + `club_tier_rank` + RLS incluindo `club_lessons` (T1); regras puras incluindo níveis cumulativos e `videoEmbedUrl` (T2); status/checkout/ativação/avulsa→Start/Vitalício/cancelar/reembolso (T3); `CheckoutForm` + `/club/assinar` fora do paywall (T4); aviso 7 dias, expiração com revogação do Premium, limpeza de pendentes (T5); feed com público/fechado, fixar/excluir, eventos em 3 níveis com RSVP, aulas em 3 níveis com CRUD de admin e conteúdo travado não entregue pelo servidor (T6–T7); nav, `config.tsx` e `Paywall` (T7); grátis só leitura (T6 `criarPost`/`rsvpEvento` recusam, T7 esconde composer/RSVP); subdomínio via rewrites por host + DNS na Cloudflare (T8, adendo do spec). Fora do MVP permanece fora.
