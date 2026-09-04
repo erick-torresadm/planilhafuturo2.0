@@ -460,3 +460,75 @@ export const solicitarReembolso = createServerFn({ method: "POST" }).handler(
     return { ok: true };
   },
 );
+
+/**
+ * Passo diário do clube (chamado por rodarCronExpiracao via import dinâmico
+ * para não criar ciclo push.functions ↔ club.functions):
+ * 1) aviso prévio 7 dias antes do fim; 2) expira períodos vencidos
+ *    (Premium perde o app); 3) limpa Pix pendente com mais de 24h.
+ */
+export async function verificarRenovacoesClube(): Promise<{
+  avisados: number;
+  expirados: number;
+  pendentesLimpos: number;
+}> {
+  const admin = await getAdminDb();
+  const agora = new Date();
+  const agoraIso = agora.toISOString();
+  const { data: ativas } = await admin.from("club_memberships").select("*").eq("status", "active");
+  let avisados = 0;
+  let expirados = 0;
+
+  for (const m of (ativas ?? []) as MembershipRow[]) {
+    const { data: prof } = await admin
+      .from("profiles")
+      .select("email")
+      .eq("id", m.user_id)
+      .maybeSingle();
+    const email = prof?.email ?? "Usuário";
+
+    if (m.current_period_end && new Date(m.current_period_end) <= agora) {
+      await admin
+        .from("club_memberships")
+        .update({ status: "expired", updated_at: agoraIso })
+        .eq("id", m.id);
+      if (m.plan === "premium") await revogarPremiumNoApp(admin, m.user_id);
+      await registrarEvento({
+        tipo: "club_expirado",
+        titulo: "Clube expirou",
+        corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} venceu sem renovar.`,
+        refUserId: m.user_id,
+        refEmail: email,
+        dedupeKey: `club_expirado:${m.id}`,
+      });
+      expirados++;
+      continue;
+    }
+
+    if (precisaAvisoRenovacao(m, agora)) {
+      await admin
+        .from("club_memberships")
+        .update({ renewal_notice_sent_at: agoraIso, updated_at: agoraIso })
+        .eq("id", m.id);
+      await registrarEvento({
+        tipo: "club_renovacao_aviso",
+        titulo: "Renovação do clube em 7 dias",
+        corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} vence em ${new Date(m.current_period_end!).toLocaleDateString("pt-BR")}.`,
+        refUserId: m.user_id,
+        refEmail: email,
+        dedupeKey: `club_renovacao_aviso:${m.id}`,
+      });
+      avisados++;
+    }
+  }
+
+  const limite = new Date(agora.getTime() - HORAS_PENDING * 60 * 60 * 1000).toISOString();
+  const { data: limpos } = await admin
+    .from("club_memberships")
+    .update({ status: "expired", updated_at: agoraIso })
+    .eq("status", "pending")
+    .lt("created_at", limite)
+    .select("id");
+
+  return { avisados, expirados, pendentesLimpos: limpos?.length ?? 0 };
+}

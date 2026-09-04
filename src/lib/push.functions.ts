@@ -329,7 +329,13 @@ export async function verificarExpirados(): Promise<{ expirados: number; avisado
  * - OU `?token=<CRON_TOKEN>` quando a env está configurada (teste manual)
  */
 export type CronExpiracaoResult =
-  | { ok: true; expirados: number; avisados: number }
+  | {
+      ok: true;
+      expirados: number;
+      avisados: number;
+      club?: { avisados: number; expirados: number; pendentesLimpos: number };
+      clubError?: string;
+    }
   | { ok: false; error: string };
 
 export const rodarCronExpiracao = createServerFn({ method: "GET" }).handler(
@@ -347,6 +353,17 @@ export const rodarCronExpiracao = createServerFn({ method: "GET" }).handler(
     }
 
     const r = await verificarExpirados();
-    return { ok: true, expirados: r.expirados, avisados: r.avisados };
+
+    // Clube: isolado — uma falha aqui não derruba a expiração acima, nem vice-versa.
+    let club: { avisados: number; expirados: number; pendentesLimpos: number } | undefined;
+    let clubError: string | undefined;
+    try {
+      const m = await import("./club.functions");
+      club = await m.verificarRenovacoesClube();
+    } catch (e: any) {
+      clubError = e?.message ?? String(e);
+    }
+
+    return { ok: true, expirados: r.expirados, avisados: r.avisados, club, clubError };
   },
 );
