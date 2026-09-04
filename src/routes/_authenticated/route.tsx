@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useLocation } from "@tanstack/react-router";
 import { AppShellV2 as AppShell } from "@/components/AppShellV2";
 import { Paywall } from "@/components/Paywall";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function RouteComponent() {
   const { user } = Route.useRouteContext();
+  const loc = useLocation();
   const [showBanner, setShowBanner] = useState(false);
   const [migrating, setMigrating] = useState(false);
 
@@ -55,6 +56,14 @@ function RouteComponent() {
       const activeWs = getActiveWorkspace();
       return m.getSubscriptionStatus({ data: activeWs ? { forOwner: activeWs } : {} });
     },
+    staleTime: 60_000,
+  });
+
+  // Membro do clube com a assinatura do app vencida ainda entra em /club: o que
+  // ele pagou foi o clube, não o app. Também alimenta o aviso de renovação.
+  const club = useQuery({
+    queryKey: ["club-status"],
+    queryFn: async () => (await import("@/lib/club.functions")).getClubStatus(),
     staleTime: 60_000,
   });
 
@@ -111,14 +120,18 @@ function RouteComponent() {
   }
 
   // Teste grátis expirado e sem pagamento → tudo travado, libera só após pagar.
-  if (sub.isPending) {
+  const noClube = loc.pathname.startsWith("/club");
+  const clubMember = club.data?.tier && club.data.tier !== "none";
+  // Sem o status do clube ainda não dá para saber se o paywall vale em /club —
+  // espera em vez de piscar o paywall na cara de um membro.
+  if (sub.isPending || (club.isPending && sub.data?.status === "inativo" && noClube)) {
     return (
       <div className="min-h-[100dvh] w-full bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
-  if (sub.data?.status === "inativo") {
+  if (sub.data?.status === "inativo" && !(noClube && clubMember)) {
     return (
       <Paywall
         onRefresh={async () => {
@@ -135,6 +148,22 @@ function RouteComponent() {
 
   return (
     <AppShell>
+      {club.data?.avisoRenovacao && !noClube && (
+        <div className="mx-4 mt-4 rounded-xl bg-warning-soft border border-warning/30 px-4 py-3 text-sm flex items-center justify-between gap-3">
+          <span>
+            Seu PlanilhaClub vence em{" "}
+            {new Date(club.data.membership?.current_period_end ?? "").toLocaleDateString("pt-BR")}.
+            Renove para não perder o acesso.
+          </span>
+          <Link
+            to="/club/assinar"
+            search={{ plan: club.data.membership?.plan ?? "start" }}
+            className="font-semibold text-warning underline shrink-0"
+          >
+            Renovar
+          </Link>
+        </div>
+      )}
       {showBanner && (
         <div className="mx-4 mt-4 rounded-xl bg-primary/5 border border-primary/20 p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">

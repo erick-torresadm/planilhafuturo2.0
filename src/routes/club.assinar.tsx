@@ -48,6 +48,18 @@ function AssinarPage() {
       </div>
     );
   }
+  if (status.isError) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background px-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          Não foi possível carregar.{" "}
+          <button onClick={() => status.refetch()} className="underline">
+            Tentar de novo
+          </button>
+        </p>
+      </div>
+    );
+  }
   const s = status.data!;
   const valor = plan === "start" ? s.ofertas.start : s.ofertas.premium;
   const info = CLUB_PLANOS[plan];
