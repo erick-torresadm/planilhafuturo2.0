@@ -64,7 +64,8 @@ export type EventoTipo =
   | "club_ativado"
   | "club_reembolso"
   | "club_renovacao_aviso"
-  | "club_expirado";
+  | "club_expirado"
+  | "club_erro";
 
 interface RegistrarEventoParams {
   tipo: EventoTipo;

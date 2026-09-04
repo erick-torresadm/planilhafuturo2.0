@@ -10,7 +10,6 @@ import { upsertAssinatura } from "./assinatura.functions";
 import { createPixCharge, checkPixStatus, createCreditCardCharge } from "./efi-service";
 import {
   CLUB_PLANOS,
-  DIAS_PERIODO,
   HORAS_PENDING,
   calcularPeriodo,
   deriveTier,
@@ -28,7 +27,6 @@ import {
 
 const PLANO_ASSINATURA_PREMIUM = "PlanilhaClub Premium";
 const ITEM_PLANILHA = "planilha_erick";
-const DIA_MS = 24 * 60 * 60 * 1000;
 
 // `club_memberships` ainda não está no types.ts gerado do Supabase (a
 // migration 009 criou a tabela, mas os types não foram regenerados — fora do
@@ -170,6 +168,11 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
       .eq("status", "active");
   }
 
+  // Claim condicional: se outra chamada concorrente (ex.: polling duplicado de
+  // "Já paguei") já ativou esta membership entre o SELECT acima e este UPDATE,
+  // `.neq("status", "active")` faz o update não afetar nenhuma linha aqui —
+  // evitamos rodar os efeitos colaterais (compras_avulsas / upsertAssinatura)
+  // duas vezes para a mesma membership.
   const { data: ativa } = await admin
     .from("club_memberships")
     .update({
@@ -179,8 +182,19 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
       updated_at: agora.toISOString(),
     })
     .eq("id", id)
+    .neq("status", "active")
     .select("*")
     .maybeSingle();
+
+  if (!ativa) {
+    // Outra chamada ativou primeiro — efeitos colaterais ja rodaram (ou vao rodar) la.
+    const { data: atual } = await admin
+      .from("club_memberships")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    return (atual ?? null) as MembershipRow | null;
+  }
 
   if (m.plan === "start") {
     const jaTem = await temPlanilhaAvulsa(admin, m.user_id);
@@ -270,7 +284,7 @@ export const criarAssinaturaClube = createServerFn({ method: "POST" })
     try {
       if (data.metodo === "pix") {
         const pix = await createPixCharge(valor, descricao);
-        await admin.from("club_memberships").insert({
+        const { error: insErr } = await admin.from("club_memberships").insert({
           user_id: me.id,
           plan: data.plan,
           status: "pending",
@@ -279,6 +293,11 @@ export const criarAssinaturaClube = createServerFn({ method: "POST" })
           gateway_txid: pix.txid,
           valor_pago: valor,
         });
+        if (insErr) {
+          // Cobrança Pix ainda não paga — inofensiva se ninguém pagar. O
+          // usuário só precisa tentar de novo para gerar outro Pix.
+          return { ok: false, error: "Não foi possível registrar a assinatura. Tente de novo." };
+        }
         return {
           ok: true,
           metodo: "pix",
@@ -303,7 +322,7 @@ export const criarAssinaturaClube = createServerFn({ method: "POST" })
       if (card.status !== "paid") {
         return { ok: true, metodo: "cartao", paid: false, message: card.message };
       }
-      const { data: nova } = await admin
+      const { data: nova, error: insErr } = await admin
         .from("club_memberships")
         .insert({
           user_id: me.id,
@@ -316,7 +335,26 @@ export const criarAssinaturaClube = createServerFn({ method: "POST" })
         })
         .select("id")
         .maybeSingle();
-      if (nova?.id) await ativarMembership(admin, nova.id);
+      if (insErr || !nova?.id) {
+        // Cartão já foi cobrado, mas não conseguimos gravar a membership —
+        // precisa de conciliação manual (a cobrança não pode ficar sem registro).
+        await registrarEvento({
+          tipo: "club_erro",
+          titulo: "Cartão aprovado sem membership",
+          corpo: `${me.email ?? me.id} — ${CLUB_PLANOS[data.plan].nome} — R$ ${valor.toFixed(2)} — charge ${card.charge_id} — ${insErr?.message ?? "insert vazio"}. Conciliar manualmente.`,
+          refUserId: me.id,
+          refEmail: me.email ?? null,
+          refPlano: CLUB_PLANOS[data.plan].nome,
+          refValor: valor,
+          dedupeKey: `club_erro:${card.charge_id}`,
+        });
+        return {
+          ok: false,
+          error:
+            "Pagamento aprovado, mas houve um erro ao ativar. Já fomos avisados e vamos ativar manualmente — fale com o suporte se precisar.",
+        };
+      }
+      await ativarMembership(admin, nova.id);
       return { ok: true, metodo: "cartao", paid: true };
     } catch (err: any) {
       return { ok: false, error: err.message ?? "Erro ao processar pagamento" };
