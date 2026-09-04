@@ -726,8 +726,16 @@ export const rsvpEvento = createServerFn({ method: "POST" })
     const me = await getAuthedUser();
     if (!me) return { ok: false, error: "Faça login primeiro" };
     const admin = await getAdminDb();
-    if ((await tierDoUsuario(admin, me.id)) === "none")
-      return { ok: false, error: "Só membros confirmam presença." };
+    const tier = await tierDoUsuario(admin, me.id);
+    if (tier === "none") return { ok: false, error: "Só membros confirmam presença." };
+    const { data: ev } = await admin
+      .from("club_events")
+      .select("id, tier_required")
+      .eq("id", data.eventId)
+      .maybeSingle();
+    if (!ev) return { ok: false, error: "Evento não encontrado." };
+    if (!podeVer(tier, ev.tier_required as ContentTier))
+      return { ok: false, error: "Esse evento é de um plano acima do seu." };
     const { data: existente } = await admin
       .from("club_event_rsvps")
       .select("event_id")
