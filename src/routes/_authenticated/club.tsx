@@ -269,6 +269,7 @@ function Feed({ isMember, isAdmin }: { isMember: boolean; isAdmin: boolean }) {
     queryKey: ["club-posts", channel],
     queryFn: () => listarPosts({ data: { channel } }),
     refetchInterval: 30_000,
+    enabled: channel === "public" || isMember,
   });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["club-posts"] });
   const publicar = useMutation({
@@ -714,10 +715,22 @@ function Aulas({ isAdmin }: { isAdmin: boolean }) {
                   !a.published && "opacity-60",
                 )}
               >
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={a.liberada ? 0 : -1}
+                  aria-expanded={open}
+                  aria-disabled={!a.liberada}
                   onClick={() => a.liberada && setAberta(open ? null : a.id)}
-                  className="w-full text-left p-4 flex items-start gap-3"
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && a.liberada) {
+                      e.preventDefault();
+                      setAberta(open ? null : a.id);
+                    }
+                  }}
+                  className={cn(
+                    "w-full text-left p-4 flex items-start gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    a.liberada && "cursor-pointer",
+                  )}
                 >
                   <div
                     className={cn(
@@ -787,7 +800,7 @@ function Aulas({ isAdmin }: { isAdmin: boolean }) {
                       </button>
                     </span>
                   )}
-                </button>
+                </div>
                 {open && a.liberada && (
                   <div className="px-4 pb-4 space-y-3">
                     {embed ? (
