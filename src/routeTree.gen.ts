@@ -26,6 +26,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
+import { Route as ClubAssinarRouteImport } from './routes/club.assinar'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiKeepaliveRouteImport } from './routes/api.keepalive'
 import { Route as ApiCronRouteImport } from './routes/api.cron'
@@ -124,6 +125,11 @@ const IndexRoute = IndexRouteImport.update({
 const ConviteTokenRoute = ConviteTokenRouteImport.update({
   id: '/convite/$token',
   path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClubAssinarRoute = ClubAssinarRouteImport.update({
+  id: '/club/assinar',
+  path: '/club/assinar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/api/cron': typeof ApiCronRoute
   '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/club/assinar': typeof ClubAssinarRoute
   '/convite/$token': typeof ConviteTokenRoute
 }
 export interface FileRoutesByTo {
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/api/cron': typeof ApiCronRoute
   '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/club/assinar': typeof ClubAssinarRoute
   '/convite/$token': typeof ConviteTokenRoute
 }
 export interface FileRoutesById {
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/api/cron': typeof ApiCronRoute
   '/api/keepalive': typeof ApiKeepaliveRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/club/assinar': typeof ClubAssinarRoute
   '/convite/$token': typeof ConviteTokenRoute
 }
 export interface FileRouteTypes {
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/api/keepalive'
     | '/auth/callback'
+    | '/club/assinar'
     | '/convite/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/api/keepalive'
     | '/auth/callback'
+    | '/club/assinar'
     | '/convite/$token'
   id:
     | '__root__'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/api/cron'
     | '/api/keepalive'
     | '/auth/callback'
+    | '/club/assinar'
     | '/convite/$token'
   fileRoutesById: FileRoutesById
 }
@@ -427,6 +439,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   ApiCronRoute: typeof ApiCronRoute
   ApiKeepaliveRoute: typeof ApiKeepaliveRoute
+  ClubAssinarRoute: typeof ClubAssinarRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
 }
 
@@ -549,6 +562,13 @@ declare module '@tanstack/react-router' {
       path: '/convite/$token'
       fullPath: '/convite/$token'
       preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/club/assinar': {
+      id: '/club/assinar'
+      path: '/club/assinar'
+      fullPath: '/club/assinar'
+      preLoaderRoute: typeof ClubAssinarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -721,6 +741,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   ApiCronRoute: ApiCronRoute,
   ApiKeepaliveRoute: ApiKeepaliveRoute,
+  ClubAssinarRoute: ClubAssinarRoute,
   ConviteTokenRoute: ConviteTokenRoute,
 }
 export const routeTree = rootRouteImport
