@@ -6,7 +6,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getAuthedUser } from "./server-session";
 import { isAdminEmail, registrarEvento } from "./push.functions";
-import { upsertAssinatura } from "./assinatura.functions";
 import { createPixCharge, checkPixStatus, createCreditCardCharge } from "./efi-service";
 import {
   CLUB_PLANOS,
@@ -32,6 +31,7 @@ const ITEM_PLANILHA = "planilha_erick";
 // migration 009 criou a tabela, mas os types não foram regenerados — fora do
 // escopo desta task). Retorno `any` aqui evita erros de tipo nas queries a
 // essa tabela, no mesmo espírito do `admin: any` já usado nos helpers abaixo.
+// TODO: regenerar src/integrations/supabase/types.ts apos aplicar a migration 009 e remover o any
 async function getAdminDb(): Promise<any> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
@@ -54,11 +54,12 @@ export type MembershipRow = {
 };
 
 async function listarMemberships(admin: any, userId: string): Promise<MembershipRow[]> {
-  const { data } = await admin
+  const { data, error } = await admin
     .from("club_memberships")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  if (error) console.error("[club] listarMemberships", error.message);
   return (data ?? []) as MembershipRow[];
 }
 
@@ -125,7 +126,7 @@ export const getClubStatus = createServerFn({ method: "GET" }).handler(
 
     return {
       tier,
-      membership: ativa ?? ms[0] ?? null,
+      membership: ativa ?? ms.find((m) => m.status !== "pending") ?? null,
       ofertas: {
         start: precoPlano("start", avulsa).valor,
         premium: CLUB_PLANOS.premium.valor,
@@ -152,39 +153,49 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
   const agora = new Date();
   const { data: anterior } = await admin
     .from("club_memberships")
-    .select("current_period_end")
+    .select("id, plan, current_period_end")
     .eq("user_id", m.user_id)
     .eq("status", "active")
     .maybeSingle();
   const fimAnterior = anterior?.current_period_end ? new Date(anterior.current_period_end) : null;
   const periodo = calcularPeriodo(agora, fimAnterior);
 
-  // Renovação: a membership antiga vira expired para o índice único liberar.
-  if (anterior) {
-    await admin
-      .from("club_memberships")
-      .update({ status: "expired", updated_at: agora.toISOString() })
-      .eq("user_id", m.user_id)
-      .eq("status", "active");
-  }
+  // Compensacao: troca nao e atomica sem funcao SQL; se o claim falhar, devolve a anterior.
+  let expirouAnterior = false;
+  let ativa: MembershipRow | null = null;
+  try {
+    // Renovação: a membership antiga vira expired para o índice único liberar.
+    if (anterior) {
+      await admin
+        .from("club_memberships")
+        .update({ status: "expired", updated_at: agora.toISOString() })
+        .eq("user_id", m.user_id)
+        .eq("status", "active");
+      expirouAnterior = true;
+    }
 
-  // Claim condicional: se outra chamada concorrente (ex.: polling duplicado de
-  // "Já paguei") já ativou esta membership entre o SELECT acima e este UPDATE,
-  // `.neq("status", "active")` faz o update não afetar nenhuma linha aqui —
-  // evitamos rodar os efeitos colaterais (compras_avulsas / upsertAssinatura)
-  // duas vezes para a mesma membership.
-  const { data: ativa } = await admin
-    .from("club_memberships")
-    .update({
-      status: "active",
-      current_period_start: periodo.start.toISOString(),
-      current_period_end: periodo.end.toISOString(),
-      updated_at: agora.toISOString(),
-    })
-    .eq("id", id)
-    .neq("status", "active")
-    .select("*")
-    .maybeSingle();
+    // Claim condicional: se outra chamada concorrente (ex.: polling duplicado de
+    // "Já paguei") já ativou esta membership entre o SELECT acima e este UPDATE,
+    // `.neq("status", "active")` faz o update não afetar nenhuma linha aqui —
+    // evitamos rodar os efeitos colaterais (compras_avulsas / assinatura no app)
+    // duas vezes para a mesma membership.
+    const { data: claimed } = await admin
+      .from("club_memberships")
+      .update({
+        status: "active",
+        current_period_start: periodo.start.toISOString(),
+        current_period_end: periodo.end.toISOString(),
+        updated_at: agora.toISOString(),
+      })
+      .eq("id", id)
+      .neq("status", "active")
+      .select("*")
+      .maybeSingle();
+    ativa = (claimed ?? null) as MembershipRow | null;
+  } catch (e) {
+    console.error("[club] ativarMembership claim", id, e);
+    ativa = null;
+  }
 
   if (!ativa) {
     // Outra chamada ativou primeiro — efeitos colaterais ja rodaram (ou vao rodar) la.
@@ -193,7 +204,20 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
       .select("*")
       .eq("id", id)
       .maybeSingle();
+    // Compensacao: so devolve a anterior se ninguem ativou a nova (senao o
+    // usuario ficaria com duas memberships ativas e o indice unico estouraria).
+    if (expirouAnterior && anterior?.id && atual?.status !== "active") {
+      await admin
+        .from("club_memberships")
+        .update({ status: "active", updated_at: new Date().toISOString() })
+        .eq("id", anterior.id);
+    }
     return (atual ?? null) as MembershipRow | null;
+  }
+
+  // Downgrade Premium → Start na renovação: o app deixa de vir pelo clube.
+  if (anterior?.plan === "premium" && m.plan !== "premium") {
+    await revogarPremiumNoApp(admin, m.user_id);
   }
 
   if (m.plan === "start") {
@@ -208,7 +232,7 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
       });
     }
   } else {
-    await upsertAssinatura(m.user_id, PLANO_ASSINATURA_PREMIUM);
+    await garantirPremiumNoApp(admin, m.user_id);
   }
 
   const { data: prof } = await admin
@@ -228,6 +252,45 @@ async function ativarMembership(admin: any, id: string): Promise<MembershipRow |
   });
 
   return (ativa ?? null) as MembershipRow | null;
+}
+
+/**
+ * Premium do clube libera o app SEM destruir o plano que o usuário já tem.
+ * Quem já é Vitalício / PRO Anual mantém a própria linha intacta (o clube não
+ * renomeia plano de ninguém) — só quem não tem nada ganha uma linha própria
+ * `PlanilhaClub Premium`, que é a única que `revogarPremiumNoApp` mexe depois.
+ * Nunca toca em `profiles.plano` / `trial_ends_at`.
+ */
+async function garantirPremiumNoApp(admin: any, userId: string) {
+  const agora = new Date().toISOString();
+  const { data: assinaturas, error } = await admin
+    .from("assinaturas")
+    .select("id, plano, status")
+    .eq("user_id", userId);
+  if (error) console.error("[club] garantirPremiumNoApp", error.message);
+  const linhas = (assinaturas ?? []) as { id: string; plano: string; status: string }[];
+
+  // (a) Já tem o app por um plano próprio — não mexe em nada.
+  if (linhas.some((a) => a.status === "ativo" && a.plano !== PLANO_ASSINATURA_PREMIUM)) return;
+
+  // (b) Já existe a linha do clube (de um período anterior) — só reativa.
+  const doClube = linhas.find((a) => a.plano === PLANO_ASSINATURA_PREMIUM);
+  if (doClube) {
+    await admin
+      .from("assinaturas")
+      .update({ status: "ativo", updated_at: agora })
+      .eq("id", doClube.id);
+    return;
+  }
+
+  // (c) Primeira vez: linha nova só do clube.
+  await admin.from("assinaturas").insert({
+    user_id: userId,
+    plano: PLANO_ASSINATURA_PREMIUM,
+    status: "ativo",
+    created_at: agora,
+    updated_at: agora,
+  });
 }
 
 /** Premium expirado/cancelado perde o app: assinatura do clube deixa de ser ativa. */
@@ -354,7 +417,26 @@ export const criarAssinaturaClube = createServerFn({ method: "POST" })
             "Pagamento aprovado, mas houve um erro ao ativar. Já fomos avisados e vamos ativar manualmente — fale com o suporte se precisar.",
         };
       }
-      await ativarMembership(admin, nova.id);
+      // Cartão já foi cobrado: se a ativação não pegou, é conciliação manual —
+      // não pode responder "pago" para um usuário que segue sem acesso.
+      const ativada = nova?.id ? await ativarMembership(admin, nova.id) : null;
+      if (!ativada || ativada.status !== "active") {
+        await registrarEvento({
+          tipo: "club_erro",
+          titulo: "Cartão aprovado sem ativação",
+          corpo: `${me.email ?? me.id} — ${CLUB_PLANOS[data.plan].nome} — R$ ${valor.toFixed(2)} — charge ${card.charge_id} — membership ${nova?.id ?? "?"} nao ativou. Conciliar manualmente.`,
+          refUserId: me.id,
+          refEmail: me.email ?? null,
+          refPlano: CLUB_PLANOS[data.plan].nome,
+          refValor: valor,
+          dedupeKey: `club_erro_ativacao:${card.charge_id}`,
+        });
+        return {
+          ok: false,
+          error:
+            "Pagamento aprovado, mas a ativação falhou. Já fomos avisados e vamos ativar manualmente.",
+        };
+      }
       return { ok: true, metodo: "cartao", paid: true };
     } catch (err: any) {
       return { ok: false, error: err.message ?? "Erro ao processar pagamento" };
@@ -476,7 +558,11 @@ export async function verificarRenovacoesClube(): Promise<{
   const admin = await getAdminDb();
   const agora = new Date();
   const agoraIso = agora.toISOString();
-  const { data: ativas } = await admin.from("club_memberships").select("*").eq("status", "active");
+  const { data: ativas, error: ativasErr } = await admin
+    .from("club_memberships")
+    .select("*")
+    .eq("status", "active");
+  if (ativasErr) console.error("[club] verificarRenovacoesClube ativas", ativasErr.message);
   let avisados = 0;
   let expirados = 0;
   let erros = 0;
@@ -530,12 +616,13 @@ export async function verificarRenovacoesClube(): Promise<{
   }
 
   const limite = new Date(agora.getTime() - HORAS_PENDING * 60 * 60 * 1000).toISOString();
-  const { data: limpos } = await admin
+  const { data: limpos, error: limposErr } = await admin
     .from("club_memberships")
     .update({ status: "expired", updated_at: agoraIso })
     .eq("status", "pending")
     .lt("created_at", limite)
     .select("id");
+  if (limposErr) console.error("[club] verificarRenovacoesClube pendentes", limposErr.message);
 
   return { avisados, expirados, pendentesLimpos: limpos?.length ?? 0, erros };
 }
@@ -571,17 +658,19 @@ export const listarPosts = createServerFn({ method: "GET" })
     const tier = await tierDoUsuario(admin, me.id);
     if (data.channel === "closed" && tier === "none") return { tier, posts: [] };
 
-    const { data: rows } = await admin
+    const { data: rows, error: postsErr } = await admin
       .from("club_posts")
       .select("id, author_id, channel, content, pinned, created_at")
       .eq("channel", data.channel)
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(50);
+    if (postsErr) console.error("[club] listarPosts posts", postsErr.message);
     const ids = [...new Set((rows ?? []).map((r: any) => r.author_id))];
-    const { data: profs } = ids.length
+    const { data: profs, error: profsErr } = ids.length
       ? await admin.from("profiles").select("id, nome").in("id", ids)
-      : { data: [] as { id: string; nome: string | null }[] };
+      : { data: [] as { id: string; nome: string | null }[], error: null };
+    if (profsErr) console.error("[club] listarPosts profiles", profsErr.message);
     const nome = new Map((profs ?? []).map((p: any) => [p.id, (p.nome ?? "Membro").split(" ")[0]]));
 
     return {
@@ -625,8 +714,12 @@ export const excluirPost = createServerFn({ method: "POST" })
     if (!me) return { ok: false, error: "Faça login primeiro" };
     const admin = await getAdminDb();
     const q = admin.from("club_posts").delete().eq("id", data.id);
-    const { error } = (await ehAdmin()) ? await q : await q.eq("author_id", me.id);
-    return error ? { ok: false, error: error.message } : { ok: true };
+    const { data: apagados, error } = (await ehAdmin())
+      ? await q.select("id")
+      : await q.eq("author_id", me.id).select("id");
+    if (error) return { ok: false, error: error.message };
+    if (!apagados?.length) return { ok: false, error: "Post não encontrado ou sem permissão." };
+    return { ok: true };
   });
 
 export const fixarPost = createServerFn({ method: "POST" })
@@ -660,10 +753,11 @@ export const listarEventos = createServerFn({ method: "GET" }).handler(
     if (!me) return { tier: "none", eventos: [] };
     const admin = await getAdminDb();
     const tier = await tierDoUsuario(admin, me.id);
-    const { data: todos } = await admin
+    const { data: todos, error: evErr } = await admin
       .from("club_events")
       .select("*")
       .order("scheduled_at", { ascending: true });
+    if (evErr) console.error("[club] listarEventos", evErr.message);
     const evs = (todos ?? []).filter((e: any) => podeVer(tier, e.tier_required as ContentTier));
     const ids = (evs ?? []).map((e: any) => e.id);
     const { data: rs } = ids.length
@@ -812,7 +906,8 @@ export const listarAulas = createServerFn({ method: "GET" }).handler(
       .order("modulo", { ascending: true })
       .order("ordem", { ascending: true });
     if (!adminLogado) q = q.eq("published", true);
-    const { data: rows } = await q;
+    const { data: rows, error } = await q;
+    if (error) console.error("[club] listarAulas", error.message);
     return {
       tier,
       aulas: (rows ?? []).map((r: any) => {

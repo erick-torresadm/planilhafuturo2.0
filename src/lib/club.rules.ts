@@ -70,7 +70,11 @@ export function podeReembolsar(
 ): boolean {
   if (m.status !== "active" || m.source === "vitalicio_included" || !m.current_period_start)
     return false;
-  return agora.getTime() - new Date(m.current_period_start).getTime() <= DIAS_REEMBOLSO * DIA_MS;
+  // Janela fechada dos dois lados: um período que ainda não começou (renovação
+  // antecipada) não é reembolsável agora. Reembolso após renovação antecipada só
+  // atinge o período novo — o anterior já está `expired`.
+  const dt = agora.getTime() - new Date(m.current_period_start).getTime();
+  return dt >= 0 && dt <= DIAS_REEMBOLSO * DIA_MS;
 }
 
 export function precisaAvisoRenovacao(

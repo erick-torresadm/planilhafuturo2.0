@@ -70,6 +70,18 @@ assert.equal(
   podeReembolsar({ source: "new", status: "canceled", current_period_start: inicioRecente }, agora),
   false,
 );
+// período que ainda não começou (renovação antecipada) não é reembolsável
+const inicioFuturo = iso(new Date(agora.getTime() + 3 * dia));
+assert.equal(
+  podeReembolsar({ source: "new", status: "active", current_period_start: inicioFuturo }, agora),
+  false,
+);
+// borda: exatamente 7 dias ainda está dentro da janela
+const inicioBorda = iso(new Date(agora.getTime() - 7 * dia));
+assert.equal(
+  podeReembolsar({ source: "new", status: "active", current_period_start: inicioBorda }, agora),
+  true,
+);
 
 // aviso de renovação: ativa, sem cancelamento, sem aviso ainda, fim em ≤ 7 dias
 const base = { status: "active" as const, cancel_renewal: false, renewal_notice_sent_at: null };
