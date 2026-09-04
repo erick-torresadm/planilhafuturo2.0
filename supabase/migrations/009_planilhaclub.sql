@@ -88,42 +88,46 @@ ALTER TABLE club_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE club_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE club_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE club_event_rsvps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE club_lessons ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON club_memberships, club_posts, club_events, club_lessons, club_event_rsvps FROM anon;
+GRANT SELECT ON club_memberships, club_events, club_lessons TO authenticated;
+GRANT SELECT, INSERT, DELETE ON club_posts, club_event_rsvps TO authenticated;
 
 -- memberships: usuário lê só as próprias; escrita só service role (sem policy de insert/update).
 CREATE POLICY club_memberships_read_own ON club_memberships
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING (auth.uid() = user_id);
 
 -- posts: público para logado; fechado só membro; insert só membro; delete só o próprio.
 CREATE POLICY club_posts_read ON club_posts
-  FOR SELECT USING (
+  FOR SELECT TO authenticated USING (
     channel = 'public' OR club_tier(auth.uid()) <> 'none'
   );
 CREATE POLICY club_posts_insert_member ON club_posts
-  FOR INSERT WITH CHECK (
+  FOR INSERT TO authenticated WITH CHECK (
     author_id = auth.uid() AND club_tier(auth.uid()) <> 'none'
   );
 CREATE POLICY club_posts_delete_own ON club_posts
-  FOR DELETE USING (author_id = auth.uid());
+  FOR DELETE TO authenticated USING (author_id = auth.uid());
 
 -- events e lessons: nivel do usuario >= nivel exigido. Sem escrita por usuário.
-ALTER TABLE club_lessons ENABLE ROW LEVEL SECURITY;
 CREATE POLICY club_events_read ON club_events
-  FOR SELECT USING (
+  FOR SELECT TO authenticated USING (
     club_tier_rank(club_tier(auth.uid())) >= club_tier_rank(tier_required)
   );
 CREATE POLICY club_lessons_read ON club_lessons
-  FOR SELECT USING (
+  FOR SELECT TO authenticated USING (
     published AND club_tier_rank(club_tier(auth.uid())) >= club_tier_rank(tier_required)
   );
 
 -- rsvps: só as próprias, só em evento visível e só membro.
 CREATE POLICY club_rsvps_read_own ON club_event_rsvps
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT TO authenticated USING (auth.uid() = user_id);
 CREATE POLICY club_rsvps_insert_member ON club_event_rsvps
-  FOR INSERT WITH CHECK (
+  FOR INSERT TO authenticated WITH CHECK (
     auth.uid() = user_id
     AND club_tier(auth.uid()) <> 'none'
     AND EXISTS (SELECT 1 FROM club_events e WHERE e.id = event_id)
   );
 CREATE POLICY club_rsvps_delete_own ON club_event_rsvps
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE TO authenticated USING (auth.uid() = user_id);
