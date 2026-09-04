@@ -41,6 +41,7 @@ import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
 import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedClubRouteImport } from './routes/_authenticated/club'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
 const TermosRoute = TermosRouteImport.update({
@@ -204,6 +205,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedClubRoute = AuthenticatedClubRouteImport.update({
+  id: '/club',
+  path: '/club',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/app': typeof AuthenticatedAppRoute
+  '/club': typeof AuthenticatedClubRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/app': typeof AuthenticatedAppRoute
+  '/club': typeof AuthenticatedClubRoute
   '/config': typeof AuthenticatedConfigRoute
   '/desejos': typeof AuthenticatedDesejosRoute
   '/fluxo': typeof AuthenticatedFluxoRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/club': typeof AuthenticatedClubRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/desejos': typeof AuthenticatedDesejosRoute
   '/_authenticated/fluxo': typeof AuthenticatedFluxoRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/suporte'
     | '/termos'
     | '/app'
+    | '/club'
     | '/config'
     | '/desejos'
     | '/fluxo'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/suporte'
     | '/termos'
     | '/app'
+    | '/club'
     | '/config'
     | '/desejos'
     | '/fluxo'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/suporte'
     | '/termos'
     | '/_authenticated/app'
+    | '/_authenticated/club'
     | '/_authenticated/config'
     | '/_authenticated/desejos'
     | '/_authenticated/fluxo'
@@ -669,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/club': {
+      id: '/_authenticated/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof AuthenticatedClubRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
@@ -681,6 +700,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedClubRoute: typeof AuthenticatedClubRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDesejosRoute: typeof AuthenticatedDesejosRoute
   AuthenticatedFluxoRoute: typeof AuthenticatedFluxoRoute
@@ -696,6 +716,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedClubRoute: AuthenticatedClubRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDesejosRoute: AuthenticatedDesejosRoute,
   AuthenticatedFluxoRoute: AuthenticatedFluxoRoute,

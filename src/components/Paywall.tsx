@@ -51,7 +51,8 @@ export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
           <h1 className="font-display text-2xl font-bold">Acesso travado</h1>
           <p className="text-sm text-muted-foreground">
             Seu mês ficou positivo e o prazo de 7 dias para apoiar o projeto terminou sem pagamento.
-            Seus dados continuam salvos — assine o PRO para voltar a usar tudo na hora.
+            Seus dados continuam salvos — assine o PlanilhaClub Premium para voltar a usar tudo na
+            hora.
           </p>
         </div>
 
@@ -76,11 +77,11 @@ export function Paywall({ onRefresh }: { onRefresh?: () => void }) {
 
         <div className="space-y-1.5">
           <Link
-            to="/checkout"
-            search={{ plan: "anual" }}
+            to="/club/assinar"
+            search={{ plan: "premium" }}
             className="cta-pill w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-sm tap-target"
           >
-            Assinar agora <ArrowRight className="h-4 w-4" />
+            Assinar o PlanilhaClub Premium <ArrowRight className="h-4 w-4" />
           </Link>
           <button
             onClick={onRefresh}
