@@ -471,6 +471,7 @@ export async function verificarRenovacoesClube(): Promise<{
   avisados: number;
   expirados: number;
   pendentesLimpos: number;
+  erros: number;
 }> {
   const admin = await getAdminDb();
   const agora = new Date();
@@ -478,47 +479,53 @@ export async function verificarRenovacoesClube(): Promise<{
   const { data: ativas } = await admin.from("club_memberships").select("*").eq("status", "active");
   let avisados = 0;
   let expirados = 0;
+  let erros = 0;
 
   for (const m of (ativas ?? []) as MembershipRow[]) {
-    const { data: prof } = await admin
-      .from("profiles")
-      .select("email")
-      .eq("id", m.user_id)
-      .maybeSingle();
-    const email = prof?.email ?? "Usuário";
+    try {
+      const { data: prof } = await admin
+        .from("profiles")
+        .select("email")
+        .eq("id", m.user_id)
+        .maybeSingle();
+      const email = prof?.email ?? "Usuário";
 
-    if (m.current_period_end && new Date(m.current_period_end) <= agora) {
-      await admin
-        .from("club_memberships")
-        .update({ status: "expired", updated_at: agoraIso })
-        .eq("id", m.id);
-      if (m.plan === "premium") await revogarPremiumNoApp(admin, m.user_id);
-      await registrarEvento({
-        tipo: "club_expirado",
-        titulo: "Clube expirou",
-        corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} venceu sem renovar.`,
-        refUserId: m.user_id,
-        refEmail: email,
-        dedupeKey: `club_expirado:${m.id}`,
-      });
-      expirados++;
-      continue;
-    }
+      if (m.current_period_end && new Date(m.current_period_end) <= agora) {
+        await admin
+          .from("club_memberships")
+          .update({ status: "expired", updated_at: agoraIso })
+          .eq("id", m.id);
+        if (m.plan === "premium") await revogarPremiumNoApp(admin, m.user_id);
+        await registrarEvento({
+          tipo: "club_expirado",
+          titulo: "Clube expirou",
+          corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} venceu sem renovar.`,
+          refUserId: m.user_id,
+          refEmail: email,
+          dedupeKey: `club_expirado:${m.id}`,
+        });
+        expirados++;
+        continue;
+      }
 
-    if (precisaAvisoRenovacao(m, agora)) {
-      await admin
-        .from("club_memberships")
-        .update({ renewal_notice_sent_at: agoraIso, updated_at: agoraIso })
-        .eq("id", m.id);
-      await registrarEvento({
-        tipo: "club_renovacao_aviso",
-        titulo: "Renovação do clube em 7 dias",
-        corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} vence em ${new Date(m.current_period_end!).toLocaleDateString("pt-BR")}.`,
-        refUserId: m.user_id,
-        refEmail: email,
-        dedupeKey: `club_renovacao_aviso:${m.id}`,
-      });
-      avisados++;
+      if (precisaAvisoRenovacao(m, agora)) {
+        await admin
+          .from("club_memberships")
+          .update({ renewal_notice_sent_at: agoraIso, updated_at: agoraIso })
+          .eq("id", m.id);
+        await registrarEvento({
+          tipo: "club_renovacao_aviso",
+          titulo: "Renovação do clube em 7 dias",
+          corpo: `${email} — ${CLUB_PLANOS[m.plan].nome} vence em ${new Date(m.current_period_end!).toLocaleDateString("pt-BR")}.`,
+          refUserId: m.user_id,
+          refEmail: email,
+          dedupeKey: `club_renovacao_aviso:${m.id}`,
+        });
+        avisados++;
+      }
+    } catch (e) {
+      erros++;
+      console.error("[club cron] membership", m.id, e);
     }
   }
 
@@ -530,5 +537,5 @@ export async function verificarRenovacoesClube(): Promise<{
     .lt("created_at", limite)
     .select("id");
 
-  return { avisados, expirados, pendentesLimpos: limpos?.length ?? 0 };
+  return { avisados, expirados, pendentesLimpos: limpos?.length ?? 0, erros };
 }

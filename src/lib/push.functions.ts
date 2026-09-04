@@ -333,7 +333,7 @@ export type CronExpiracaoResult =
       ok: true;
       expirados: number;
       avisados: number;
-      club?: { avisados: number; expirados: number; pendentesLimpos: number };
+      club?: { avisados: number; expirados: number; pendentesLimpos: number; erros: number };
       clubError?: string;
     }
   | { ok: false; error: string };
@@ -355,7 +355,9 @@ export const rodarCronExpiracao = createServerFn({ method: "GET" }).handler(
     const r = await verificarExpirados();
 
     // Clube: isolado — uma falha aqui não derruba a expiração acima, nem vice-versa.
-    let club: { avisados: number; expirados: number; pendentesLimpos: number } | undefined;
+    let club:
+      | { avisados: number; expirados: number; pendentesLimpos: number; erros: number }
+      | undefined;
     let clubError: string | undefined;
     try {
       const m = await import("./club.functions");
