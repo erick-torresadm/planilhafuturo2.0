@@ -333,5 +333,84 @@ O repositório não tem test runner nem testes. Nesta sprint:
    especiais, cancelamento, reembolso).
 3. `CheckoutForm` e `/club/assinar`.
 4. Passo de renovação no cron.
-5. `/club` com gate, feed e eventos; navegação; troca do PRO Anual em
+5. `/club` com gate, feed, eventos e aulas; navegação; troca do PRO Anual em
    `config.tsx` e `Paywall`.
+6. Subdomínio `club.planilhafuturo.com.br` (DNS, Vercel, rewrites).
+
+## Adendo (aprovado em 2026-09-04, depois do spec inicial)
+
+Duas mudanças pedidas pelo usuário após a aprovação das seções acima. Onde
+este adendo contradiz o texto anterior, vale o adendo.
+
+### Níveis de conteúdo: free, start, premium (cumulativos)
+
+O clube deixa de ter conteúdo idêntico para Start e Premium. Aulas e eventos
+têm um nível mínimo, e os níveis são cumulativos: `free` é visível para
+qualquer usuário autenticado (inclusive o plano grátis do app), `start` para
+Start e Premium, `premium` só para Premium. A ordem é
+`free (0) < start (1) < premium (2)`; `club_tier()` continua devolvendo
+`none | start | premium`, e `none` conta como nível `free` para leitura.
+
+- `club_events.tier_required` passa a aceitar `free | start | premium`
+  (default `start`). A regra anterior de dois níveis (`public | members`)
+  deixa de existir.
+- Feed continua com dois canais (`public`, `closed`); não muda.
+- RSVP e post continuam exclusivos de membro (`club_tier <> 'none'`).
+
+### Aulas (`club_lessons`)
+
+Conteúdo em vídeo embutido (YouTube não listado ou Vimeo) mais texto. Sem
+upload: o admin cola a URL e o app monta o embed. Sem storage.
+
+```sql
+create table club_lessons (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  video_url text,
+  tier_required text not null default 'start' check (tier_required in ('free','start','premium')),
+  modulo text,
+  ordem integer not null default 0,
+  published boolean not null default true,
+  created_by uuid references profiles(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+```
+
+RLS: SELECT se `published` e o nível do usuário for maior ou igual ao
+`tier_required` (função `club_tier_rank`). Escrita só por service role, via
+server functions de admin (`criarAula`, `editarAula`, `excluirAula`).
+
+`/club` ganha a aba **Aulas**: lista agrupada por `modulo`, ordenada por
+`ordem`. Aula acima do nível do usuário aparece travada, com o nível
+necessário e o CTA de assinar. A URL do vídeo é convertida em embed por uma
+função pura (`videoEmbedUrl`) que aceita `youtube.com/watch?v=`, `youtu.be/`
+e `vimeo.com/<id>`; URL fora desses padrões não vira iframe.
+
+### Subdomínio `club.planilhafuturo.com.br`
+
+O clube é servido nesse host pela **mesma aplicação Vercel**, sem app
+separado. Situação no dia da decisão: DNS do domínio na Hostinger
+(`athena/apollo.dns-parking.com`), `www` apontando para a Vercel, `club`
+inexistente; a conta Cloudflare do usuário não tinha a zona.
+
+Passos, nesta ordem:
+
+1. Criar a zona `planilhafuturo.com.br` na Cloudflare e replicar os registros
+   públicos atuais (apex, `www`, MX/TXT de email). Registros da Vercel ficam
+   DNS-only (sem proxy), porque a Vercel gerencia o TLS e o proxy causa loop
+   de redirecionamento.
+2. O usuário troca os nameservers na Hostinger para os da Cloudflare (só ele
+   tem esse acesso).
+3. Criar `club` CNAME → `cname.vercel-dns.com` na Cloudflare.
+4. Adicionar `club.planilhafuturo.com.br` ao projeto Vercel.
+5. `vercel.json`: dois rewrites condicionados ao host `club.planilhafuturo.com.br`:
+   `/` → `/club` e `/assinar` → `/club/assinar`. Todo o resto passa igual, então
+   links internos `/club/...` funcionam no subdomínio.
+
+Sessão: o Supabase guarda o login em `localStorage`, que é por origem. No
+subdomínio o usuário faz login uma vez (mesma conta). Compartilhar a sessão
+entre `www` e `club` exigiria trocar a auth para cookie em
+`.planilhafuturo.com.br` no `client.ts` gerado pelo Lovable — fora do MVP,
+decidido com o usuário.
