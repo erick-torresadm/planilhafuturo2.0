@@ -539,3 +539,325 @@ export async function verificarRenovacoesClube(): Promise<{
 
   return { avisados, expirados, pendentesLimpos: limpos?.length ?? 0, erros };
 }
+
+// ─── Feed ────────────────────────────────────────────────────
+
+async function tierDoUsuario(admin: any, userId: string): Promise<ClubTier> {
+  return deriveTier(await listarMemberships(admin, userId), new Date());
+}
+
+async function ehAdmin(): Promise<boolean> {
+  const me = await getAuthedUser();
+  return !!me && isAdminEmail(me.email ?? null);
+}
+
+export type PostRow = {
+  id: string;
+  authorId: string;
+  authorNome: string;
+  channel: "public" | "closed";
+  content: string;
+  pinned: boolean;
+  createdAt: string;
+  mine: boolean;
+};
+
+export const listarPosts = createServerFn({ method: "GET" })
+  .validator((data: { channel: "public" | "closed" }) => data)
+  .handler(async ({ data }): Promise<{ tier: ClubTier; posts: PostRow[] }> => {
+    const me = await getAuthedUser();
+    if (!me) return { tier: "none", posts: [] };
+    const admin = await getAdminDb();
+    const tier = await tierDoUsuario(admin, me.id);
+    if (data.channel === "closed" && tier === "none") return { tier, posts: [] };
+
+    const { data: rows } = await admin
+      .from("club_posts")
+      .select("id, author_id, channel, content, pinned, created_at")
+      .eq("channel", data.channel)
+      .order("pinned", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(50);
+    const ids = [...new Set((rows ?? []).map((r: any) => r.author_id))];
+    const { data: profs } = ids.length
+      ? await admin.from("profiles").select("id, nome").in("id", ids)
+      : { data: [] as { id: string; nome: string | null }[] };
+    const nome = new Map((profs ?? []).map((p: any) => [p.id, (p.nome ?? "Membro").split(" ")[0]]));
+
+    return {
+      tier,
+      posts: (rows ?? []).map((r: any) => ({
+        id: r.id,
+        authorId: r.author_id,
+        authorNome: nome.get(r.author_id) ?? "Membro",
+        channel: r.channel,
+        content: r.content,
+        pinned: r.pinned,
+        createdAt: r.created_at,
+        mine: r.author_id === me.id,
+      })),
+    };
+  });
+
+type Ok = { ok: true } | { ok: false; error: string };
+
+export const criarPost = createServerFn({ method: "POST" })
+  .validator((data: { channel: "public" | "closed"; content: string }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me) return { ok: false, error: "Faça login primeiro" };
+    const content = data.content.trim();
+    if (content.length < 1 || content.length > 2000)
+      return { ok: false, error: "Texto entre 1 e 2000 caracteres." };
+    const admin = await getAdminDb();
+    if ((await tierDoUsuario(admin, me.id)) === "none")
+      return { ok: false, error: "Só membros publicam." };
+    const { error } = await admin
+      .from("club_posts")
+      .insert({ author_id: me.id, channel: data.channel, content });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+export const excluirPost = createServerFn({ method: "POST" })
+  .validator((data: { id: string }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me) return { ok: false, error: "Faça login primeiro" };
+    const admin = await getAdminDb();
+    const q = admin.from("club_posts").delete().eq("id", data.id);
+    const { error } = (await ehAdmin()) ? await q : await q.eq("author_id", me.id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+export const fixarPost = createServerFn({ method: "POST" })
+  .validator((data: { id: string; pinned: boolean }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    if (!(await ehAdmin())) return { ok: false, error: "Só o admin fixa posts." };
+    const admin = await getAdminDb();
+    const { error } = await admin
+      .from("club_posts")
+      .update({ pinned: data.pinned })
+      .eq("id", data.id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+// ─── Eventos ─────────────────────────────────────────────────
+
+export type EventoRow = {
+  id: string;
+  title: string;
+  type: "call" | "desafio";
+  description: string | null;
+  scheduledAt: string;
+  tierRequired: ContentTier;
+  rsvps: number;
+  going: boolean;
+};
+
+export const listarEventos = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ tier: ClubTier; eventos: EventoRow[] }> => {
+    const me = await getAuthedUser();
+    if (!me) return { tier: "none", eventos: [] };
+    const admin = await getAdminDb();
+    const tier = await tierDoUsuario(admin, me.id);
+    const { data: todos } = await admin
+      .from("club_events")
+      .select("*")
+      .order("scheduled_at", { ascending: true });
+    const evs = (todos ?? []).filter((e: any) => podeVer(tier, e.tier_required as ContentTier));
+    const ids = (evs ?? []).map((e: any) => e.id);
+    const { data: rs } = ids.length
+      ? await admin.from("club_event_rsvps").select("event_id, user_id").in("event_id", ids)
+      : { data: [] as { event_id: string; user_id: string }[] };
+    const porEvento = new Map<string, { n: number; going: boolean }>();
+    for (const r of rs ?? []) {
+      const cur = porEvento.get(r.event_id) ?? { n: 0, going: false };
+      cur.n++;
+      if (r.user_id === me.id) cur.going = true;
+      porEvento.set(r.event_id, cur);
+    }
+    return {
+      tier,
+      eventos: (evs ?? []).map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        type: e.type,
+        description: e.description,
+        scheduledAt: e.scheduled_at,
+        tierRequired: e.tier_required,
+        rsvps: porEvento.get(e.id)?.n ?? 0,
+        going: porEvento.get(e.id)?.going ?? false,
+      })),
+    };
+  },
+);
+
+export const criarEvento = createServerFn({ method: "POST" })
+  .validator(
+    (data: {
+      title: string;
+      type: "call" | "desafio";
+      description?: string;
+      scheduledAt: string;
+      tierRequired: ContentTier;
+    }) => data,
+  )
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me || !isAdminEmail(me.email ?? null))
+      return { ok: false, error: "Só o admin cria eventos." };
+    if (!data.title.trim()) return { ok: false, error: "Título obrigatório." };
+    if (isNaN(new Date(data.scheduledAt).getTime())) return { ok: false, error: "Data inválida." };
+    const admin = await getAdminDb();
+    const { error } = await admin.from("club_events").insert({
+      title: data.title.trim(),
+      type: data.type,
+      description: data.description?.trim() || null,
+      scheduled_at: new Date(data.scheduledAt).toISOString(),
+      tier_required: data.tierRequired,
+      created_by: me.id,
+    });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+export const rsvpEvento = createServerFn({ method: "POST" })
+  .validator((data: { eventId: string }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me) return { ok: false, error: "Faça login primeiro" };
+    const admin = await getAdminDb();
+    if ((await tierDoUsuario(admin, me.id)) === "none")
+      return { ok: false, error: "Só membros confirmam presença." };
+    const { data: existente } = await admin
+      .from("club_event_rsvps")
+      .select("event_id")
+      .eq("event_id", data.eventId)
+      .eq("user_id", me.id)
+      .maybeSingle();
+    const { error } = existente
+      ? await admin
+          .from("club_event_rsvps")
+          .delete()
+          .eq("event_id", data.eventId)
+          .eq("user_id", me.id)
+      : await admin.from("club_event_rsvps").insert({ event_id: data.eventId, user_id: me.id });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+// ─── Aulas ───────────────────────────────────────────────────
+
+export type AulaRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  videoUrl: string | null;
+  tierRequired: ContentTier;
+  modulo: string | null;
+  ordem: number;
+  published: boolean;
+  liberada: boolean;
+};
+
+type AulaInput = {
+  title: string;
+  description?: string;
+  videoUrl?: string;
+  tierRequired: ContentTier;
+  modulo?: string;
+  ordem?: number;
+  published?: boolean;
+};
+
+const TIERS: ContentTier[] = ["free", "start", "premium"];
+
+function validarAula(d: AulaInput): string | null {
+  if (!d.title?.trim()) return "Título obrigatório.";
+  if (!TIERS.includes(d.tierRequired)) return "Nível inválido.";
+  if (d.videoUrl && !/^https?:\/\//.test(d.videoUrl.trim())) return "URL do vídeo inválida.";
+  return null;
+}
+
+function aulaPayload(d: AulaInput, userId?: string) {
+  return {
+    title: d.title.trim(),
+    description: d.description?.trim() || null,
+    video_url: d.videoUrl?.trim() || null,
+    tier_required: d.tierRequired,
+    modulo: d.modulo?.trim() || null,
+    ordem: Number.isFinite(d.ordem) ? Number(d.ordem) : 0,
+    published: d.published ?? true,
+    ...(userId ? { created_by: userId } : {}),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export const listarAulas = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ tier: ClubTier; aulas: AulaRow[] }> => {
+    const me = await getAuthedUser();
+    if (!me) return { tier: "none", aulas: [] };
+    const admin = await getAdminDb();
+    const tier = await tierDoUsuario(admin, me.id);
+    const adminLogado = isAdminEmail(me.email ?? null);
+    let q = admin
+      .from("club_lessons")
+      .select("*")
+      .order("modulo", { ascending: true })
+      .order("ordem", { ascending: true });
+    if (!adminLogado) q = q.eq("published", true);
+    const { data: rows } = await q;
+    return {
+      tier,
+      aulas: (rows ?? []).map((r: any) => {
+        const liberada = adminLogado || podeVer(tier, r.tier_required as ContentTier);
+        return {
+          id: r.id,
+          title: r.title,
+          description: liberada ? r.description : null,
+          videoUrl: liberada ? r.video_url : null,
+          tierRequired: r.tier_required,
+          modulo: r.modulo,
+          ordem: r.ordem,
+          published: r.published,
+          liberada,
+        };
+      }),
+    };
+  },
+);
+
+export const criarAula = createServerFn({ method: "POST" })
+  .validator((data: AulaInput) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me || !isAdminEmail(me.email ?? null))
+      return { ok: false, error: "Só o admin cria aulas." };
+    const erro = validarAula(data);
+    if (erro) return { ok: false, error: erro };
+    const admin = await getAdminDb();
+    const { error } = await admin.from("club_lessons").insert(aulaPayload(data, me.id));
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+export const editarAula = createServerFn({ method: "POST" })
+  .validator((data: AulaInput & { id: string }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me || !isAdminEmail(me.email ?? null))
+      return { ok: false, error: "Só o admin edita aulas." };
+    const erro = validarAula(data);
+    if (erro) return { ok: false, error: erro };
+    const admin = await getAdminDb();
+    const { error } = await admin.from("club_lessons").update(aulaPayload(data)).eq("id", data.id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
+
+export const excluirAula = createServerFn({ method: "POST" })
+  .validator((data: { id: string }) => data)
+  .handler(async ({ data }): Promise<Ok> => {
+    const me = await getAuthedUser();
+    if (!me || !isAdminEmail(me.email ?? null))
+      return { ok: false, error: "Só o admin exclui aulas." };
+    const admin = await getAdminDb();
+    const { error } = await admin.from("club_lessons").delete().eq("id", data.id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  });
