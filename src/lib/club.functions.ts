@@ -27,11 +27,11 @@ import {
 const PLANO_ASSINATURA_PREMIUM = "PlanilhaClub Premium";
 const ITEM_PLANILHA = "planilha_erick";
 
-// `club_memberships` ainda não está no types.ts gerado do Supabase (a
-// migration 009 criou a tabela, mas os types não foram regenerados — fora do
-// escopo desta task). Retorno `any` aqui evita erros de tipo nas queries a
-// essa tabela, no mesmo espírito do `admin: any` já usado nos helpers abaixo.
-// TODO: regenerar src/integrations/supabase/types.ts apos aplicar a migration 009 e remover o any
+// types.ts já foi regenerado (migration 009 aplicada) e inclui club_memberships/
+// club_posts/club_events/club_lessons/club_event_rsvps. O `any` aqui só segue o
+// mesmo padrão usado em getAdminDb() de assinatura.functions.ts e push.functions.ts —
+// as queries desse arquivo usam .select("*") e strings soltas, então tipar o
+// client aqui não travaria nada sem tipar cada função por baixo também.
 async function getAdminDb(): Promise<any> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
