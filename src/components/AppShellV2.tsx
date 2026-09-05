@@ -388,7 +388,7 @@ function SidebarLink({
   collapsed,
   small,
 }: {
-  n: (typeof NAV)[number];
+  n: (typeof ALL)[number];
   active: boolean;
   collapsed: boolean;
   small?: boolean;
