@@ -2,17 +2,5 @@
   "crons": [
     { "path": "/api/cron", "schedule": "0 12 * * *" },
     { "path": "/api/keepalive", "schedule": "0 6 * * *" }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "club.planilhafuturo.com.br" }],
-      "destination": "/club"
-    },
-    {
-      "source": "/assinar",
-      "has": [{ "type": "host", "value": "club.planilhafuturo.com.br" }],
-      "destination": "/club/assinar"
-    }
   ]
 }
