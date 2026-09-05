@@ -5,8 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createPixCharge, checkPixStatus } from "./efi-service";
 import { getAuthedUser } from "./server-session";
-
-const VALOR_PLANILHA = 70;
+import { VALOR_PLANILHA_AVULSA as VALOR_PLANILHA } from "./club.rules";
 const ITEM_PLANILHA = "planilha_erick";
 const NOME_ARQUIVO = "Planilha_do_Erick.xlsx";
 const TIPO_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -23,8 +22,8 @@ type CompraResult =
 /**
  * Gera um Pix de R$70 para compra da Planilha do Erick.
  */
-export const criarCompraPlanilha = createServerFn({ method: "POST" })
-  .handler(async (): Promise<CompraResult> => {
+export const criarCompraPlanilha = createServerFn({ method: "POST" }).handler(
+  async (): Promise<CompraResult> => {
     const user = await getAuthedUser();
     if (!user) return { ok: false, error: "Faça login primeiro" };
 
@@ -51,11 +50,10 @@ export const criarCompraPlanilha = createServerFn({ method: "POST" })
     } catch (err: any) {
       return { ok: false, error: err.message ?? "Erro ao gerar Pix" };
     }
-  });
+  },
+);
 
-type VerificacaoResult =
-  | { ok: true; mensagem: string }
-  | { ok: false; error: string };
+type VerificacaoResult = { ok: true; mensagem: string } | { ok: false; error: string };
 
 /**
  * Verifica pagamento da planilha.
@@ -91,8 +89,8 @@ type TemPlanilhaResult = { tem: boolean };
 /**
  * Checa se o usuário já comprou a Planilha do Erick (paga).
  */
-export const temPlanilha = createServerFn({ method: "GET" })
-  .handler(async (): Promise<TemPlanilhaResult> => {
+export const temPlanilha = createServerFn({ method: "GET" }).handler(
+  async (): Promise<TemPlanilhaResult> => {
     const user = await getAuthedUser();
     if (!user) return { tem: false };
 
@@ -106,7 +104,8 @@ export const temPlanilha = createServerFn({ method: "GET" })
       .maybeSingle();
 
     return { tem: !!compra };
-  });
+  },
+);
 
 type DownloadResult =
   | { ok: true; base64: string; nome: string; tipo: string }
@@ -115,8 +114,8 @@ type DownloadResult =
 /**
  * Retorna a planilha em base64 para download (após pagamento confirmado).
  */
-export const baixarPlanilha = createServerFn({ method: "POST" })
-  .handler(async (): Promise<DownloadResult> => {
+export const baixarPlanilha = createServerFn({ method: "POST" }).handler(
+  async (): Promise<DownloadResult> => {
     const user = await getAuthedUser();
     if (!user) return { ok: false, error: "Faça login primeiro" };
 
@@ -145,4 +144,5 @@ export const baixarPlanilha = createServerFn({ method: "POST" })
     } catch {
       return { ok: false, error: "Arquivo não encontrado no servidor." };
     }
-  });
+  },
+);

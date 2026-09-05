@@ -23,6 +23,7 @@ import {
   ChevronsRight,
   Grid2x2,
   X,
+  Users,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from "motion/react";
@@ -41,6 +42,7 @@ const NAV = [
   { to: "/app", label: "Hoje", icon: Home, hint: "Resumo do dia" },
   { to: "/fluxo", label: "Fluxo", icon: CalendarDays, hint: "Projeção mensal" },
   { to: "/gastos", label: "Gastos", icon: Receipt, hint: "Contas fixas" },
+  { to: "/club", label: "Clube", icon: Users, hint: "Comunidade PlanilhaClub" },
   { to: "/parcelas", label: "Parcelas", icon: CreditCard, hint: "Compras no cartão" },
 ] as const;
 
@@ -56,10 +58,7 @@ const MORE = [
 ] as const;
 
 const ALL = [...NAV, ...MORE];
-const BOTTOM_NAV = [
-  ...NAV.slice(0, 3),
-  { to: "/tarefas", label: "Tarefas", icon: ListChecks, hint: "Lembretes" },
-] as const;
+const BOTTOM_NAV = [...NAV.slice(0, 4)] as const;
 const REMAINING = ALL.filter((n) => !BOTTOM_NAV.some((b) => b.to === n.to));
 
 export function AppShellV2({ children }: { children: ReactNode }) {
@@ -254,7 +253,10 @@ function ShellInnerV2({ children }: { children: ReactNode }) {
                     strokeWidth={a ? 2.2 : 1.75}
                   />
                   <span
-                    className={cn("nav-label relative", a ? "text-primary" : "text-muted-foreground")}
+                    className={cn(
+                      "nav-label relative",
+                      a ? "text-primary" : "text-muted-foreground",
+                    )}
                   >
                     {n.label}
                   </span>
@@ -386,7 +388,7 @@ function SidebarLink({
   collapsed,
   small,
 }: {
-  n: (typeof NAV)[number];
+  n: (typeof ALL)[number];
   active: boolean;
   collapsed: boolean;
   small?: boolean;
