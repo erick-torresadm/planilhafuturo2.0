@@ -68,7 +68,11 @@ function ParcelasPage() {
 
   const totalPorMes = meses12.map((mm) => rows.reduce((a, p) => a + valorParcelaNoMes(p, mm.y, mm.m), 0));
   const totalGeral = rows.reduce((a, p) => a + Number(p.valor_total), 0);
-  const ativas = rows.filter((p) => parcelasPagas(p) < p.qtd_parcelas).length;
+  const rowsAtivas = rows.filter((p) => parcelasPagas(p) < p.qtd_parcelas);
+  const rowsPagas = rows.filter((p) => parcelasPagas(p) >= p.qtd_parcelas);
+  const ativas = rowsAtivas.length;
+  const [showPagas, setShowPagas] = useState(false);
+  const visibleRows = showPagas ? rows : rowsAtivas;
   const loading = q.isPending;
 
   return (
@@ -77,9 +81,16 @@ function ParcelasPage() {
         title="Parcelas"
         subtitle="Compras parceladas do cartão"
         actions={
-          <Button onClick={() => setOpenNew(true)}>
-            <Plus className="h-4 w-4" /><span className="hidden sm:inline ml-1">Nova parcela</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {rowsPagas.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setShowPagas((v) => !v)}>
+                {showPagas ? "Ocultar pagas" : `Ver pagas (${rowsPagas.length})`}
+              </Button>
+            )}
+            <Button onClick={() => setOpenNew(true)}>
+              <Plus className="h-4 w-4" /><span className="hidden sm:inline ml-1">Nova parcela</span>
+            </Button>
+          </div>
         }
       />
 
@@ -106,23 +117,27 @@ function ParcelasPage() {
         <DataView
           storageKey="parcelas-view"
           cards={
-            rows.length === 0 ? (
-              <EmptyState icon={CreditCard} title="Nenhuma parcela" description="Adicione compras parceladas para distribuir no fluxo." />
+            visibleRows.length === 0 ? (
+              <EmptyState icon={CreditCard} title="Nenhuma parcela ativa" description="Tudo pago! Ative “ver pagas” pra conferir o histórico." />
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
-                {rows.map((r) => {
-                  const restantes = r.qtd_parcelas - (r.parcela_inicial - 1);
+                {visibleRows.map((r) => {
+                  const paga = parcelasPagas(r);
+                  const restantes = r.qtd_parcelas - paga;
+                  const quitada = restantes <= 0;
                   const parcela = Number(r.valor_total) / Math.max(1, r.qtd_parcelas);
-                  const paga = r.parcela_inicial - 1;
                   const pct = (paga / r.qtd_parcelas) * 100;
                   return (
-                    <div key={r.id} className="rounded-xl bg-card border border-border p-4 transition-all hover:shadow-sm">
+                    <div key={r.id} className={cn("rounded-xl border p-4 transition-all hover:shadow-sm", quitada ? "bg-muted/40 border-border/60" : "bg-card border-border")}>
                       <div className="flex items-start gap-3">
                         <div className="h-10 w-10 rounded-lg bg-primary/10 grid place-items-center shrink-0">
                           <CreditCard className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
+                          <div className="flex items-center gap-2">
+                            <Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 font-semibold px-0" />
+                            {quitada && <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-positive bg-positive-soft px-1.5 py-0.5 rounded">Pago</span>}
+                          </div>
                           <div className="flex gap-2 mt-0.5 text-xs text-muted-foreground">
                             <span>{r.cartao}</span><span>·</span><span>{r.categoria}</span>
                           </div>
@@ -139,7 +154,7 @@ function ParcelasPage() {
                       <div className="mt-3 flex items-baseline justify-between">
                         <div>
                           <span className="eyebrow">Parcela</span>
-                          <div className="font-display text-lg font-bold text-negative mt-0.5"><Money value={parcela} signed={false} /></div>
+                          <div className={cn("font-display text-lg font-bold mt-0.5", quitada ? "text-muted-foreground" : "text-negative")}><Money value={parcela} signed={false} /></div>
                         </div>
                         <div className="text-right">
                           <span className="eyebrow">Total</span>
@@ -149,10 +164,10 @@ function ParcelasPage() {
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-muted-foreground mb-1">
                           <span>{paga} de {r.qtd_parcelas}</span>
-                          <span>{restantes} restantes</span>
+                          <span>{restantes > 0 ? `${restantes} restantes` : "quitada"}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                          <div className={cn("h-full", quitada ? "bg-positive" : "bg-primary")} style={{ width: `${Math.min(100, pct)}%` }} />
                         </div>
                       </div>
                     </div>
@@ -162,7 +177,7 @@ function ParcelasPage() {
             )
           }
           table={
-            rows.length === 0 ? (
+            visibleRows.length === 0 ? (
               <div className="rounded-xl bg-card border border-border p-8 text-center text-sm text-muted-foreground">Nenhuma parcela.</div>
             ) : (
               <div className="rounded-xl bg-card border border-border overflow-x-auto table-scroll">
@@ -199,7 +214,7 @@ function ParcelasPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((r, i) => (
+                    {visibleRows.map((r, i) => (
                       <tr key={r.id} className="border-t border-border/60 hover:bg-primary/[0.02]">
                         <td className="px-4 py-2.5 sticky left-0 bg-card z-10"><Input type="date" defaultValue={r.data} onBlur={(e) => e.target.value !== r.data && upd.mutate({ id: r.id, patch: { data: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0 w-32" /></td>
                         <td className="px-4 py-2.5 sticky left-40 bg-card z-10"><Input defaultValue={r.descricao} onBlur={(e) => e.target.value !== r.descricao && upd.mutate({ id: r.id, patch: { descricao: e.target.value } })} className="h-7 border-0 bg-transparent shadow-none focus-visible:ring-1 px-0" /></td>
