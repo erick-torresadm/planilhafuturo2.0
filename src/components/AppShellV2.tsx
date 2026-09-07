@@ -24,6 +24,7 @@ import {
   Grid2x2,
   X,
   Users,
+  Compass,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from "motion/react";
@@ -47,6 +48,7 @@ const NAV = [
 ] as const;
 
 const MORE = [
+  { to: "/plano-financeiro", label: "Meu plano", icon: Compass, hint: "Por que nunca sobra?" },
   { to: "/investimentos", label: "Investimentos", icon: Wallet, hint: "Sua carteira" },
   { to: "/mercado", label: "Mercado", icon: TrendingUp, hint: "Indicadores" },
   { to: "/historico", label: "Histórico", icon: History, hint: "Meses passados" },

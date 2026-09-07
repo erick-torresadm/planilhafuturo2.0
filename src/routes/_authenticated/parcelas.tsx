@@ -14,7 +14,7 @@ import { KpiCard } from "@/components/KpiCard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { DataView } from "@/components/DataView";
-import { valorParcelaNoMes, type Parcela } from "@/lib/finance";
+import { valorParcelaNoMes, parcelasPagas, type Parcela } from "@/lib/finance";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -68,6 +68,7 @@ function ParcelasPage() {
 
   const totalPorMes = meses12.map((mm) => rows.reduce((a, p) => a + valorParcelaNoMes(p, mm.y, mm.m), 0));
   const totalGeral = rows.reduce((a, p) => a + Number(p.valor_total), 0);
+  const ativas = rows.filter((p) => parcelasPagas(p) < p.qtd_parcelas).length;
   const loading = q.isPending;
 
   return (
@@ -82,7 +83,7 @@ function ParcelasPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <KpiCard label="Compromisso total" value={totalGeral} icon={CreditCard} tone="primary" />
         <KpiCard
           label={focusedIdx === 0 ? "Este mês" : `${MESES_ABREV[meses12[focusedIdx].m]}/${String(meses12[focusedIdx].y).slice(2)}`}
@@ -90,6 +91,11 @@ function ParcelasPage() {
           tone="negative"
           hint="em parcelas"
         />
+        <div className="card-strong p-5 col-span-2 sm:col-span-1">
+          <div className="eyebrow">Parcelas ativas</div>
+          <div className="mt-2 num-lg text-2xl lg:text-[26px] leading-tight text-foreground">{ativas}</div>
+          <div className="mt-1.5 text-[11px] text-muted-foreground">ainda rodando</div>
+        </div>
       </div>
 
       {loading ? (
