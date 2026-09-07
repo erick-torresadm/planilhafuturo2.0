@@ -181,3 +181,14 @@ export function parcelasNoMes(parcelas: Parcela[], y: number, m0: number): numbe
   }
   return s;
 }
+
+/**
+ * Quantas parcelas já foram pagas, contando o avanço real do tempo desde a
+ * compra — parcela_inicial sozinho só reflete a parcela vigente no dia do
+ * cadastro e nunca avança com os meses, travando a barra de progresso.
+ */
+export function parcelasPagas(p: Parcela, ref: Date = new Date()): number {
+  const dt = new Date(p.data + "T00:00:00");
+  const monthsElapsed = Math.max(0, (ref.getFullYear() - dt.getFullYear()) * 12 + (ref.getMonth() - dt.getMonth()));
+  return Math.min(p.qtd_parcelas, (p.parcela_inicial - 1) + monthsElapsed);
+}

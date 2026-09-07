@@ -4,8 +4,9 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Money } from "@/components/Money";
+import { KpiCard } from "@/components/KpiCard";
 import { selectAll, getProfile } from "@/lib/db";
-import { totalGastoFixoMensal, parcelasNoMes, type GastoFixo, type Parcela } from "@/lib/finance";
+import { totalGastoFixoMensal, parcelasNoMes, parcelasPagas, type GastoFixo, type Parcela } from "@/lib/finance";
 import {
   Compass, AlertTriangle, TrendingDown, PauseCircle, Wallet, PiggyBank,
   CheckCircle2, ArrowRight, type LucideIcon,
@@ -79,6 +80,10 @@ function GuiaPage() {
 
   const lazer = ((caixinhasQ.data ?? []) as any[]).find((c) => c.nome === "Lazer");
   const reserva = ((caixinhasQ.data ?? []) as any[]).find((c) => c.nome === "Reserva de Emergência");
+  const parcelasAtivas = useMemo(
+    () => ((parcelasQ.data ?? []) as Parcela[]).filter((p) => parcelasPagas(p) < p.qtd_parcelas).length,
+    [parcelasQ.data],
+  );
 
   const loading = profile.isPending || gastosQ.isPending || parcelasQ.isPending;
 
@@ -89,6 +94,26 @@ function GuiaPage() {
         title="Por que nunca sobra?"
         subtitle="Seu plano pra parar de viver no aperto até o fim do mês"
       />
+
+      {!loading && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        >
+          <KpiCard label="Chão do mês" value={chao} tone="negative" hint="fixo + parcelas" />
+          <KpiCard label="Renda fixa" value={renda} tone="primary" hint="seu salário" />
+          <KpiCard label="Sobra estimada" value={sobraEstimada} tone={sobraEstimada >= 0 ? "positive" : "negative"} />
+          <KpiCard label="Guardado — Lazer" value={Number(lazer?.atual ?? 0)} hint={`meta ${lazer?.meta ?? 1800}`} />
+          <KpiCard label="Guardado — Reserva" value={Number(reserva?.atual ?? 0)} hint={`meta ${reserva?.meta ?? 1000}`} />
+          <div className="card-strong p-5">
+            <div className="eyebrow">Parcelas ativas</div>
+            <div className="mt-2 num-lg text-2xl lg:text-[26px] leading-tight text-foreground">{parcelasAtivas}</div>
+            <div className="mt-1.5 text-[11px] text-muted-foreground">ainda rodando</div>
+          </div>
+        </motion.div>
+      )}
 
       <Section icon={Compass} title="O problema não é quanto você ganha" delay={0}>
         <p className="text-sm text-muted-foreground leading-relaxed">
