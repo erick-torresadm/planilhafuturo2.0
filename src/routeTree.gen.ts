@@ -9,104 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermosRouteImport } from './routes/termos'
-import { Route as SuporteRouteImport } from './routes/suporte'
-import { Route as Pv3RouteImport } from './routes/pv3'
-import { Route as Pv2RouteImport } from './routes/pv2'
-import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as PlanilhaRouteImport } from './routes/planilha'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as ObrigadoRouteImport } from './routes/obrigado'
-import { Route as GuiaRouteImport } from './routes/guia'
-import { Route as DocsRouteImport } from './routes/docs'
-import { Route as CookiesRouteImport } from './routes/cookies'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
-import { Route as ClubAssinarRouteImport } from './routes/club.assinar'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ApiKeepaliveRouteImport } from './routes/api.keepalive'
-import { Route as ApiCronRouteImport } from './routes/api.cron'
-import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
-import { Route as AuthenticatedSobreRouteImport } from './routes/_authenticated/sobre'
-import { Route as AuthenticatedProdutividadeRouteImport } from './routes/_authenticated/produtividade'
-import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
-import { Route as AuthenticatedMercadoRouteImport } from './routes/_authenticated/mercado'
-import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
-import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
-import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
-import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
-import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
-import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
-import { Route as AuthenticatedClubRouteImport } from './routes/_authenticated/club'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as GuiaRouteImport } from './routes/guia'
+import { Route as ObrigadoRouteImport } from './routes/obrigado'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PlanilhaRouteImport } from './routes/planilha'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as Pv2RouteImport } from './routes/pv2'
+import { Route as Pv3RouteImport } from './routes/pv3'
+import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedClubRouteImport } from './routes/_authenticated/club'
+import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedDesejosRouteImport } from './routes/_authenticated/desejos'
+import { Route as AuthenticatedFluxoRouteImport } from './routes/_authenticated/fluxo'
+import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
+import { Route as AuthenticatedMercadoRouteImport } from './routes/_authenticated/mercado'
+import { Route as AuthenticatedParcelasRouteImport } from './routes/_authenticated/parcelas'
+import { Route as AuthenticatedPlanoFinanceiroRouteImport } from './routes/_authenticated/plano-financeiro'
+import { Route as AuthenticatedProdutividadeRouteImport } from './routes/_authenticated/produtividade'
+import { Route as AuthenticatedSobreRouteImport } from './routes/_authenticated/sobre'
+import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
+import { Route as ApiCronRouteImport } from './routes/api.cron'
+import { Route as ApiKeepaliveRouteImport } from './routes/api.keepalive'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ClubAssinarRouteImport } from './routes/club.assinar'
+import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 
-const TermosRoute = TermosRouteImport.update({
-  id: '/termos',
-  path: '/termos',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SuporteRoute = SuporteRouteImport.update({
-  id: '/suporte',
-  path: '/suporte',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Pv3Route = Pv3RouteImport.update({
-  id: '/pv3',
-  path: '/pv3',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Pv2Route = Pv2RouteImport.update({
-  id: '/pv2',
-  path: '/pv2',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacidadeRoute = PrivacidadeRouteImport.update({
-  id: '/privacidade',
-  path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanilhaRoute = PlanilhaRouteImport.update({
-  id: '/planilha',
-  path: '/planilha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ObrigadoRoute = ObrigadoRouteImport.update({
-  id: '/obrigado',
-  path: '/obrigado',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GuiaRoute = GuiaRouteImport.update({
-  id: '/guia',
-  path: '/guia',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CookiesRoute = CookiesRouteImport.update({
-  id: '/cookies',
-  path: '/cookies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -114,64 +59,104 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConviteTokenRoute = ConviteTokenRouteImport.update({
-  id: '/convite/$token',
-  path: '/convite/$token',
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ClubAssinarRoute = ClubAssinarRouteImport.update({
-  id: '/club/assinar',
-  path: '/club/assinar',
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => AuthRoute,
-} as any)
-const ApiKeepaliveRoute = ApiKeepaliveRouteImport.update({
-  id: '/api/keepalive',
-  path: '/api/keepalive',
+const GuiaRoute = GuiaRouteImport.update({
+  id: '/guia',
+  path: '/guia',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronRoute = ApiCronRouteImport.update({
-  id: '/api/cron',
-  path: '/api/cron',
+const ObrigadoRoute = ObrigadoRouteImport.update({
+  id: '/obrigado',
+  path: '/obrigado',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
-  id: '/tarefas',
-  path: '/tarefas',
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanilhaRoute = PlanilhaRouteImport.update({
+  id: '/planilha',
+  path: '/planilha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Pv2Route = Pv2RouteImport.update({
+  id: '/pv2',
+  path: '/pv2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Pv3Route = Pv3RouteImport.update({
+  id: '/pv3',
+  path: '/pv3',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSobreRoute = AuthenticatedSobreRouteImport.update({
-  id: '/sobre',
-  path: '/sobre',
+const AuthenticatedClubRoute = AuthenticatedClubRouteImport.update({
+  id: '/club',
+  path: '/club',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedProdutividadeRoute =
-  AuthenticatedProdutividadeRouteImport.update({
-    id: '/produtividade',
-    path: '/produtividade',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedParcelasRoute = AuthenticatedParcelasRouteImport.update({
-  id: '/parcelas',
-  path: '/parcelas',
+const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedMercadoRoute = AuthenticatedMercadoRouteImport.update({
-  id: '/mercado',
-  path: '/mercado',
+const AuthenticatedDesejosRoute = AuthenticatedDesejosRouteImport.update({
+  id: '/desejos',
+  path: '/desejos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFluxoRoute = AuthenticatedFluxoRouteImport.update({
+  id: '/fluxo',
+  path: '/fluxo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGastosRoute = AuthenticatedGastosRouteImport.update({
+  id: '/gastos',
+  path: '/gastos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInvestimentosRoute =
@@ -180,40 +165,62 @@ const AuthenticatedInvestimentosRoute =
     path: '/investimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
-  id: '/historico',
-  path: '/historico',
+const AuthenticatedMercadoRoute = AuthenticatedMercadoRouteImport.update({
+  id: '/mercado',
+  path: '/mercado',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedGastosRoute = AuthenticatedGastosRouteImport.update({
-  id: '/gastos',
-  path: '/gastos',
+const AuthenticatedParcelasRoute = AuthenticatedParcelasRouteImport.update({
+  id: '/parcelas',
+  path: '/parcelas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFluxoRoute = AuthenticatedFluxoRouteImport.update({
-  id: '/fluxo',
-  path: '/fluxo',
+const AuthenticatedPlanoFinanceiroRoute =
+  AuthenticatedPlanoFinanceiroRouteImport.update({
+    id: '/plano-financeiro',
+    path: '/plano-financeiro',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProdutividadeRoute =
+  AuthenticatedProdutividadeRouteImport.update({
+    id: '/produtividade',
+    path: '/produtividade',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSobreRoute = AuthenticatedSobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDesejosRoute = AuthenticatedDesejosRouteImport.update({
-  id: '/desejos',
-  path: '/desejos',
+const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
+  id: '/tarefas',
+  path: '/tarefas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
-  id: '/config',
-  path: '/config',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiCronRoute = ApiCronRouteImport.update({
+  id: '/api/cron',
+  path: '/api/cron',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedClubRoute = AuthenticatedClubRouteImport.update({
-  id: '/club',
-  path: '/club',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiKeepaliveRoute = ApiKeepaliveRouteImport.update({
+  id: '/api/keepalive',
+  path: '/api/keepalive',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
+const ClubAssinarRoute = ClubAssinarRouteImport.update({
+  id: '/club/assinar',
+  path: '/club/assinar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -242,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
+  '/plano-financeiro': typeof AuthenticatedPlanoFinanceiroRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
   '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
@@ -277,6 +285,7 @@ export interface FileRoutesByTo {
   '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/mercado': typeof AuthenticatedMercadoRoute
   '/parcelas': typeof AuthenticatedParcelasRoute
+  '/plano-financeiro': typeof AuthenticatedPlanoFinanceiroRoute
   '/produtividade': typeof AuthenticatedProdutividadeRoute
   '/sobre': typeof AuthenticatedSobreRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
@@ -314,6 +323,7 @@ export interface FileRoutesById {
   '/_authenticated/investimentos': typeof AuthenticatedInvestimentosRoute
   '/_authenticated/mercado': typeof AuthenticatedMercadoRoute
   '/_authenticated/parcelas': typeof AuthenticatedParcelasRoute
+  '/_authenticated/plano-financeiro': typeof AuthenticatedPlanoFinanceiroRoute
   '/_authenticated/produtividade': typeof AuthenticatedProdutividadeRoute
   '/_authenticated/sobre': typeof AuthenticatedSobreRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/mercado'
     | '/parcelas'
+    | '/plano-financeiro'
     | '/produtividade'
     | '/sobre'
     | '/tarefas'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/mercado'
     | '/parcelas'
+    | '/plano-financeiro'
     | '/produtividade'
     | '/sobre'
     | '/tarefas'
@@ -422,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/investimentos'
     | '/_authenticated/mercado'
     | '/_authenticated/parcelas'
+    | '/_authenticated/plano-financeiro'
     | '/_authenticated/produtividade'
     | '/_authenticated/sobre'
     | '/_authenticated/tarefas'
@@ -457,102 +470,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/termos': {
-      id: '/termos'
-      path: '/termos'
-      fullPath: '/termos'
-      preLoaderRoute: typeof TermosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/suporte': {
-      id: '/suporte'
-      path: '/suporte'
-      fullPath: '/suporte'
-      preLoaderRoute: typeof SuporteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pv3': {
-      id: '/pv3'
-      path: '/pv3'
-      fullPath: '/pv3'
-      preLoaderRoute: typeof Pv3RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pv2': {
-      id: '/pv2'
-      path: '/pv2'
-      fullPath: '/pv2'
-      preLoaderRoute: typeof Pv2RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacidade': {
-      id: '/privacidade'
-      path: '/privacidade'
-      fullPath: '/privacidade'
-      preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planilha': {
-      id: '/planilha'
-      path: '/planilha'
-      fullPath: '/planilha'
-      preLoaderRoute: typeof PlanilhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/obrigado': {
-      id: '/obrigado'
-      path: '/obrigado'
-      fullPath: '/obrigado'
-      preLoaderRoute: typeof ObrigadoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/guia': {
-      id: '/guia'
-      path: '/guia'
-      fullPath: '/guia'
-      preLoaderRoute: typeof GuiaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cookies': {
-      id: '/cookies'
-      path: '/cookies'
-      fullPath: '/cookies'
-      preLoaderRoute: typeof CookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -562,123 +484,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/convite/$token': {
-      id: '/convite/$token'
-      path: '/convite/$token'
-      fullPath: '/convite/$token'
-      preLoaderRoute: typeof ConviteTokenRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/club/assinar': {
-      id: '/club/assinar'
-      path: '/club/assinar'
-      fullPath: '/club/assinar'
-      preLoaderRoute: typeof ClubAssinarRouteImport
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/api/keepalive': {
-      id: '/api/keepalive'
-      path: '/api/keepalive'
-      fullPath: '/api/keepalive'
-      preLoaderRoute: typeof ApiKeepaliveRouteImport
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron': {
-      id: '/api/cron'
-      path: '/api/cron'
-      fullPath: '/api/cron'
-      preLoaderRoute: typeof ApiCronRouteImport
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/tarefas': {
-      id: '/_authenticated/tarefas'
-      path: '/tarefas'
-      fullPath: '/tarefas'
-      preLoaderRoute: typeof AuthenticatedTarefasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/guia': {
+      id: '/guia'
+      path: '/guia'
+      fullPath: '/guia'
+      preLoaderRoute: typeof GuiaRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/sobre': {
-      id: '/_authenticated/sobre'
-      path: '/sobre'
-      fullPath: '/sobre'
-      preLoaderRoute: typeof AuthenticatedSobreRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/obrigado': {
+      id: '/obrigado'
+      path: '/obrigado'
+      fullPath: '/obrigado'
+      preLoaderRoute: typeof ObrigadoRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/produtividade': {
-      id: '/_authenticated/produtividade'
-      path: '/produtividade'
-      fullPath: '/produtividade'
-      preLoaderRoute: typeof AuthenticatedProdutividadeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/parcelas': {
-      id: '/_authenticated/parcelas'
-      path: '/parcelas'
-      fullPath: '/parcelas'
-      preLoaderRoute: typeof AuthenticatedParcelasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/planilha': {
+      id: '/planilha'
+      path: '/planilha'
+      fullPath: '/planilha'
+      preLoaderRoute: typeof PlanilhaRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/mercado': {
-      id: '/_authenticated/mercado'
-      path: '/mercado'
-      fullPath: '/mercado'
-      preLoaderRoute: typeof AuthenticatedMercadoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/investimentos': {
-      id: '/_authenticated/investimentos'
-      path: '/investimentos'
-      fullPath: '/investimentos'
-      preLoaderRoute: typeof AuthenticatedInvestimentosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/pv2': {
+      id: '/pv2'
+      path: '/pv2'
+      fullPath: '/pv2'
+      preLoaderRoute: typeof Pv2RouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/historico': {
-      id: '/_authenticated/historico'
-      path: '/historico'
-      fullPath: '/historico'
-      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/pv3': {
+      id: '/pv3'
+      path: '/pv3'
+      fullPath: '/pv3'
+      preLoaderRoute: typeof Pv3RouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/gastos': {
-      id: '/_authenticated/gastos'
-      path: '/gastos'
-      fullPath: '/gastos'
-      preLoaderRoute: typeof AuthenticatedGastosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/fluxo': {
-      id: '/_authenticated/fluxo'
-      path: '/fluxo'
-      fullPath: '/fluxo'
-      preLoaderRoute: typeof AuthenticatedFluxoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/desejos': {
-      id: '/_authenticated/desejos'
-      path: '/desejos'
-      fullPath: '/desejos'
-      preLoaderRoute: typeof AuthenticatedDesejosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/config': {
-      id: '/_authenticated/config'
-      path: '/config'
-      fullPath: '/config'
-      preLoaderRoute: typeof AuthenticatedConfigRouteImport
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/club': {
@@ -688,12 +596,124 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClubRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/app': {
-      id: '/_authenticated/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AuthenticatedAppRouteImport
+    '/_authenticated/config': {
+      id: '/_authenticated/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof AuthenticatedConfigRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/desejos': {
+      id: '/_authenticated/desejos'
+      path: '/desejos'
+      fullPath: '/desejos'
+      preLoaderRoute: typeof AuthenticatedDesejosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/fluxo': {
+      id: '/_authenticated/fluxo'
+      path: '/fluxo'
+      fullPath: '/fluxo'
+      preLoaderRoute: typeof AuthenticatedFluxoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gastos': {
+      id: '/_authenticated/gastos'
+      path: '/gastos'
+      fullPath: '/gastos'
+      preLoaderRoute: typeof AuthenticatedGastosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investimentos': {
+      id: '/_authenticated/investimentos'
+      path: '/investimentos'
+      fullPath: '/investimentos'
+      preLoaderRoute: typeof AuthenticatedInvestimentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mercado': {
+      id: '/_authenticated/mercado'
+      path: '/mercado'
+      fullPath: '/mercado'
+      preLoaderRoute: typeof AuthenticatedMercadoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parcelas': {
+      id: '/_authenticated/parcelas'
+      path: '/parcelas'
+      fullPath: '/parcelas'
+      preLoaderRoute: typeof AuthenticatedParcelasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/plano-financeiro': {
+      id: '/_authenticated/plano-financeiro'
+      path: '/plano-financeiro'
+      fullPath: '/plano-financeiro'
+      preLoaderRoute: typeof AuthenticatedPlanoFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/produtividade': {
+      id: '/_authenticated/produtividade'
+      path: '/produtividade'
+      fullPath: '/produtividade'
+      preLoaderRoute: typeof AuthenticatedProdutividadeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sobre': {
+      id: '/_authenticated/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof AuthenticatedSobreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tarefas': {
+      id: '/_authenticated/tarefas'
+      path: '/tarefas'
+      fullPath: '/tarefas'
+      preLoaderRoute: typeof AuthenticatedTarefasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/cron': {
+      id: '/api/cron'
+      path: '/api/cron'
+      fullPath: '/api/cron'
+      preLoaderRoute: typeof ApiCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/keepalive': {
+      id: '/api/keepalive'
+      path: '/api/keepalive'
+      fullPath: '/api/keepalive'
+      preLoaderRoute: typeof ApiKeepaliveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/club/assinar': {
+      id: '/club/assinar'
+      path: '/club/assinar'
+      fullPath: '/club/assinar'
+      preLoaderRoute: typeof ClubAssinarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -709,6 +729,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvestimentosRoute: typeof AuthenticatedInvestimentosRoute
   AuthenticatedMercadoRoute: typeof AuthenticatedMercadoRoute
   AuthenticatedParcelasRoute: typeof AuthenticatedParcelasRoute
+  AuthenticatedPlanoFinanceiroRoute: typeof AuthenticatedPlanoFinanceiroRoute
   AuthenticatedProdutividadeRoute: typeof AuthenticatedProdutividadeRoute
   AuthenticatedSobreRoute: typeof AuthenticatedSobreRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
@@ -725,6 +746,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvestimentosRoute: AuthenticatedInvestimentosRoute,
   AuthenticatedMercadoRoute: AuthenticatedMercadoRoute,
   AuthenticatedParcelasRoute: AuthenticatedParcelasRoute,
+  AuthenticatedPlanoFinanceiroRoute: AuthenticatedPlanoFinanceiroRoute,
   AuthenticatedProdutividadeRoute: AuthenticatedProdutividadeRoute,
   AuthenticatedSobreRoute: AuthenticatedSobreRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
